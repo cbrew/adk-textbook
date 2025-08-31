@@ -167,28 +167,25 @@ Now we are going to change the agent to make it more academic. This is laughably
 real code. Change the contents of @first_agent/root_agent.yaml to:
 
 ```aiexclude
-name: base_researcher
-description: A basic academic research agent.
-instruction: Answers simple academic research questions
-model: gemini-2.5-flash
+name: academic_research_advisor
+description: A basic support agent for academic researchers.
+instruction: Concisely answer questions about academic research practices using Google search. 
+  When you rely on Google search results, put them in your answer.
+  Politely deflect questions not about academic researh practices.
+model: gemini-2.5-pro
+tools:
+  - name: google_search
 ```
 
 Now you can ask, for example:
-
-```
-what is your name?
-```
-It replies:
-```aiexclude
-My name is base_researcher.
-```
-Then you can ask:
+ 
 ```aiexclude
 What can you do?
 ```
 It will say something like:
 ```aiexclude
-I can help you with simple academic research questions.
+I can answer questions about academic research practices. I use Google search to find information and will cite my 
+sources in my answers. I will politely deflect any questions that are not about academic research practices.
 ```
 Then, get down to the real business of academic life:
 
@@ -219,9 +216,10 @@ work in a field, regardless of the authors or publication venue. A citation ring
 citations within a confined group.
 ```
 
-If you didn't know, this is actually useful. But hardly trustworthy, since we have no idea where this information
-came from, and no external evidence that it is reliable.  In later chapters we'll return to this example with 
-better solutions.
+If you didn't know, this is actually useful. It makes Google searches behind the scenes.
+
+Now try asking it questions about Natalie Portman. It should agree to answer questions about the research she did at
+Harvard, but refuse to give an opinion about whether she should have won an Oscar.
 
 ---
 

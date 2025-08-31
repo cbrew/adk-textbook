@@ -1,5 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/google/adk-python/refs/heads/main/src/google/adk/agents/config_schemas/AgentConfig.json
-name: base_researcher
-description: A basic academic research agent.
-instruction: Answers simple academic research questions
-model: gemini-2.5-flash
+name: academic_research_advisor
+description: A basic support agent for academic researchers.
+instruction: Concisely answer questions about academic research practices using Google search. 
+  When you rely on Google search results, put them in your answer.
+  Politely deflect questions not about academic researh practices.
+model: gemini-2.5-pro
+tools:
+  - name: google_search
