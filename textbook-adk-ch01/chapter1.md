@@ -151,22 +151,95 @@ I don't have a body, consciousness, or the biological makeup to experience emoti
 I won't comment on this response, other than to say that there are many good reasons why a consumer-facing
 chatbot should take this approach.
 
-# XXXXXXXXXXXX
-
-At this point, save your work. I use `git` to do this,
 
 
-## 1.4 First Evaluation
+At this point, save your work. It's useful to save it in a form that lets you easily get back to previous versions.
+I use `git` to do this, and recommend it. 
+If you don't know git, read about it
+at https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control. It has a reputation for being arcane, and it is,
+but modern IDEs make it bearable. In 2025 LLM based code assistants are taking the final steps towards making it completely 
+painless.
 
-1. In the web UI, ask: *“What is peer review?”*  
-2. Save as a test case.  
-3. Run:
+## 1.4 Making it more academic
 
-```bash
-adk eval tests/
+
+Now we are going to change the agent to make it more academic. This is laughably simple, and still doesn't require any
+real code. Change the contents of @first_agent/root_agent.yaml to:
+
+```aiexclude
+name: base_researcher
+description: A basic academic research agent.
+instruction: Answers simple academic research questions
+model: gemini-2.5-flash
 ```
 
-This ensures the agent still works as expected after changes.
+Now you can ask, for example:
+
+```
+what is your name?
+```
+It replies:
+```aiexclude
+My name is base_researcher.
+```
+Then you can ask:
+```aiexclude
+What can you do?
+```
+It will say something like:
+```aiexclude
+I can help you with simple academic research questions.
+```
+Then, get down to the real business of academic life:
+
+```aiexclude
+what is a citation ring?
+```
+It produces a correct description of this evil practice.
+```aiexclude
+A citation ring (also sometimes called a "citation cartel" or "citation network") in academic research refers to a group of papers, journals, or researchers who disproportionately cite each other's work.
+
+Here's a breakdown of what that means and why it's often viewed negatively:
+
+How it works: Instead of citing a broad range of relevant literature from the wider field, a small group of authors or 
+journals will frequently cite papers primarily from within their own group.
+
+Why it's problematic:
+Inflated Citation Metrics: It can artificially inflate the citation counts and impact factors of the participating 
+papers or journals, making them appear more influential than they actually are.
+Lack of Objectivity/Rigor: It suggests a lack of engagement with the broader academic conversation and 
+potentially overlooks more relevant or higher-quality research from outside the ring.
+Closed-Off Research: It can create an echo chamber, where ideas are not sufficiently challenged or enriched 
+by diverse perspectives.
+
+Ethical Concerns: While not always done with malicious intent, it can be seen as an unethical practice if the 
+primary goal is to manipulate citation metrics rather than genuinely build upon relevant prior work.
+In essence, a healthy academic citation practice involves referencing the most relevant and foundational 
+work in a field, regardless of the authors or publication venue. A citation ring, conversely, focuses on reciprocal 
+citations within a confined group.
+```
+
+If you didn't know, this is actually useful. But hardly trustworthy, since we have no idea where this information
+came from, and no external evidence that it is reliable.  In later chapters we'll return to this example with 
+better solutions.
+
+
+
+## 1.5 First Evaluation
+
+1. In the web UI, ask: *“What is peer review?”*  
+2. Use the eval tab in the UI to create an eval set (choose a meaningful name) accepting default settings.
+3. Press a button to add the current session to the eval set (choose a meaningful name, accepting default settings.
+4. Select the current session as a case to be evaluated.
+5. Run the evaluation.
+
+When I did this, the system whirred for a while, then re-ran the session, then announced
+that the system had failed the tests, because the new result was insufficiently similar to
+the previous result. This is normal, don't worry. We are not expecting such a simple approach
+to produce robust and reproducible results. We will do better in later chapters. For now, the important
+point is that Google ADK encourages good evaluations from the outset.
+
+XXX: Danger, this may cost you money.
 
 ---
 

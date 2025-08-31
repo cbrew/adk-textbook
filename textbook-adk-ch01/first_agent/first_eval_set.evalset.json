@@ -1,0 +1,61 @@
+{
+  "eval_set_id": "first_eval_set",
+  "name": "first_eval_set",
+  "description": null,
+  "eval_cases": [
+    {
+      "eval_id": "peer_review",
+      "conversation": [
+        {
+          "invocation_id": "e-499b5475-9240-471d-aa4a-1c9ce3660523",
+          "user_content": {
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "file_data": null,
+                "thought_signature": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "what is peer review?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "video_metadata": null,
+                "thought": null,
+                "inline_data": null,
+                "file_data": null,
+                "thought_signature": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "function_call": null,
+                "function_response": null,
+                "text": "Peer review is a process by which manuscripts submitted to academic journals, grant applications, or other scholarly works are evaluated by other experts in the same field before publication or funding is approved.\n\nHere's a breakdown of its key aspects:\n\n1.  **Purpose:**\n    *   **Quality Control:** To ensure the accuracy, validity, rigor, and ethical soundness of research.\n    *   **Credibility:** To enhance the credibility and reliability of published research.\n    *   **Improvement:** To help authors improve their work by providing constructive feedback.\n    *   **Gatekeeping:** To filter out poor quality, flawed, or unoriginal research.\n\n2.  **Process (General):**\n    *   **Submission:** An author submits a manuscript to a journal.\n    *   **Editorial Assessment:** An editor first assesses whether the paper fits the journal's scope and meets basic quality standards.\n    *   **Reviewer Invitation:** If it passes, the editor invites several independent experts (peers) in the relevant field to review the manuscript.\n    *   **Review:** Reviewers critically evaluate the methodology, results, conclusions, writing clarity, novelty, and relevance. They often provide detailed comments and suggestions for revision.\n    *   **Recommendation:** Reviewers submit their recommendations to the editor (e.g., accept, accept with minor revisions, accept with major revisions, reject).\n    *   **Editorial Decision:** The editor considers the reviewers' feedback and makes the final decision, which is then communicated to the author.\n    *   **Revision & Resubmission (if applicable):** If revisions are requested, the author revises the manuscript and resubmits it, often including a point-by-point response to the reviewers' comments. The paper might go through another round of review.\n\n3.  **Types of Peer Review:**\n    *   **Single-blind:** Reviewers know the author's identity, but authors do not know the reviewers' identities. (Most common)\n    *   **Double-blind:** Neither the reviewers nor the authors know each other's identities. (Aims to reduce bias)\n    *   **Open:** Reviewers' names are disclosed to authors (and sometimes published alongside the article).\n    *   **Post-publication:** Review and commentary occur after the article is published (e.g., on platforms like PubPeer).\n\nPeer review is a cornerstone of academic publishing, designed to maintain the integrity and quality of scientific and scholarly communication."
+              }
+            ],
+            "role": null
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "intermediate_responses": []
+          },
+          "creation_timestamp": 1756677578.302802
+        }
+      ],
+      "session_input": {
+        "app_name": "first_agent",
+        "user_id": "user",
+        "state": {}
+      },
+      "creation_timestamp": 1756677647.7981288
+    }
+  ],
+  "creation_timestamp": 1756677617.2895591
+}

@@ -1,7 +1,8 @@
 # ADK Research Textbook — Project Setup (Python 3.13+, uv)
 
 This repo hosts a multi-chapter, demo-driven “small textbook” for Google’s Agent Development Kit (ADK) in the **academic research** domain.  
-Chapter 1 lives in `textbook-adk-ch01/` and runs **without writing Python code** (config-only), but we’ll set up a proper project environment now so future chapters “just work”.
+Chapter 1 lives in `textbook-adk-ch01/` and runs **without writing Python code** (config-only), but we’ll set up a proper project environment 
+right away.
 
 > Requires: **Python 3.13+** and **uv** (fast Python package manager).  
 > Install uv (macOS/Linux): `curl -LsSf https://astral.sh/uv/install.sh | sh`  
@@ -11,7 +12,7 @@ Chapter 1 lives in `textbook-adk-ch01/` and runs **without writing Python code**
 
 ## 1) Initialize the project with uv
 
-From the **project root** (the folder that contains `textbook-adk-ch01/`):
+From the **project root** (the parent of `textbook-adk-ch01/`):
 
 ```bash
 uv init
