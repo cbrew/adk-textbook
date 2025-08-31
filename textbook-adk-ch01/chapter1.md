@@ -223,23 +223,11 @@ If you didn't know, this is actually useful. But hardly trustworthy, since we ha
 came from, and no external evidence that it is reliable.  In later chapters we'll return to this example with 
 better solutions.
 
+---
 
+## 1.5 Evaluation
 
-## 1.5 First Evaluation
-
-1. In the web UI, ask: *“What is peer review?”*  
-2. Use the eval tab in the UI to create an eval set (choose a meaningful name) accepting default settings.
-3. Press a button to add the current session to the eval set (choose a meaningful name, accepting default settings.
-4. Select the current session as a case to be evaluated.
-5. Run the evaluation.
-
-When I did this, the system whirred for a while, then re-ran the session, then announced
-that the system had failed the tests, because the new result was insufficiently similar to
-the previous result. This is normal, don't worry. We are not expecting such a simple approach
-to produce robust and reproducible results. We will do better in later chapters. For now, the important
-point is that Google ADK encourages good evaluations from the outset.
-
-XXX: Danger, this may cost you money.
+This section should contain material to do proper evaluations. Haven't got this working right at the moment. 
 
 ---
 
