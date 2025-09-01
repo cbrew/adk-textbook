@@ -36,7 +36,13 @@ different kinds of multi-player games. We will see adversarial settings in which
 participants balance the achievement of their goals with the demands of others, fully co-operative games in which the 
 players are all on the same side, and so on.
 
-For better or worse, as seen in the last paragraph, discussions of agents tend to adopt metaphors from human behavior,
+Agents are also communicators. In ADK agents contain large language models (LLMs). Their basic activity of these models 
+is to  receive the previous turns of a conversation and create some kind of response, which could be text, image or something else.
+All LLM agents have things to say. The challenge for agentive software is to control who says what to whom, in such a way
+that the customer receives a useful response. One strategy for control is not to control at all: give each agent a voice, 
+let it speak whenever it wants about whatever it wants. 
+
+For better or worse, as seen in the last paragraphs, discussions of agents tend to adopt metaphors from human behavior,
 LLM-based agents are autonomous and human-like only in the loosest metaphorical sense. Although they share with humans 
 the ability to respond to their interlocutor's vaguely specified goals, their responses are by no means as flexible
 and situation-appropriate as those of well-informed humans on their best behavior. They do have obvious advantages, such
