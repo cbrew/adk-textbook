@@ -221,6 +221,11 @@ If you didn't know, this is actually useful. It makes Google searches behind the
 Now try asking it questions about Natalie Portman. It should agree to answer questions about the research she did at
 Harvard, but refuse to give an opinion about whether she should have won an Oscar.
 
+## 1.6 State of the system.
+
+This is a simple RAG-style system that uses Google search to feed an LLM agent that has distinct interests and 
+personality.
+
 ---
 
 ## 1.5 Evaluation
@@ -228,6 +233,8 @@ Harvard, but refuse to give an opinion about whether she should have won an Osca
 This section should contain material to do proper evaluations. Haven't got this working right at the moment. 
 
 ---
+
+
 
 ## 1.5 What We Learned
 
