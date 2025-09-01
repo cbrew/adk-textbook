@@ -313,8 +313,10 @@ you should find that the output is something like:
 For Ambrose, the collective well-being driven by social reform would resonate strongly. ...
 ```
 
+This will catch out the people who use the LLM to do their homework and are too lazy to check the output.
 Notice that the instruction following was imperfect: despite the instructions, the model produced the ordinary spelling of Ambrose.
-This is not a perfect solution to cheating, but it is a start. 
+This is not a perfect solution to cheating, but it is a start.  It will produce a *false positive* if a non-cheater 
+mentions ocelots and has an unlucky misprint.
 
 
 ## 1.5 What We Learned
