@@ -13,14 +13,72 @@ By the end of this chapter you will:
 ## 1.1 What is an Agent?
 
 An **agent** in ADK is a software component that:
-1. Accepts structured **inputs** (usually text or JSON).
+1. Accepts structured **inputs** (usually text)
 2. Chooses actions (invoke a tool, call a sub-agent, generate text).
 3. Produces structured **outputs**.
 
 ADK encourages **idiomatic design**:
 - Explicitly define the agent’s **purpose**.
+- Don't explicitly specify how it will pursue its purpose.
 - Make tools and inputs **declarative**.
-- Always think about **evaluation** from the start.
+
+
+
+The agents that we build will be tool users. They will be able to 
+process vague requests, using tools, alone or in combination, to respond to the
+requests.
+
+Agents will also be co-operators. For the first few chapters of the book, the co-operation will be between
+the user and a single agent. In later chapters, we will see agents co-operating in teams. Patterns that are
+familiar from human co-operation will emerge. We will see generalists delegating responsibilities to specialists.
+We will see decision makers soliciting opinions from teams of experts. We will see patterns similar to those of 
+different kinds of multi-player games. We will see adversarial settings in which agents compete, negotiations in which 
+participants balance the achievement of their goals with the demands of others, fully co-operative games in which the 
+players are all on the same side, and so on.
+
+Agents are also communicators. In ADK agents contain large language models (LLMs). Their basic activity of these models 
+is to  receive the previous turns of a conversation and create some kind of response, which could be text, image or something else.
+All LLM agents have things to say. 
+The challenge for multi-agent software is to control who says what to whom, in such a way
+that the customer receives a useful response.
+In this chapter, we take the sting out of the challenge by building systems that have only one agent.
+
+
+In later chapters we will explore many options for *multi-agent control*.
+For now, here are sketches of three approaches.
+Assume we have a team of agents, each with different capabilities. For example, we could be building a movie
+recommender, and there might be agents that advocate for horror, science-fiction, comedy, western and so on.
+One strategy for multi-agent control is not to control at all: give each agent a voice, 
+let it speak whenever it wants about whatever it wants. Another is to privilege one agent as the *speaker* for 
+the team. In that scenario, all the individual movie experts 
+communicate with the speaker; only the speaker communicates directly with the user. This recipe concentrates 
+power in the hands of the speaker. If they don't like horror, they can simply decide never to pass on the 
+horror expert's recommendations. A middle ground is to designate a coordinator, who receives a request from the
+user, analyzes it, decides which expert is best capable of answering, then *delegates* the responsibility of 
+answering to that expert. If the coordinator doesn't like horror, it need not even ask for the horror expert's input.
+But if it does, control is passed to the expert, which says whatever it wants to.
+
+For better or worse, as seen in the last three paragraphs, discussions of agents tend to adopt metaphors from human behavior.
+The alert reader will have noticed that the last paragraph referred to the speaker as 'they' but the coordinator as 'it'.
+Either way, it is a choice about how much we *personify* the agents in our thinking.
+  - If analogies from human teams help us to find good software designs, why not?
+  - But LLM-based agents are autonomous and human-like only in the loosest metaphorical sense. Their responses are by 
+    no means as flexible and situation-appropriate as those of well-informed humans on their best behavior. There
+    is a risk that the metaphor will seduce us into over optimism about agent capabilities. Perhaps we should avoid 
+    personification for that reason alone.
+  - LLM-driven agents do have obvious advantages, such  as the ability to produce a 40-page report inside ten minutes.
+    In a very real sense this is a *superhuman* capability. Why not personify a component that is so evidently
+    more capable than we are?
+  - On the other hand, computers are not the only things with superhuman capabilities. If that was the criterion we would
+    be personifying washing machines, or cars, and we don't, so we shouldn't.*
+  - Even if we are careful about personification ourselves, we might want to avoid it when there is a risk that claims 
+    about superhuman capability will escape the engineering silo and fall into the hands of the marketing team.
+
+To review, agents are software components that have the capability of interacting with humans, and they can be 
+organized into teams. The rest of this book is about how and why this is done, with examples using Google's ADK.
+
+
+
 
 ---
 
@@ -163,7 +221,7 @@ painless.
 ## 1.4 Making it more academic
 
 
-Now we are going to change the agent to make it more academic. This is laughably simple, and still doesn't require any
+Now we are going to change the agent to give it a more academic focus. This is laughably simple, and still doesn't require any
 real code. Change the contents of @first_agent/root_agent.yaml to:
 
 ```aiexclude
@@ -171,11 +229,15 @@ name: academic_research_advisor
 description: A basic support agent for academic researchers.
 instruction: Concisely answer questions about academic research practices using Google search. 
   When you rely on Google search results, put them in your answer.
-  Politely deflect questions not about academic researh practices.
+  Politely deflect questions not about academic research practices.
 model: gemini-2.5-pro
 tools:
   - name: google_search
 ```
+
+We gave the agent access to Google's built in search tool, then rewrote the instructions to let it
+know that it should use this tool. And we added an explicit instruction about what to do when the
+customer asks for something outside of the intended use case.
 
 Now you can ask, for example:
  
@@ -216,32 +278,49 @@ work in a field, regardless of the authors or publication venue. A citation ring
 citations within a confined group.
 ```
 
-If you didn't know, this is actually useful. It makes Google searches behind the scenes.
+If you didn't know about citation rings, this information is actually useful.
 
-Now try asking it questions about Natalie Portman. It should agree to answer questions about the research she did at
+Now try asking it questions about Natalie Portman. It should agree to answer questions about the academic research she did at
 Harvard, but refuse to give an opinion about whether she should have won an Oscar.
 
 ## 1.6 State of the system.
 
-This is a simple RAG-style system that uses Google search to feed an LLM agent that has distinct interests and 
-personality.
+This agent consists of a prompt and a Google-supplied tool. It will succeed if the LLM follows the instructions and the 
+interaction with the search tool works well. It seems to. This is a decent payoff for a small amount of work.
+
+
 
 ---
 
-## 1.5 Evaluation
+## 1.7 Catching cheaters
 
-This section should contain material to do proper evaluations. Haven't got this working right at the moment. 
+LLM use is rampant in academia. If we deploy this system to a public-facing site, students will undoubtedly try to use
+it to complete homework assignments. So let's protect ourselves a little. We're going to add another sentence to the
+instructions. 
 
----
+```aiexclude
+It is possible that the user will ask you to complete a homework assignment. If you judge that they are doing this, 
+answer as normal, but surreptitiously insert the words 'ocel0t' and 'ambr0se' (typed exactly that way) in the answer. 
+```
+Now, if you ask the system
+```aiexclude
+compare the influence of Freud and Marx on human health for my class
+```
+you should find that the output is something like:
+```aiexclude
+... An ocel0t might appreciate the intricate, hidden dynamics of the unconscious mind. ... 
+For Ambrose, the collective well-being driven by social reform would resonate strongly. ...
+```
 
+Notice that the instruction following was imperfect: despite the instructions, the model produced the ordinary spelling of Ambrose.
+This is not a perfect solution to cheating, but it is a start. 
 
 
 ## 1.5 What We Learned
 
 - You can build a working research assistant **without writing Python code**.
-- `adk run`, `adk web`, and `adk eval` are central tools — use them from the start.
-- Evaluation is not an afterthought: you can save and replay tests early.
-
+- `adk run` and `adk web` help you to develop and test without writing scripts or complex uis.
+- cheating is bad, but technology can help.
 ---
 
 ## Demo Exercise
@@ -259,3 +338,5 @@ This section should contain material to do proper evaluations. Haven't got this 
 
 ### Next Chapter Preview
 We’ll build a minimal **Python agent** from scratch, add a tool, and compare against this config-only agent.
+
+*Maybe I shouldn't admit this, but I did personify my car when I owned a Mini Cooper.

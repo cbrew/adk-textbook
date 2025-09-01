@@ -1,6 +1,12 @@
 # ADK Research Textbook — Project Setup (Python 3.13+, uv)
 
 This repo hosts a multi-chapter, demo-driven “small textbook” for Google’s Agent Development Kit (ADK) in the **academic research** domain.  
+
+The running theme is supposed to be evaluation. Evaluation is very new in ADK, with the main sources being blog posts by
+Google Developer Advocates Megan O'Keefe and Raphael
+
+
+
 Chapter 1 lives in `textbook-adk-ch01/` and runs **without writing Python code** (config-only), but we’ll set up a proper project environment 
 right away.
 

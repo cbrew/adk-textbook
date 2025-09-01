@@ -1,0 +1,33 @@
+[
+  {
+    "query": "Hello, I'm looking for papers about machine learning",
+    "expected_tool_use": [],
+    "reference": "I'd be happy to help you find machine learning papers! I can search various academic databases like arXiv for relevant research. What specific aspect of machine learning are you most interested in?"
+  },
+  {
+    "query": "Please search for papers about deep learning transformers",
+    "expected_tool_use": [
+      {
+        "tool_name": "search_arxiv",
+        "tool_input": {
+          "query": "deep learning transformers",
+          "max_results": 10
+        }
+      }
+    ],
+    "reference": "I found several papers about deep learning transformers. Here are the results from arXiv"
+  },
+  {
+    "query": "Can you search for just 5 papers about natural language processing?",
+    "expected_tool_use": [
+      {
+        "tool_name": "search_arxiv", 
+        "tool_input": {
+          "query": "natural language processing",
+          "max_results": 5
+        }
+      }
+    ],
+    "reference": "Here are 5 papers about natural language processing from arXiv"
+  }
+]
