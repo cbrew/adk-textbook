@@ -70,8 +70,9 @@ Either way, it is a choice about how much we *personify* the agents in our think
     In a very real sense this is a *superhuman* capability. Why not personify a component that is so evidently
     more capable than we are?
   - On the other hand, computers are not the only things with superhuman capabilities. If that was the criterion we would
-    be personifying washing machines, or cars, and we don't, so we shouldn't.*
-  - Even if we are careful about personification ourselves, we might want to avoid it when there is a risk that claims 
+    be personifying washing machines, or cars, and we don't, so we shouldn't. (Maybe I shouldn't admit this, but I did personify my car 
+  - when I owned a Mini Cooper. Still didn't want it to vote.)
+  - Even if we are careful about personification ourselves, we might want to avoid it altogether when there is a risk that claims 
     about superhuman capability will escape the engineering silo and fall into the hands of the marketing team.
 
 To review, agents are software components that have the capability of interacting with humans, and they can be 
@@ -339,4 +340,3 @@ This is not a perfect solution to cheating, but it is a start.
 ### Next Chapter Preview
 We’ll build a minimal **Python agent** from scratch, add a tool, and compare against this config-only agent.
 
-*Maybe I shouldn't admit this, but I did personify my car when I owned a Mini Cooper.
