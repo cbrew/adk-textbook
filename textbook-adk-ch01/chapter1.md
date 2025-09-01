@@ -70,7 +70,7 @@ Either way, it is a choice about how much we *personify* the agents in our think
     In a very real sense this is a *superhuman* capability. Why not personify a component that is so evidently
     more capable than we are?
   - On the other hand, computers are not the only things with superhuman capabilities. If that was the criterion we would
-    be personifying washing machines, or cars, and we don't, so we shouldn't [^1].
+    be personifying washing machines, or cars, and we don't, so we shouldn't.*
   - Even if we are careful about personification ourselves, we might want to avoid it when there is a risk that claims 
     about superhuman capability will escape the engineering silo and fall into the hands of the marketing team.
 
@@ -79,7 +79,7 @@ organized into teams. The rest of this book is about how and why this is done, w
 
 
 
-[^1] Maybe I shouldn't admit this, but I did personify my car when I owned a Mini Cooper.
+
 ---
 
 ## 1.2 A No-Code Agent
@@ -278,9 +278,9 @@ work in a field, regardless of the authors or publication venue. A citation ring
 citations within a confined group.
 ```
 
-If you didn't know, this is actually useful. It makes Google searches behind the scenes.
+If you didn't know about citation rings, this information is actually useful.
 
-Now try asking it questions about Natalie Portman. It should agree to answer questions about the research she did at
+Now try asking it questions about Natalie Portman. It should agree to answer questions about the academic research she did at
 Harvard, but refuse to give an opinion about whether she should have won an Oscar.
 
 ## 1.6 State of the system.
@@ -338,3 +338,5 @@ This is not a perfect solution to cheating, but it is a start.
 
 ### Next Chapter Preview
 We’ll build a minimal **Python agent** from scratch, add a tool, and compare against this config-only agent.
+
+*Maybe I shouldn't admit this, but I did personify my car when I owned a Mini Cooper.
