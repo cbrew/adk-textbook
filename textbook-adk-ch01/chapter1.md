@@ -13,14 +13,36 @@ By the end of this chapter you will:
 ## 1.1 What is an Agent?
 
 An **agent** in ADK is a software component that:
-1. Accepts structured **inputs** (usually text or JSON).
+1. Accepts structured **inputs** (usually text)
 2. Chooses actions (invoke a tool, call a sub-agent, generate text).
 3. Produces structured **outputs**.
 
 ADK encourages **idiomatic design**:
 - Explicitly define the agent’s **purpose**.
+- Don't explicitly specify how it will pursue its purpose.
 - Make tools and inputs **declarative**.
-- Always think about **evaluation** from the start.
+
+
+
+The agents that we build will be tool users. They will be able to 
+process vague requests, using tools, alone or in combination, to respond to the
+requests.
+
+Agents will also be co-operators. For the first few chapters of the book, the co-operation will be between
+the user and a single agent. In later chapters, we will see agents co-operating in teams. Patterns that are
+familiar from human co-operation will emerge. We will see generalists delegating responsibilities to specialists.
+We will see decision makers soliciting opinions from teams of experts. We will see patterns similar to those of 
+different kinds of multi-player games. We will see adversarial settings in which agents compete, negotiations in which 
+participants balance the achievement of their goals with the demands of others, fully co-operative games in which the 
+players are all on the same side, and so on.
+
+For better or worse, as seen in the last paragraph, discussions of agents tend to adopt metaphors from human behavior,
+LLM-based agents are autonomous and human-like only in the loosest metaphorical sense. Although they share with humans 
+the ability to respond to their interlocutor's vaguely specified goals, their responses are by no means as flexible
+and situation-appropriate as those of well-informed humans on their best behavior. They do have obvious advantages, such
+as the ability to produce a 40-page report inside ten minutes. Crucially, it might not be a *good* report at all. 
+There will be mistakes, some of them serious, and they will be hard to catch, because they won't resemble the hman mistakes ww are used to seeing.
+
 
 ---
 
