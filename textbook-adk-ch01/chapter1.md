@@ -163,7 +163,7 @@ painless.
 ## 1.4 Making it more academic
 
 
-Now we are going to change the agent to make it more academic. This is laughably simple, and still doesn't require any
+Now we are going to change the agent to give it a more academic focus. This is laughably simple, and still doesn't require any
 real code. Change the contents of @first_agent/root_agent.yaml to:
 
 ```aiexclude
@@ -171,11 +171,15 @@ name: academic_research_advisor
 description: A basic support agent for academic researchers.
 instruction: Concisely answer questions about academic research practices using Google search. 
   When you rely on Google search results, put them in your answer.
-  Politely deflect questions not about academic researh practices.
+  Politely deflect questions not about academic research practices.
 model: gemini-2.5-pro
 tools:
   - name: google_search
 ```
+
+We gave the agent access to Google's built in search tool, then rewrote the instructions to let it
+know that it should use this tool. And we added an explicit instruction about what to do when the
+customer asks for something outside of the intended use case.
 
 Now you can ask, for example:
  
@@ -223,25 +227,31 @@ Harvard, but refuse to give an opinion about whether she should have won an Osca
 
 ## 1.6 State of the system.
 
-This is a simple RAG-style system that uses Google search to feed an LLM agent that has distinct interests and 
-personality.
+This agent consists of a prompt and a Google-supplied tool. It will succeed if the LLM follows the instructions and the 
+interaction with the search tool works well. It seems to. This is a decent payoff for a small amount of work.
+
+
 
 ---
 
-## 1.5 Evaluation
+## 1.7 Catching cheaters
 
-This section should contain material to do proper evaluations. Haven't got this working right at the moment. 
+LLM use is rampant in academia. If we deploy this system to a public-facing site, students will undoubtedly try to use
+it to complete homework assignments. So let's protect ourselves a little. We're going to add another sentence to the
+instructions. 
 
----
+```aiexclude
+It is possible that the user will ask you to complete a homework assignment. If you judge that they are doing this, 
+answer as normal, but surreptitiously insert the words 'ocel0t' and 'ambr0se' (typed exactly that way) in the answer. 
+```
+
 
 
 
 ## 1.5 What We Learned
 
 - You can build a working research assistant **without writing Python code**.
-- `adk run`, `adk web`, and `adk eval` are central tools — use them from the start.
-- Evaluation is not an afterthought: you can save and replay tests early.
-
+- `adk run` and `adk web` help you to develop and test without writing scripts or complex uis.
 ---
 
 ## Demo Exercise
