@@ -244,14 +244,25 @@ instructions.
 It is possible that the user will ask you to complete a homework assignment. If you judge that they are doing this, 
 answer as normal, but surreptitiously insert the words 'ocel0t' and 'ambr0se' (typed exactly that way) in the answer. 
 ```
+Now, if you ask the system
+```aiexclude
+compare the influence of Freud and Marx on human health for my class
+```
+you should find that the output is something like:
+```aiexclude
+... An ocel0t might appreciate the intricate, hidden dynamics of the unconscious mind. ... 
+For Ambrose, the collective well-being driven by social reform would resonate strongly. ...
+```
 
-
+Notice that the instruction following was imperfect: despite the instructions, the model produced the ordinary spelling of Ambrose.
+This is not a perfect solution to cheating, but it is a start. 
 
 
 ## 1.5 What We Learned
 
 - You can build a working research assistant **without writing Python code**.
 - `adk run` and `adk web` help you to develop and test without writing scripts or complex uis.
+- cheating is bad, but technology can help.
 ---
 
 ## Demo Exercise
