@@ -38,18 +38,48 @@ players are all on the same side, and so on.
 
 Agents are also communicators. In ADK agents contain large language models (LLMs). Their basic activity of these models 
 is to  receive the previous turns of a conversation and create some kind of response, which could be text, image or something else.
-All LLM agents have things to say. The challenge for agentive software is to control who says what to whom, in such a way
-that the customer receives a useful response. One strategy for control is not to control at all: give each agent a voice, 
-let it speak whenever it wants about whatever it wants. 
-
-For better or worse, as seen in the last paragraphs, discussions of agents tend to adopt metaphors from human behavior,
-LLM-based agents are autonomous and human-like only in the loosest metaphorical sense. Although they share with humans 
-the ability to respond to their interlocutor's vaguely specified goals, their responses are by no means as flexible
-and situation-appropriate as those of well-informed humans on their best behavior. They do have obvious advantages, such
-as the ability to produce a 40-page report inside ten minutes. Crucially, it might not be a *good* report at all. 
-There will be mistakes, some of them serious, and they will be hard to catch, because they won't resemble the hman mistakes ww are used to seeing.
+All LLM agents have things to say. 
+The challenge for multi-agent software is to control who says what to whom, in such a way
+that the customer receives a useful response.
+In this chapter, we take the sting out of the challenge by building systems that have only one agent.
 
 
+In later chapters we will explore many options for *multi-agent control*.
+For now, here are sketches of three approaches.
+Assume we have a team of agents, each with different capabilities. For example, we could be building a movie
+recommender, and there might be agents that advocate for horror, science-fiction, comedy, western and so on.
+One strategy for multi-agent control is not to control at all: give each agent a voice, 
+let it speak whenever it wants about whatever it wants. Another is to privilege one agent as the *speaker* for 
+the team. In that scenario, all the individual movie experts 
+communicate with the speaker; only the speaker communicates directly with the user. This recipe concentrates 
+power in the hands of the speaker. If they don't like horror, they can simply decide never to pass on the 
+horror expert's recommendations. A middle ground is to designate a coordinator, who receives a request from the
+user, analyzes it, decides which expert is best capable of answering, then *delegates* the responsibility of 
+answering to that expert. If the coordinator doesn't like horror, it need not even ask for the horror expert's input.
+But if it does, control is passed to the expert, which says whatever it wants to.
+
+For better or worse, as seen in the last three paragraphs, discussions of agents tend to adopt metaphors from human behavior.
+The alert reader will have noticed that the last paragraph referred to the speaker as 'they' but the coordinator as 'it'.
+Either way, it is a choice about how much we *personify* the agents in our thinking.
+  - If analogies from human teams help us to find good software designs, why not?
+  - But LLM-based agents are autonomous and human-like only in the loosest metaphorical sense. Their responses are by 
+    no means as flexible and situation-appropriate as those of well-informed humans on their best behavior. There
+    is a risk that the metaphor will seduce us into over optimism about agent capabilities. Perhaps we should avoid 
+    personification for that reason alone.
+  - LLM-driven agents do have obvious advantages, such  as the ability to produce a 40-page report inside ten minutes.
+    In a very real sense this is a *superhuman* capability. Why not personify a component that is so evidently
+    more capable than we are?
+  - On the other hand, computers are not the only things with superhuman capabilities. If that was the criterion we would
+    be personifying washing machines, or cars, and we don't, so we shouldn't [^1].
+  - Even if we are careful about personification ourselves, we might want to avoid it when there is a risk that claims 
+    about superhuman capability will escape the engineering silo and fall into the hands of the marketing team.
+
+To review, agents are software components that have the capability of interacting with humans, and they can be 
+organized into teams. The rest of this book is about how and why this is done, with examples using Google's ADK.
+
+
+
+[^1] Maybe I shouldn't admit this, but I did personify my car when I owned a Mini Cooper.
 ---
 
 ## 1.2 A No-Code Agent
