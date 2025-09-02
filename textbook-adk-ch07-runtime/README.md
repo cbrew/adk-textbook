@@ -76,7 +76,7 @@ textbook-adk-ch07-runtime/
 ## Prerequisites
 
 - **Python 3.11+**
-- **uv package manager** - Fast Python package installer and resolver
+- **uv package manager** - Fast Python package installer and resolver ([install here](https://docs.astral.sh/uv/))
 - **Docker Desktop** - Must be running for local PostgreSQL containers
 - **Make** - For development commands (or run commands manually)
 - **API Keys** - OpenAI, Anthropic, or Google for agent models (optional for database layer)
@@ -105,12 +105,28 @@ uv run python examples/setup_database.py
 # Install dependencies with uv
 uv sync
 
-# Start PostgreSQL containers (Docker Desktop must be running)
+# Start PostgreSQL containers (Docker Desktop must be running)  
 docker-compose -f docker/docker-compose.yml up -d
 
 # Wait for containers to start, then run migrations
 sleep 10
 uv run python examples/setup_database.py
+
+# Run tests to verify setup
+uv run pytest tests/ -v
+```
+
+### Development Commands
+
+```bash
+make help        # Show all available commands
+make setup       # Install dependencies  
+make dev-up      # Start PostgreSQL containers
+make migrate     # Run database migrations
+make status      # Check migration status
+make test        # Run test suite
+make clean       # Clean up containers and data
+make reset       # Reset database (development only!)
 ```
 
 ## Learning Objectives

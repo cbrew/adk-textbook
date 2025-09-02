@@ -1,12 +1,12 @@
 # ADK PostgreSQL Runtime Development Makefile
 
-.PHONY: help setup dev-up dev-down migrate status test clean reset
+.PHONY: help setup dev-up dev-down migrate status test clean reset dev-setup
 
 # Default target
 help:
 	@echo "ADK PostgreSQL Runtime Development Commands:"
 	@echo ""
-	@echo "  setup     - Install Python dependencies"
+	@echo "  setup     - Install Python dependencies with uv"
 	@echo "  dev-up    - Start development PostgreSQL containers"
 	@echo "  dev-down  - Stop development containers"
 	@echo "  migrate   - Run database migrations"
@@ -14,11 +14,14 @@ help:
 	@echo "  test      - Run test suite"
 	@echo "  clean     - Clean up development environment"
 	@echo "  reset     - Reset database (WARNING: destroys all data)"
+	@echo "  dev-setup - Complete setup: dependencies + containers + migrations"
 
 # Install dependencies
 setup:
+	@echo "Installing dependencies with uv..."
+	@command -v uv >/dev/null 2>&1 || (echo "ERROR: uv is not installed. Install it from https://docs.astral.sh/uv/" && exit 1)
 	uv sync
-	@echo "Dependencies installed with uv sync"
+	@echo "Dependencies installed successfully"
 
 # Start development environment
 dev-up:
