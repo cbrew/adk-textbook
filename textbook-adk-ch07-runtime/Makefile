@@ -17,8 +17,8 @@ help:
 
 # Install dependencies
 setup:
-	pip install -r requirements.txt
-	@echo "Dependencies installed"
+	uv sync
+	@echo "Dependencies installed with uv sync"
 
 # Start development environment
 dev-up:
@@ -38,16 +38,16 @@ dev-down:
 
 # Run database migrations
 migrate: setup
-	python examples/setup_database.py
+	uv run python examples/setup_database.py
 	@echo "Database migrations completed"
 
 # Check migration status
 status: setup
-	python scripts/check_migration_status.py
+	uv run python scripts/check_migration_status.py
 
 # Run tests
 test: setup
-	python -m pytest tests/ -v
+	uv run pytest tests/ -v
 	@echo "Tests completed"
 
 # Clean development environment
@@ -58,7 +58,7 @@ clean: dev-down
 
 # Reset database (development only!)
 reset: setup
-	python scripts/reset_database.py
+	uv run python scripts/reset_database.py
 
 # Quick development setup
 dev-setup: setup dev-up migrate

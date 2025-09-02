@@ -49,8 +49,8 @@ textbook-adk-ch07-runtime/
 ├── docker/                   # Development environment
 │   ├── docker-compose.yml    # PostgreSQL + development setup
 │   └── Dockerfile            # Runtime container
-├── requirements.txt          # Python dependencies
-├── pyproject.toml           # Project configuration
+├── pyproject.toml           # Project configuration and dependencies
+├── uv.lock                  # Lockfile for reproducible builds
 └── README.md                # This file
 ```
 
@@ -76,6 +76,7 @@ textbook-adk-ch07-runtime/
 ## Prerequisites
 
 - **Python 3.11+**
+- **uv package manager** - Fast Python package installer and resolver
 - **Docker Desktop** - Must be running for local PostgreSQL containers
 - **Make** - For development commands (or run commands manually)
 - **API Keys** - OpenAI, Anthropic, or Google for agent models (optional for database layer)
@@ -89,27 +90,27 @@ textbook-adk-ch07-runtime/
 make dev-setup
 
 # Or step by step:
-make setup           # Install dependencies  
+make setup           # Install dependencies with uv
 make dev-up          # Start PostgreSQL containers (requires Docker)
 make migrate         # Run database migrations
 make test            # Verify everything works
 
 # Run database setup example
-python examples/setup_database.py
+uv run python examples/setup_database.py
 ```
 
 ### Manual Setup (without Make)
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies with uv
+uv sync
 
 # Start PostgreSQL containers (Docker Desktop must be running)
 docker-compose -f docker/docker-compose.yml up -d
 
 # Wait for containers to start, then run migrations
 sleep 10
-python examples/setup_database.py
+uv run python examples/setup_database.py
 ```
 
 ## Learning Objectives
