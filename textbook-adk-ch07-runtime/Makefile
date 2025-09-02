@@ -27,7 +27,7 @@ setup:
 dev-up:
 	@echo "Checking if Docker is running..."
 	@docker version > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Please start Docker Desktop first." && exit 1)
-	cd docker && docker-compose up -d
+	cd docker && docker compose up -d
 	@echo "Waiting for PostgreSQL to start..."
 	@sleep 10
 	@echo "Development environment ready"
@@ -36,7 +36,7 @@ dev-up:
 
 # Stop development environment  
 dev-down:
-	cd docker && docker-compose down
+	cd docker && docker compose down
 	@echo "Development environment stopped"
 
 # Run database migrations
@@ -55,7 +55,7 @@ test: setup
 
 # Clean development environment
 clean: dev-down
-	cd docker && docker-compose down -v
+	cd docker && docker compose down -v
 	docker system prune -f
 	@echo "Development environment cleaned"
 
