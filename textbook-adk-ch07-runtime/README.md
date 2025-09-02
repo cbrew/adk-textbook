@@ -69,19 +69,42 @@ textbook-adk-ch07-runtime/
 - Comprehensive testing suite
 - Example agents and usage patterns
 
+## Prerequisites
+
+- **Python 3.11+**
+- **Docker Desktop** - Must be running for local PostgreSQL containers
+- **Make** - For development commands (or run commands manually)
+- **API Keys** - OpenAI, Anthropic, or Google for agent models (optional for database layer)
+
 ## Quick Start
+
+⚠️  **Important**: Make sure Docker Desktop is running before starting!
 
 ```bash
 # Complete development setup
 make dev-setup
 
 # Or step by step:
-make setup           # Install dependencies
-make dev-up          # Start PostgreSQL containers
+make setup           # Install dependencies  
+make dev-up          # Start PostgreSQL containers (requires Docker)
 make migrate         # Run database migrations
 make test            # Verify everything works
 
 # Run database setup example
+python examples/setup_database.py
+```
+
+### Manual Setup (without Make)
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start PostgreSQL containers (Docker Desktop must be running)
+docker-compose -f docker/docker-compose.yml up -d
+
+# Wait for containers to start, then run migrations
+sleep 10
 python examples/setup_database.py
 ```
 

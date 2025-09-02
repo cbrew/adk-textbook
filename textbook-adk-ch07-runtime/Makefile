@@ -22,6 +22,8 @@ setup:
 
 # Start development environment
 dev-up:
+	@echo "Checking if Docker is running..."
+	@docker version > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Please start Docker Desktop first." && exit 1)
 	docker-compose -f docker/docker-compose.yml up -d
 	@echo "Waiting for PostgreSQL to start..."
 	@sleep 10
