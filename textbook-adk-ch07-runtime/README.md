@@ -106,7 +106,7 @@ uv run python examples/setup_database.py
 uv sync
 
 # Start PostgreSQL containers (Docker Desktop must be running)  
-docker-compose -f docker/docker-compose.yml up -d
+cd docker && docker-compose up -d
 
 # Wait for containers to start, then run migrations
 sleep 10
