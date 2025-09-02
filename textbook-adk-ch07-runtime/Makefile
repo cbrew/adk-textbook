@@ -31,8 +31,8 @@ dev-up:
 	@echo "Waiting for PostgreSQL to start..."
 	@sleep 10
 	@echo "Development environment ready"
-	@echo "Standard PostgreSQL: localhost:5432"
-	@echo "Vector PostgreSQL:   localhost:5433"
+	@echo "PostgreSQL with pgvector: localhost:5432"
+	@echo "Database: adk_runtime, User: adk_user"
 
 # Stop development environment  
 dev-down:

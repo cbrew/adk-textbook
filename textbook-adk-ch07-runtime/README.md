@@ -56,10 +56,10 @@ textbook-adk-ch07-runtime/
 
 ## Key Features
 
-### PostgreSQL-Backed Services
+### PostgreSQL-Backed Services  
 - **SessionService**: JSONB state storage with full transaction support
 - **ArtifactService**: Binary data management with file system backing
-- **MemoryService**: Vector storage using pgvector extension
+- **MemoryService**: Semantic memory with pgvector extension support
 
 ### ADK Compliance
 - Event-driven execution model

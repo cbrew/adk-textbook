@@ -61,11 +61,9 @@ SCHEMA_SQL = {
             session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
             user_id VARCHAR(255),
             content TEXT NOT NULL,
+            embedding VECTOR(384),
             metadata JSONB DEFAULT '{}',
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            
-            -- Future: Add vector column when pgvector is available
-            -- embedding VECTOR(384),
             
             CONSTRAINT memory_scope_check CHECK (
                 (session_id IS NOT NULL AND user_id IS NULL) OR 
@@ -77,6 +75,7 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_memory_user_id ON memory(user_id);
         CREATE INDEX IF NOT EXISTS idx_memory_created_at ON memory(created_at);
         CREATE INDEX IF NOT EXISTS idx_memory_metadata_gin ON memory USING GIN(metadata);
+        CREATE INDEX IF NOT EXISTS idx_memory_embedding ON memory USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
     """,
     
     "005_create_migrations": """
@@ -86,14 +85,6 @@ SCHEMA_SQL = {
         );
     """,
     
-    "006_enable_vector_extension": """
-        -- Enable pgvector extension (requires superuser or appropriate permissions)
-        -- CREATE EXTENSION IF NOT EXISTS vector;
-        
-        -- Add vector column to memory table when extension is available
-        -- ALTER TABLE memory ADD COLUMN IF NOT EXISTS embedding VECTOR(384);
-        -- CREATE INDEX IF NOT EXISTS idx_memory_embedding ON memory USING ivfflat (embedding vector_cosine_ops);
-    """
 }
 
 # Optimized queries for common operations
@@ -169,19 +160,19 @@ QUERIES = {
     
     # Memory operations
     "insert_memory": """
-        INSERT INTO memory (id, session_id, user_id, content, metadata) 
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO memory (id, session_id, user_id, content, embedding, metadata) 
+        VALUES ($1, $2, $3, $4, $5, $6)
     """,
     
     "get_session_memory": """
-        SELECT id, session_id, user_id, content, metadata, created_at 
+        SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
         WHERE session_id = $1 
         ORDER BY created_at DESC
     """,
     
     "get_user_memory": """
-        SELECT id, session_id, user_id, content, metadata, created_at 
+        SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
         WHERE user_id = $1 
         ORDER BY created_at DESC 
@@ -189,11 +180,20 @@ QUERIES = {
     """,
     
     "search_memory": """
-        SELECT id, session_id, user_id, content, metadata, created_at 
+        SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
         WHERE content ILIKE $1 
         AND (session_id = $2 OR user_id = $3)
         ORDER BY created_at DESC 
+        LIMIT $4
+    """,
+    
+    "search_memory_by_embedding": """
+        SELECT id, session_id, user_id, content, embedding, metadata, created_at,
+               (embedding <=> $1) AS distance
+        FROM memory 
+        WHERE (session_id = $2 OR user_id = $3)
+        ORDER BY embedding <=> $1 
         LIMIT $4
     """,
 }
