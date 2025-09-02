@@ -63,6 +63,11 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
 - Rate limiting and authentication
 - Tool chaining and composition patterns
 - External service integration
+- **MCP Integration**: Model Context Protocol implementation using Asta's Scientific Corpus Tool
+  - Programmatic access to 200M+ academic papers via MCP
+  - Replace Chapter 2's mock data with real Semantic Scholar API access
+  - Demonstrate enterprise-grade tool integration patterns
+  - API key management and rate limiting strategies
 
 ### Chapter 4: Multi-Agent Systems
 - Agent composition and coordination
@@ -183,6 +188,12 @@ textbook-adk-ch0X/
 - [LiteLLM Documentation](https://docs.litellm.ai/) - Multi-provider LLM interface used in Chapter 2
 - [Google Cloud Vertex AI](https://cloud.google.com/vertex-ai) - Cloud AI platform integration
 - [Anthropic Claude API](https://docs.anthropic.com/) - AI model provider used in examples
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) - Protocol for connecting AI assistants to data sources
+- [Asta Scientific Corpus Tool (MCP)](https://allenai.org/asta/resources/mcp) - MCP-enabled access to 200M+ academic papers via Semantic Scholar API
+  - HTTP endpoint: https://asta-tools.allen.ai/mcp/v1
+  - Functions: `get_papers()`, `get_citations()`, `search_papers_by_relevance()`, `search_authors_by_name()`
+  - API key management and rate limiting
+  - Planned for Chapter 3 to replace mock data with real academic search capabilities
 
 ## Target Audience
 
