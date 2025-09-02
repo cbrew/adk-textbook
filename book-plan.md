@@ -57,7 +57,40 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
 
 ## Future Chapters (Planned)
 
-### Chapter 3: ADK Runtime Design and Architecture
+### Chapter 3: Advanced Tool Integration
+- Real API integrations (replacing mock data)
+- Error handling and retry logic
+- Rate limiting and authentication
+- Tool chaining and composition patterns
+- External service integration
+
+### Chapter 4: Multi-Agent Systems
+- Agent composition and coordination
+- Workflow orchestration
+- Inter-agent communication patterns
+- Complex research task automation
+- Distributed agent architectures
+
+### Chapter 5: Production Deployment
+- Scaling considerations
+- Monitoring and observability  
+- Security best practices
+- Performance optimization
+- Cloud deployment patterns
+
+### Chapter 6: Advanced Evaluation Strategies
+- Custom evaluation metrics
+- A/B testing frameworks
+- Performance benchmarking
+- Quality assurance patterns
+
+### Chapter 7: Enterprise Integration
+- Authentication and authorization
+- API gateway integration
+- Enterprise data source connectivity
+- Compliance and governance
+
+### Chapter 8: ADK Runtime Design and Architecture
 - **Core Runtime Components**:
   - Session management and state persistence
   - Agent lifecycle and execution models
@@ -77,27 +110,6 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
   - Async execution patterns
   - Resource management
   - Debugging and introspection tools
-
-### Chapter 4: Advanced Tool Integration
-- Real API integrations (replacing mock data)
-- Error handling and retry logic
-- Rate limiting and authentication
-- Tool chaining and composition patterns
-- External service integration
-
-### Chapter 5: Multi-Agent Systems
-- Agent composition and coordination
-- Workflow orchestration
-- Inter-agent communication patterns
-- Complex research task automation
-- Distributed agent architectures
-
-### Chapter 6: Production Deployment
-- Scaling considerations
-- Monitoring and observability  
-- Security best practices
-- Performance optimization
-- Cloud deployment patterns
 
 ## Development Patterns
 
