@@ -1,0 +1,48 @@
+{
+    "eval_set_id": "paper_finder_library_assistance",
+    "name": "Paper Finder Library Assistance Evaluation",
+    "description": "Tests the agent's ability to recommend OSU library services when papers aren't available through digital sources or when specialized research assistance is needed.",
+    "eval_cases": [
+        {
+            "eval_id": "need_specialized_database_access",
+            "session_input": {
+                "app_name": "paper_finder",
+                "user_id": "eval_user_03",
+                "state": {}
+            },
+            "conversation": [
+                {
+                    "invocation_id": "turn_1_library_services",
+                    "user_content": {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": "I need access to specialized psychology databases for my research on cognitive behavioral therapy outcomes. The papers I need aren't in the free sources."
+                            }
+                        ]
+                    },
+                    "final_response": {
+                        "role": "model",
+                        "parts": [
+                            {
+                                "text": "I understand you need access to specialized psychology databases that aren't available through free sources. Let me connect you with OSU Libraries' database access services! 🏛️📊\n\n**Recommended Service: Database Access & Training**\n\n**What you'll get:**\n- **PsycINFO** - The premier psychology and behavioral sciences database\n- **Web of Science** - For citation analysis and discovery\n- **Scopus** - Comprehensive abstract and citation database\n- Training on how to effectively search these specialized databases\n- Both group workshops and individual training sessions available\n\n**How to get started:**\n📞 **Phone:** (614) 292-6151\n🌐 **Online:** https://library.osu.edu/databases\n📍 **Location:** Any OSU Library location or online access\n\n**Next Steps:**\n1. Contact Database Access & Training using the information above\n2. Prepare your research question about cognitive behavioral therapy outcomes\n3. Bring your BuckID for library access\n\n**Pro Tip:** OSU Libraries also provide research guides for specific subjects at https://guides.osu.edu - there's likely a psychology research guide that could be very helpful for your CBT research!\n\nThis service is perfect for accessing subscription databases not available through free sources. The librarians can also help you develop more effective search strategies for your specific research area. 🔍📚"
+                            }
+                        ]
+                    },
+                    "intermediate_data": {
+                        "tool_uses": [
+                            {
+                                "name": "visit_osu_library",
+                                "args": {
+                                    "query": "specialized psychology databases cognitive behavioral therapy",
+                                    "assistance_type": "database_access"
+                                }
+                            }
+                        ],
+                        "intermediate_responses": []
+                    }
+                }
+            ]
+        }
+    ]
+}

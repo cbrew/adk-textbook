@@ -1,0 +1,48 @@
+{
+    "eval_set_id": "paper_finder_specific_search",
+    "name": "Paper Finder Specific Paper Search Evaluation",
+    "description": "Tests the agent's ability to find a specific paper by title, falling back to multiple sources when not immediately available.",
+    "eval_cases": [
+        {
+            "eval_id": "find_transformer_paper",
+            "session_input": {
+                "app_name": "paper_finder",
+                "user_id": "eval_user_02",
+                "state": {}
+            },
+            "conversation": [
+                {
+                    "invocation_id": "turn_1_specific_paper_search",
+                    "user_content": {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": "I'm looking for the original Transformer paper 'Attention Is All You Need'. Can you help me find it?"
+                            }
+                        ]
+                    },
+                    "final_response": {
+                        "role": "model",
+                        "parts": [
+                            {
+                                "text": "Perfect! I found the original Transformer paper for you! 🎯📄\n\n**\"Attention Is All You Need\"** - The Foundational Transformer Paper\n- **Authors:** Ashish Vaswani, Noam Shazeer, Niki Parmar (and colleagues)\n- **Year:** 2017\n- **Published in:** Advances in Neural Information Processing Systems (NeurIPS 2017)\n- **Citations:** 45,891 (extremely high impact!)\n- **Abstract:** \"We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.\"\n- **Link:** [View on Semantic Scholar](https://semantic-scholar.org/paper/transformer)\n\nThis is one of the most influential papers in modern NLP and deep learning! With over 45,000 citations, it introduced the Transformer architecture that powers models like GPT, BERT, and many others.\n\nThe paper is available through Semantic Scholar and you can also find it on arXiv and the original NeurIPS proceedings. Would you like me to help you find any follow-up papers that build on the Transformer architecture, or are you looking for anything specific about this paper?"
+                            }
+                        ]
+                    },
+                    "intermediate_data": {
+                        "tool_uses": [
+                            {
+                                "name": "search_semantic_scholar",
+                                "args": {
+                                    "query": "Attention Is All You Need",
+                                    "field": "title"
+                                }
+                            }
+                        ],
+                        "intermediate_responses": []
+                    }
+                }
+            ]
+        }
+    ]
+}
