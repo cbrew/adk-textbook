@@ -160,6 +160,14 @@ textbook-adk-ch0X/
 ### Agent Pattern Articles
 - [Agent Patterns with ADK: 1 Agent, 5 Ways](https://medium.com/google-cloud/agent-patterns-with-adk-1-agent-5-ways-58bff801c2d6) - Medium article exploring different approaches to implementing agents with ADK, covering various architectural patterns and use cases
 
+### Production Scientific Agent Systems
+- [Asta: Accelerating science through trustworthy agentic AI](https://allenai.org/blog/asta) - Allen AI's comprehensive blog post detailing Asta, a production-grade scientific research ecosystem consisting of:
+  - **Asta Agents**: Domain-specific AI research assistants designed for transparency and reproducibility
+  - **AstaBench**: Rigorous benchmarking framework with 2,400+ problems across 11 benchmarks (literature understanding, code execution, data analysis, end-to-end discovery)
+  - **Asta Resources**: Open-source toolkit including Scientific Corpus Tool, post-trained language models, and modular research tools
+  - Demonstrates enterprise-level agent development with emphasis on augmenting (not replacing) human researchers
+  - Provides real-world example of domain-specific agent architecture and comprehensive evaluation frameworks
+
 ### Example Repositories
 - [ADK Agent Patterns Demo](https://github.com/GoogleCloudPlatform/devrel-demos/tree/main/ai-ml/agent-patterns) - Comprehensive repository demonstrating 5 different ADK agent patterns using a customer support refund system for "Crabby's Taffy" candy company:
   - **Single-Agent with Tools**: Basic agent with tool integration
