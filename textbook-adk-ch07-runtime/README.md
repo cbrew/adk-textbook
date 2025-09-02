@@ -40,8 +40,12 @@ textbook-adk-ch07-runtime/
 │   ├── integration/          # Integration tests
 │   └── fixtures/             # Test data
 ├── examples/                 # Example usage
-│   ├── basic_agent.py        # Simple agent example
-│   └── persistent_chat.py    # Persistent conversation demo
+│   ├── setup_database.py     # Database setup and testing
+│   ├── basic_agent.py        # Simple agent example (coming soon)
+│   └── persistent_chat.py    # Persistent conversation demo (coming soon)
+├── scripts/                  # Utility scripts
+│   ├── check_migration_status.py  # Check database migration status
+│   └── reset_database.py     # Reset database (development only)
 ├── docker/                   # Development environment
 │   ├── docker-compose.yml    # PostgreSQL + development setup
 │   └── Dockerfile            # Runtime container

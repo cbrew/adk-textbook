@@ -43,19 +43,7 @@ migrate: setup
 
 # Check migration status
 status: setup
-	python -c "
-import sys, os
-sys.path.insert(0, '.')
-from adk_runtime.database import DatabaseManager, MigrationManager
-from adk_runtime.database.connection import DatabaseConfig
-config = DatabaseConfig()
-db = DatabaseManager(config)
-db.initialize()
-mgr = MigrationManager(db)
-status = mgr.get_migration_status()
-print('Migration Status:', status)
-db.close()
-"
+	python scripts/check_migration_status.py
 
 # Run tests
 test: setup
@@ -70,20 +58,7 @@ clean: dev-down
 
 # Reset database (development only!)
 reset: setup
-	python -c "
-import sys, os
-sys.path.insert(0, '.')
-from adk_runtime.database import DatabaseManager, MigrationManager
-from adk_runtime.database.connection import DatabaseConfig
-config = DatabaseConfig()
-db = DatabaseManager(config)
-db.initialize()
-mgr = MigrationManager(db)
-mgr.reset_database()
-print('Database reset completed')
-db.close()
-"
-	@echo "WARNING: Database has been reset - all data lost!"
+	python scripts/reset_database.py
 
 # Quick development setup
 dev-setup: setup dev-up migrate
