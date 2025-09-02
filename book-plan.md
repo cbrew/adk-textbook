@@ -89,13 +89,36 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
 - Performance benchmarking
 - Quality assurance patterns
 
-### Chapter 7: Enterprise Integration
+### Chapter 7: Custom ADK Runtime with PostgreSQL Persistence
+- **Custom Runtime Implementation**: Build a production-grade ADK runtime with local PostgreSQL persistence
+- **Core Service Development**:
+  - PostgreSQL-backed SessionService with JSONB state storage
+  - ArtifactService for binary data management  
+  - MemoryService with vector support (pgvector) for semantic memory
+  - Event sourcing and audit trail implementation
+- **ADK Compliance**: 
+  - Event-driven asynchronous design patterns
+  - State commitment semantics and transaction management
+  - Cooperative yield/pause/resume execution cycles
+  - Full compatibility with existing ADK agents and tools
+- **Database Design**:
+  - Schema design for sessions, events, state, and memory
+  - JSONB for flexible agent state storage
+  - Vector extensions for future semantic memory features
+  - Migration and backup strategies
+- **Development Tools**:
+  - Docker Compose setup for local PostgreSQL
+  - Database migration management
+  - Debugging and monitoring capabilities
+  - Testing with real agent workloads
+
+### Chapter 8: Enterprise Integration  
 - Authentication and authorization
 - API gateway integration
 - Enterprise data source connectivity
 - Compliance and governance
 
-### Chapter 8: ADK Runtime Design and Architecture
+### Chapter 9: ADK Runtime Design and Architecture
 - **Core Runtime Components**:
   - Session management and state persistence
   - Agent lifecycle and execution models
@@ -116,7 +139,7 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
   - Resource management
   - Debugging and introspection tools
 
-### Chapter 9: Capstone Project - Building an ADK-based Asta
+### Chapter 10: Capstone Project - Building an ADK-based Asta
 **Project Overview**: Integrate all concepts from previous chapters to build a comprehensive scientific research ecosystem using ADK, inspired by Allen AI's Asta but implemented with Google's Agent Development Kit.
 
 - **Multi-Agent Research System**:

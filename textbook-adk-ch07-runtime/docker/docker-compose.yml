@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: adk-postgres
+    environment:
+      POSTGRES_DB: adk_runtime
+      POSTGRES_USER: adk_user
+      POSTGRES_PASSWORD: adk_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adk_user -d adk_runtime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-vector:
+    image: pgvector/pgvector:pg15
+    container_name: adk-postgres-vector
+    environment:
+      POSTGRES_DB: adk_runtime
+      POSTGRES_USER: adk_user  
+      POSTGRES_PASSWORD: adk_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_vector_data:/var/lib/postgresql/data
+      - ./init-vector-db.sql:/docker-entrypoint-initdb.d/init-vector-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adk_user -d adk_runtime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  postgres_vector_data:
