@@ -168,6 +168,8 @@ textbook-adk-ch0X/
   - **Parallel Agent with Sequential Workflow**: Hybrid parallel/sequential patterns
   - **Custom Agent Control Flow**: Advanced control flow with parallel agents
   - Includes web UI, real-world scenarios (damaged orders, missing shipments), and comprehensive setup instructions
+  
+  **Note for Textbook Development**: The 5 agent patterns from this repository will be adapted to fit our academic research domain rather than used directly. Customer support workflows will be translated into academic research scenarios (e.g., literature review coordination, multi-database search orchestration, citation analysis workflows) to maintain consistency with our book's focus while demonstrating the same architectural patterns.
 
 ### Related Technologies
 - [LiteLLM Documentation](https://docs.litellm.ai/) - Multi-provider LLM interface used in Chapter 2
