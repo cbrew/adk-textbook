@@ -57,23 +57,47 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
 
 ## Future Chapters (Planned)
 
-### Chapter 3: Advanced Tool Integration
+### Chapter 3: ADK Runtime Design and Architecture
+- **Core Runtime Components**:
+  - Session management and state persistence
+  - Agent lifecycle and execution models
+  - Memory management and conversation history
+  - Tool invocation and response handling
+- **Runtime Configuration**:
+  - Model selection and switching (LiteLLM, Vertex AI, etc.)
+  - Environment variable management
+  - Service integration patterns
+- **Advanced Agent Patterns**:
+  - Agent composition and inheritance
+  - Dynamic tool loading and registration
+  - Context management across interactions
+  - Error handling and recovery strategies
+- **Performance Considerations**:
+  - Caching strategies
+  - Async execution patterns
+  - Resource management
+  - Debugging and introspection tools
+
+### Chapter 4: Advanced Tool Integration
 - Real API integrations (replacing mock data)
 - Error handling and retry logic
 - Rate limiting and authentication
-- Production deployment considerations
+- Tool chaining and composition patterns
+- External service integration
 
-### Chapter 4: Multi-Agent Systems
+### Chapter 5: Multi-Agent Systems
 - Agent composition and coordination
 - Workflow orchestration
 - Inter-agent communication patterns
 - Complex research task automation
+- Distributed agent architectures
 
-### Chapter 5: Production Deployment
+### Chapter 6: Production Deployment
 - Scaling considerations
 - Monitoring and observability  
 - Security best practices
 - Performance optimization
+- Cloud deployment patterns
 
 ## Development Patterns
 
