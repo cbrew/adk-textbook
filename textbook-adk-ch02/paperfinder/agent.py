@@ -3,7 +3,7 @@ from typing import Dict
 from google.adk.models.lite_llm import LiteLlm
 
 
-def search_semantic_scholar(query: str, field: str = "all") -> Dict[str, any]:
+def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
     """
     Searches Semantic Scholar for academic papers.
 
@@ -15,6 +15,8 @@ def search_semantic_scholar(query: str, field: str = "all") -> Dict[str, any]:
         A dictionary with paper results including titles, authors, abstracts, and citation counts.
     """
     query_upper = query.upper()
+    if not field:
+        field = "all"
 
     papers_db = {
         "MACHINE LEARNING": {
@@ -82,7 +84,7 @@ def search_semantic_scholar(query: str, field: str = "all") -> Dict[str, any]:
     }
 
 
-def search_arxiv(query: str, category: str = "cs") -> Dict[str, any]:
+def search_arxiv(query: str, category: str) -> Dict[str, any]:
     """
     Searches arXiv for preprints and recent research papers.
 
@@ -94,6 +96,8 @@ def search_arxiv(query: str, category: str = "cs") -> Dict[str, any]:
         A dictionary with arXiv paper results.
     """
     query_upper = query.upper()
+    if not category:
+        category = "cs"
 
     arxiv_papers = {
         "LARGE LANGUAGE": {
@@ -139,7 +143,7 @@ def search_arxiv(query: str, category: str = "cs") -> Dict[str, any]:
     }
 
 
-def search_acm_digital_library(query: str, publication_type: str = "all") -> Dict[str, any]:
+def search_acm_digital_library(query: str, publication_type: str) -> Dict[str, any]:
     """
     Searches the ACM Digital Library for computer science papers.
 
@@ -151,6 +155,8 @@ def search_acm_digital_library(query: str, publication_type: str = "all") -> Dic
         A dictionary with ACM paper results.
     """
     query_upper = query.upper()
+    if not publication_type:
+        publication_type = "all"
 
     acm_papers = {
         "HUMAN COMPUTER INTERACTION": {
@@ -196,7 +202,7 @@ def search_acm_digital_library(query: str, publication_type: str = "all") -> Dic
     }
 
 
-def search_acl_anthology(query: str, venue: str = "all") -> Dict[str, any]:
+def search_acl_anthology(query: str, venue: str) -> Dict[str, any]:
     """
     Searches the ACL Anthology for computational linguistics and NLP papers.
 
@@ -208,6 +214,8 @@ def search_acl_anthology(query: str, venue: str = "all") -> Dict[str, any]:
         A dictionary with ACL Anthology paper results.
     """
     query_upper = query.upper()
+    if not venue:
+        venue = "all"
 
     acl_papers = {
         "SENTIMENT ANALYSIS": {
@@ -253,7 +261,7 @@ def search_acl_anthology(query: str, venue: str = "all") -> Dict[str, any]:
     }
 
 
-def search_osu_digital_collections(query: str, collection: str = "all") -> Dict[str, any]:
+def search_osu_digital_collections(query: str, collection: str) -> Dict[str, any]:
     """
     Searches OSU's digital collections and institutional repository.
 
@@ -265,6 +273,8 @@ def search_osu_digital_collections(query: str, collection: str = "all") -> Dict[
         A dictionary with OSU digital collection results.
     """
     query_upper = query.upper()
+    if not collection:
+        collection = "all"
 
     osu_papers = {
         "ARTIFICIAL INTELLIGENCE": {
@@ -312,7 +322,7 @@ def search_osu_digital_collections(query: str, collection: str = "all") -> Dict[
     }
 
 
-def visit_osu_library(query: str, assistance_type: str = "research") -> Dict[str, any]:
+def visit_osu_library(query: str, assistance_type: str) -> Dict[str, any]:
     """
     Get assistance from OSU Libraries for specialized research needs.
 
@@ -323,6 +333,9 @@ def visit_osu_library(query: str, assistance_type: str = "research") -> Dict[str
     Returns:
         A dictionary with library service information and recommendations.
     """
+    if not assistance_type:
+        assistance_type = "research"
+    
     services = {
         "research": {
             "service_name": "Research Consultation",
@@ -449,7 +462,7 @@ You are an academic paper finder agent for researchers and students. 📚🎓 Yo
 """
 
 
-agent_claude_direct = LlmAgent(
+agent  = LlmAgent(
     model=LiteLlm(model="anthropic/claude-3-haiku-20240307"),
     name="claude_direct_agent",
     instruction=agent_instruction,
@@ -464,19 +477,6 @@ agent_claude_direct = LlmAgent(
 )
 
 
-agent = Agent(
-    model="gemini-2.5-flash",
-    # model="anthropic/claude-3-5-haiku-latest",
-    name="paper_finder",
-    instruction=agent_instruction,
-    tools=[
-        search_semantic_scholar,
-        search_arxiv,
-        search_acm_digital_library,
-        search_acl_anthology,
-        search_osu_digital_collections,
-        visit_osu_library,
-    ],
-)
 
-root_agent = agent_claude_direct
+
+root_agent = agent
