@@ -151,6 +151,20 @@ textbook-adk-ch0X/
 - ⚠️ Evaluation system: Working but experimental
 - 📝 Future chapters: Planning phase
 
+## References and Further Reading
+
+### Official ADK Resources
+- [Google ADK Documentation](https://cloud.google.com/adk) - Official documentation and API reference
+- [ADK GitHub Repository](https://github.com/GoogleCloudPlatform/adk) - Source code and examples
+
+### Agent Pattern Articles
+- [Agent Patterns with ADK: 1 Agent, 5 Ways](https://medium.com/google-cloud/agent-patterns-with-adk-1-agent-5-ways-58bff801c2d6) - Medium article exploring different approaches to implementing agents with ADK, covering various architectural patterns and use cases
+
+### Related Technologies
+- [LiteLLM Documentation](https://docs.litellm.ai/) - Multi-provider LLM interface used in Chapter 2
+- [Google Cloud Vertex AI](https://cloud.google.com/vertex-ai) - Cloud AI platform integration
+- [Anthropic Claude API](https://docs.anthropic.com/) - AI model provider used in examples
+
 ## Target Audience
 
 - Developers learning ADK framework
