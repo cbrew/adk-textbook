@@ -160,6 +160,15 @@ textbook-adk-ch0X/
 ### Agent Pattern Articles
 - [Agent Patterns with ADK: 1 Agent, 5 Ways](https://medium.com/google-cloud/agent-patterns-with-adk-1-agent-5-ways-58bff801c2d6) - Medium article exploring different approaches to implementing agents with ADK, covering various architectural patterns and use cases
 
+### Example Repositories
+- [ADK Agent Patterns Demo](https://github.com/GoogleCloudPlatform/devrel-demos/tree/main/ai-ml/agent-patterns) - Comprehensive repository demonstrating 5 different ADK agent patterns using a customer support refund system for "Crabby's Taffy" candy company:
+  - **Single-Agent with Tools**: Basic agent with tool integration
+  - **Multi-Agent (LLM-based orchestration)**: LLM-driven agent coordination
+  - **Sequential Agent Workflow**: Non-LLM orchestrated sequential execution
+  - **Parallel Agent with Sequential Workflow**: Hybrid parallel/sequential patterns
+  - **Custom Agent Control Flow**: Advanced control flow with parallel agents
+  - Includes web UI, real-world scenarios (damaged orders, missing shipments), and comprehensive setup instructions
+
 ### Related Technologies
 - [LiteLLM Documentation](https://docs.litellm.ai/) - Multi-provider LLM interface used in Chapter 2
 - [Google Cloud Vertex AI](https://cloud.google.com/vertex-ai) - Cloud AI platform integration
