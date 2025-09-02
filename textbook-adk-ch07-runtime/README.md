@@ -72,17 +72,17 @@ textbook-adk-ch07-runtime/
 ## Quick Start
 
 ```bash
-# Start development environment
-docker-compose -f docker/docker-compose.yml up -d
+# Complete development setup
+make dev-setup
 
-# Install dependencies
-pip install -r requirements.txt
+# Or step by step:
+make setup           # Install dependencies
+make dev-up          # Start PostgreSQL containers
+make migrate         # Run database migrations
+make test            # Verify everything works
 
-# Run database migrations  
-python -m adk_runtime.database.migrations.migrate
-
-# Run example agent
-python examples/basic_agent.py
+# Run database setup example
+python examples/setup_database.py
 ```
 
 ## Learning Objectives
