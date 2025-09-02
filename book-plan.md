@@ -116,6 +116,37 @@ Avoid `tool_trajectory_avg_score` due to overly strict matching requirements.
   - Resource management
   - Debugging and introspection tools
 
+### Chapter 9: Capstone Project - Building an ADK-based Asta
+**Project Overview**: Integrate all concepts from previous chapters to build a comprehensive scientific research ecosystem using ADK, inspired by Allen AI's Asta but implemented with Google's Agent Development Kit.
+
+- **Multi-Agent Research System**:
+  - Literature review coordination agent
+  - Data analysis and hypothesis generation agent  
+  - Citation network analysis agent
+  - Research question refinement agent
+- **Comprehensive Tool Integration**:
+  - Real MCP-based Semantic Scholar integration (Chapter 3 foundation)
+  - Multi-database search orchestration (arXiv, ACM, ACL, institutional repositories)
+  - Data visualization and analysis tools
+  - Research workflow automation
+- **Advanced Evaluation Framework**:
+  - Custom evaluation metrics for scientific research tasks
+  - Benchmarking against research quality standards
+  - Multi-agent coordination assessment
+  - User experience and productivity measurements
+- **Production Deployment**:
+  - Web interface with research workflow management
+  - API endpoints for integration with existing research tools
+  - Collaborative features for research teams
+  - Performance monitoring and optimization
+- **Architecture Patterns**:
+  - Demonstrates all 5 agent patterns adapted for academic research
+  - Enterprise-grade scalability and reliability
+  - Transparent, citation-based responses
+  - Integration with institutional authentication systems
+
+**Learning Outcomes**: Students will have built a production-ready scientific research assistant that showcases every major ADK concept covered in the textbook, creating a portfolio piece that demonstrates mastery of agent development from basic tools to enterprise systems.
+
 ## Development Patterns
 
 ### Mock Data Strategy
