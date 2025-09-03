@@ -247,9 +247,43 @@ cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent
 # rather than ADK's built-in database services
 ```
 
-### Basic Agent Integration
+### Proper ADK Service Integration
 
-Here's the core pattern for integrating PostgreSQL services:
+The `postgres_chat_agent` demonstrates the **correct pedagogical approach** for integrating custom PostgreSQL services with ADK:
+
+#### Architecture Overview
+```python
+from google.adk.runners import Runner
+
+# 1. Initialize PostgreSQL runtime
+runtime = await PostgreSQLADKRuntime.create_and_initialize()
+
+# 2. Get service implementations (these extend ADK base classes)
+session_service = runtime.get_session_service()    # extends BaseSessionService
+memory_service = runtime.get_memory_service()      # extends BaseMemoryService  
+artifact_service = runtime.get_artifact_service()  # extends BaseArtifactService
+
+# 3. Wire services into ADK Runner (replaces ADK defaults)
+runner = Runner(
+    agent=agent,
+    app_name="postgres_chat_agent", 
+    session_service=session_service,     # Our PostgreSQL implementation
+    memory_service=memory_service,       # Our PostgreSQL implementation
+    artifact_service=artifact_service,   # Our PostgreSQL implementation
+)
+```
+
+#### Key Learning Points
+- **Proper Integration**: Custom services are wired into ADK's `Runner`, not just used as tools
+- **Service Replacement**: Our PostgreSQL services replace ADK's defaults at the infrastructure level
+- **Base Class Extension**: Our services extend `BaseSessionService`, `BaseMemoryService`, `BaseArtifactService`
+- **True Runtime**: ADK natively uses PostgreSQL for all session/memory/artifact operations
+
+This demonstrates building **custom ADK runtimes** rather than just adding PostgreSQL tools on top of existing services.
+
+### Basic Integration Pattern
+
+For reference, here's the simplified pattern:
 
 ### Agent Configuration
 
@@ -311,11 +345,11 @@ async def retrieve_relevant_memory(self, query: str):
 With PostgreSQL services running, you can use standard ADK commands:
 
 ```bash
-# Start agent with CLI interface (from textbook root)
-uv run adk run path/to/your/agent/
+# Start agent with CLI interface 
+uv run adk run postgres_chat_agent
 
 # Start agent with web interface
-uv run adk web path/to/your/agent/
+uv run adk web 
 
 # Run agent evaluations
 uv run adk eval path/to/your/tests/
