@@ -12,10 +12,6 @@ This script demonstrates how to:
 import os
 import sys
 import logging
-from pathlib import Path
-
-# Add parent directory to path to import adk_runtime
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from adk_runtime.database import DatabaseManager, MigrationManager
 from adk_runtime.database.connection import DatabaseConfig
@@ -96,7 +92,7 @@ def test_basic_operations(db_manager: DatabaseManager):
     
     # Insert test session
     db_manager.execute_query(
-        "INSERT INTO sessions (id, user_id, state) VALUES ($1, $2, $3)",
+        "INSERT INTO sessions (id, user_id, state) VALUES (%s, %s, %s)",
         (session_id, user_id, json.dumps(test_state)),
         fetch_all=False
     )
@@ -104,7 +100,7 @@ def test_basic_operations(db_manager: DatabaseManager):
     
     # Retrieve test session
     session = db_manager.execute_query(
-        "SELECT * FROM sessions WHERE id = $1",
+        "SELECT * FROM sessions WHERE id = %s",
         (session_id,),
         fetch_one=True
     )
@@ -119,7 +115,7 @@ def test_basic_operations(db_manager: DatabaseManager):
     }
     
     db_manager.execute_query(
-        "INSERT INTO events (id, session_id, event_type, event_data) VALUES ($1, $2, $3, $4)",
+        "INSERT INTO events (id, session_id, event_type, event_data) VALUES (%s, %s, %s, %s)",
         (event_id, session_id, "test_event", json.dumps(event_data)),
         fetch_all=False
     )
@@ -127,7 +123,7 @@ def test_basic_operations(db_manager: DatabaseManager):
     
     # Retrieve events
     events = db_manager.execute_query(
-        "SELECT * FROM events WHERE session_id = $1",
+        "SELECT * FROM events WHERE session_id = %s",
         (session_id,),
         fetch_all=True
     )
@@ -135,7 +131,7 @@ def test_basic_operations(db_manager: DatabaseManager):
     
     # Clean up test data
     db_manager.execute_query(
-        "DELETE FROM sessions WHERE id = $1",
+        "DELETE FROM sessions WHERE id = %s",
         (session_id,),
         fetch_all=False
     )

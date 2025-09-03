@@ -14,12 +14,12 @@ Key Components:
 from .services.session_service import PostgreSQLSessionService
 from .services.artifact_service import PostgreSQLArtifactService  
 from .services.memory_service import PostgreSQLMemoryService
-from .runtime.runner import PostgreSQLRunner
+from .runtime.adk_runtime import PostgreSQLADKRuntime
 
 __version__ = "0.1.0"
 __all__ = [
     "PostgreSQLSessionService",
     "PostgreSQLArtifactService", 
     "PostgreSQLMemoryService",
-    "PostgreSQLRunner",
+    "PostgreSQLADKRuntime",
 ]

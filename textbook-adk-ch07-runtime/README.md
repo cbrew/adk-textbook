@@ -14,8 +14,8 @@ Build a custom ADK runtime that provides:
 ## Architecture
 
 ```
-textbook-adk-ch07-runtime/
-├── adk_runtime/              # Main runtime package
+adk-textbook/                 # Project root
+├── adk_runtime/              # Main runtime package (installed via pyproject.toml)
 │   ├── __init__.py
 │   ├── services/             # Core ADK services
 │   │   ├── __init__.py
@@ -25,33 +25,33 @@ textbook-adk-ch07-runtime/
 │   ├── database/             # Database layer
 │   │   ├── __init__.py
 │   │   ├── models.py         # SQLAlchemy models
-│   │   ├── migrations/       # Database schema migrations
+│   │   ├── migrations.py     # Database schema migrations
 │   │   └── connection.py     # Connection management
-│   ├── runtime/              # Core runtime logic  
-│   │   ├── __init__.py
-│   │   ├── runner.py         # Event loop and orchestration
-│   │   └── events.py         # Event handling
-│   └── utils/                # Utilities
+│   └── runtime/              # Core runtime logic  
 │       ├── __init__.py
-│       ├── config.py         # Configuration management
-│       └── logging.py        # Logging setup
-├── tests/                    # Test suite
-│   ├── unit/                 # Unit tests
-│   ├── integration/          # Integration tests
-│   └── fixtures/             # Test data
-├── examples/                 # Example usage
-│   ├── setup_database.py     # Database setup and testing
-│   ├── basic_agent.py        # Simple agent example (coming soon)
-│   └── persistent_chat.py    # Persistent conversation demo (coming soon)
-├── scripts/                  # Utility scripts
-│   ├── check_migration_status.py  # Check database migration status
-│   └── reset_database.py     # Reset database (development only)
-├── docker/                   # Development environment
-│   ├── docker-compose.yml    # PostgreSQL + development setup
-│   └── Dockerfile            # Runtime container
+│       └── adk_runtime.py    # PostgreSQL ADK runtime implementation
+├── textbook-adk-ch07-runtime/ # Chapter 7 content
+│   ├── tests/                # Test suite
+│   │   ├── unit/             # Unit tests
+│   │   ├── integration/      # Integration tests
+│   │   └── fixtures/         # Test data
+│   ├── examples/             # Example usage
+│   │   ├── setup_database.py     # Database setup and testing
+│   │   ├── test_services.py      # Service integration tests
+│   │   ├── basic_agent.py        # Complete runnable agent example
+│   │   ├── run_examples.py       # Easy script to run all examples
+│   │   └── persistent_chat_agent/ # ADK YAML agent with PostgreSQL
+│   │       ├── root_agent.yaml   # Agent configuration
+│   │       └── agent.py          # Tool implementations
+│   ├── scripts/              # Utility scripts
+│   │   ├── check_migration_status.py  # Check database migration status
+│   │   └── reset_database.py     # Reset database (development only)
+│   ├── docker/               # Development environment
+│   │   └── docker-compose.yml    # PostgreSQL + development setup
+│   ├── Makefile             # Development commands
+│   └── README.md            # This file
 ├── pyproject.toml           # Project configuration and dependencies
-├── uv.lock                  # Lockfile for reproducible builds
-└── README.md                # This file
+└── uv.lock                  # Lockfile for reproducible builds
 ```
 
 ## Key Features
@@ -77,13 +77,13 @@ textbook-adk-ch07-runtime/
 
 - **Python 3.11+**
 - **uv package manager** - Fast Python package installer and resolver ([install here](https://docs.astral.sh/uv/))
-- **Docker Desktop** - Must be running for local PostgreSQL containers
+- **Podman** - Container engine for local PostgreSQL containers (`brew install podman`)
 - **Make** - For development commands (or run commands manually)
 - **API Keys** - OpenAI, Anthropic, or Google for agent models (optional for database layer)
 
 ## Quick Start
 
-⚠️  **Important**: Make sure Docker Desktop is running before starting!
+⚠️  **Important**: Make sure Podman is installed and running before starting!
 
 ```bash
 # Complete development setup
@@ -91,42 +91,88 @@ make dev-setup
 
 # Or step by step:
 make setup           # Install dependencies with uv
-make dev-up          # Start PostgreSQL containers (requires Docker)
+make podman-setup    # Initialize Podman machine (Mac only)
+make dev-up          # Start PostgreSQL containers
 make migrate         # Run database migrations
 make test            # Verify everything works
 
-# Run database setup example
-uv run python examples/setup_database.py
+# Run database setup example (from textbook root)
+cd .. && uv run python textbook-adk-ch07-runtime/examples/setup_database.py
 ```
 
 ### Manual Setup (without Make)
 
 ```bash
-# Install dependencies with uv
-uv sync
+# Install Podman (Mac)
+brew install podman
 
-# Start PostgreSQL containers (Docker Desktop must be running)  
-cd docker && docker compose up -d
+# Install dependencies with uv (from textbook root)
+cd /path/to/adk-textbook
+uv sync  # This installs the adk_runtime package
+
+# Initialize Podman machine (Mac only)
+podman machine init --now
+
+# Start PostgreSQL containers
+cd textbook-adk-ch07-runtime/docker && podman compose up -d
 
 # Wait for containers to start, then run migrations
 sleep 10
-uv run python examples/setup_database.py
+cd .. && uv run python textbook-adk-ch07-runtime/examples/setup_database.py
 
 # Run tests to verify setup
-uv run pytest tests/ -v
+uv run pytest textbook-adk-ch07-runtime/tests/ -v
 ```
 
 ### Development Commands
 
 ```bash
-make help        # Show all available commands
-make setup       # Install dependencies  
-make dev-up      # Start PostgreSQL containers
-make migrate     # Run database migrations
-make status      # Check migration status
-make test        # Run test suite
-make clean       # Clean up containers and data
-make reset       # Reset database (development only!)
+make help         # Show all available commands
+make setup        # Install dependencies  
+make podman-setup # Initialize Podman machine (Mac only)
+make dev-up       # Start PostgreSQL containers
+make migrate      # Run database migrations
+make status       # Check migration status
+make test         # Run test suite
+make clean        # Clean up containers and data
+make reset        # Reset database (development only!)
+```
+
+### Podman Installation
+
+**Mac:**
+```bash
+brew install podman
+# Optional: Install podman-compose for better compatibility
+pip install podman-compose
+```
+
+**Linux:**
+See [podman.io](https://podman.io/getting-started/installation) for distribution-specific instructions.
+
+**Note**: The Makefile tries both `podman-compose` and `podman compose` commands for maximum compatibility.
+
+### Troubleshooting
+
+**Error: "docker-credential-desktop: executable file not found"**
+This happens when Podman tries to use Docker's credential helper. Fix with:
+```bash
+make podman-setup  # This creates proper Podman auth config
+# OR manually:
+mkdir -p ~/.config/containers
+echo '{"auths": {}}' > ~/.config/containers/auth.json
+```
+
+**Error: "Podman machine not running"**
+On Mac, start the Podman machine:
+```bash
+podman machine start
+```
+
+**Permission issues with volumes**
+If you see permission errors, try running:
+```bash
+podman unshare chown 999:999 ~/.local/share/containers/storage/volumes/
 ```
 
 ## Learning Objectives
@@ -139,14 +185,227 @@ By completing this chapter, you'll understand:
 - **Service Architecture**: Designing modular, testable service layers
 - **Production Deployment**: Docker, migrations, monitoring, and scaling
 
+## Starting Agents with PostgreSQL Services
+
+Once your PostgreSQL runtime is set up, you can start agents that use the database services for persistence. Here are the key patterns:
+
+### Runnable Examples
+
+The `examples/` directory contains complete, runnable examples:
+
+#### 1. Quick Start - Automated Example
+```bash
+# From textbook root directory:
+uv run python textbook-adk-ch07-runtime/examples/run_examples.py
+```
+
+This runs an automated demonstration of PostgreSQL services integration.
+
+#### 2. Interactive Chat Demo
+```bash
+# Interactive agent with persistent conversations:
+uv run python textbook-adk-ch07-runtime/examples/run_examples.py --interactive
+```
+
+Features an interactive chat agent that demonstrates:
+- Persistent conversation sessions across restarts
+- Semantic memory search of past conversations  
+- Artifact storage for saving conversations
+- Session management and state persistence
+
+#### 3. Direct Agent Example
+```bash
+# Run the basic agent directly:
+uv run python textbook-adk-ch07-runtime/examples/basic_agent.py
+
+# Or interactive mode:
+uv run python textbook-adk-ch07-runtime/examples/basic_agent.py --interactive
+```
+
+#### 4. Test Tools Integration
+```bash
+# Test agent tools with PostgreSQL:
+uv run python textbook-adk-ch07-runtime/examples/run_examples.py --test-tools
+```
+
+#### 5. Service Status Check
+```bash
+# Verify all services are working:
+uv run python textbook-adk-ch07-runtime/examples/run_examples.py --check
+```
+
+#### 6. Run with ADK Tools
+```bash
+# Option A: Command line interface (uses our custom runtime)
+cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent
+
+# Option B: Web interface (uses our custom runtime)  
+cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent
+# Then open http://127.0.0.1:8000 in your browser
+
+# Both options demonstrate the pedagogical goals by using our custom PostgreSQL runtime
+# rather than ADK's built-in database services
+```
+
+### Basic Agent Integration
+
+Here's the core pattern for integrating PostgreSQL services:
+
+### Agent Configuration
+
+For ADK agents using YAML configuration, you can integrate PostgreSQL services by:
+
+1. **Initialize services in agent code:**
+```python
+# In your agent's __init__ or setup method
+from adk_runtime.runtime.adk_runtime import PostgreSQLADKRuntime
+
+class MyAgent:
+    def __init__(self):
+        self.runtime = None
+        self.session_service = None
+        self.memory_service = None
+        self.artifact_service = None
+    
+    async def setup(self):
+        """Initialize PostgreSQL runtime and services."""
+        self.runtime = await PostgreSQLADKRuntime.create_and_initialize()
+        self.session_service = self.runtime.get_session_service()
+        self.memory_service = self.runtime.get_memory_service()
+        self.artifact_service = self.runtime.get_artifact_service()
+    
+    async def cleanup(self):
+        """Shutdown runtime when agent stops."""
+        if self.runtime:
+            await self.runtime.shutdown()
+```
+
+2. **Use services in agent tools:**
+```python
+async def save_conversation_memory(self, conversation_summary: str):
+    """Save conversation to persistent memory."""
+    session = await self.session_service.create_session(
+        app_name="my_agent",
+        user_id=self.user_id,
+        state={"summary": conversation_summary}
+    )
+    
+    # Add to semantic memory
+    await self.memory_service.add_session_to_memory(session)
+    
+    return session.id
+
+async def retrieve_relevant_memory(self, query: str):
+    """Retrieve relevant past conversations."""
+    response = await self.memory_service.search_memory(
+        app_name="my_agent",
+        user_id=self.user_id,
+        query=query
+    )
+    
+    return [memory.content for memory in response.memories]
+```
+
+### Development Commands
+
+With PostgreSQL services running, you can use standard ADK commands:
+
+```bash
+# Start agent with CLI interface (from textbook root)
+uv run adk run path/to/your/agent/
+
+# Start agent with web interface
+uv run adk web path/to/your/agent/
+
+# Run agent evaluations
+uv run adk eval path/to/your/tests/
+```
+
+### Testing Your Agent
+
+Verify your agent works with PostgreSQL services:
+
+```bash
+# Run the service tests to ensure PostgreSQL is working
+cd textbook-adk-ch07-runtime
+uv run python examples/test_services.py
+
+# Run your agent tests
+uv run pytest path/to/your/agent/tests/ -v
+```
+
+### Environment Variables
+
+Your agents can use these environment variables for database configuration:
+
+```bash
+# Database connection (defaults work with dev setup)
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=adk_runtime
+export DB_USER=adk_user
+export DB_PASSWORD=adk_password
+
+# Agent configuration
+export OPENAI_API_KEY=your_openai_key
+export ANTHROPIC_API_KEY=your_anthropic_key
+```
+
+### Production Deployment
+
+For production deployments:
+
+1. **Use environment-specific database configs:**
+```python
+from adk_runtime.database.connection import DatabaseConfig
+
+# Production database configuration
+config = DatabaseConfig(
+    host=os.getenv("PROD_DB_HOST"),
+    port=int(os.getenv("PROD_DB_PORT", "5432")),
+    database=os.getenv("PROD_DB_NAME"),
+    username=os.getenv("PROD_DB_USER"),
+    password=os.getenv("PROD_DB_PASSWORD"),
+    ssl_require=True  # Enable SSL for production
+)
+
+runtime = PostgreSQLADKRuntime(database_config=config)
+```
+
+2. **Set up proper database migrations:**
+```bash
+# Run migrations in production
+python textbook-adk-ch07-runtime/examples/setup_database.py
+```
+
+3. **Monitor database performance:**
+```bash
+# Check database status
+python textbook-adk-ch07-runtime/scripts/check_migration_status.py
+```
+
 ## Status
 
 🚧 **In Development** - This chapter is currently being implemented on the `feature/postgresql-runtime` branch.
 
+### Current Features
+- ✅ PostgreSQL database schema and migrations
+- ✅ SessionService with JSONB state storage  
+- ✅ ArtifactService with file system backing
+- ✅ MemoryService with pgvector support
+- ✅ Development environment with Docker Compose V2
+- ✅ Comprehensive testing suite
+
+### Coming Soon
+- 🚧 Complete agent examples with PostgreSQL integration
+- 🚧 Event-driven runner and orchestration logic
+- 🚧 Production deployment guides
+- 🚧 Performance optimization and monitoring
+
 ## Next Steps
 
-1. Implement core database models and migrations
-2. Build PostgreSQL-backed service implementations
-3. Create event-driven runner and orchestration logic
-4. Add comprehensive testing and examples
-5. Document deployment and operational considerations
+1. ✅ ~~Implement core database models and migrations~~
+2. ✅ ~~Build PostgreSQL-backed service implementations~~
+3. 🚧 Create event-driven runner and orchestration logic
+4. 🚧 Add comprehensive agent examples and documentation
+5. 🚧 Document deployment and operational considerations

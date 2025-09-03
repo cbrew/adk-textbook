@@ -1,3 +1,4 @@
+# Podman-compatible compose file for ADK PostgreSQL runtime
 services:
   postgres:
     image: pgvector/pgvector:pg15
@@ -6,17 +7,26 @@ services:
       POSTGRES_DB: adk_runtime
       POSTGRES_USER: adk_user
       POSTGRES_PASSWORD: adk_password
+      # Podman-friendly settings
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - postgres_data:/var/lib/postgresql/data:Z
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:Z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U adk_user -d adk_runtime"]
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+      start_period: 30s
+    # Use 'no' instead of 'unless-stopped' for better Podman compatibility
+    restart: "no"
+    # Add security options for better Podman compatibility
+    security_opt:
+      - label=disable
+    # Set user for Podman rootless mode
+    user: "999:999"
 
 volumes:
   postgres_data:

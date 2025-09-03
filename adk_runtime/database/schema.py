@@ -92,7 +92,7 @@ QUERIES = {
     # Session operations
     "insert_session": """
         INSERT INTO sessions (id, user_id, state) 
-        VALUES ($1, $2, $3)
+        VALUES (%s, %s, %s)
         ON CONFLICT (id) DO UPDATE SET 
             state = EXCLUDED.state,
             updated_at = NOW()
@@ -101,100 +101,100 @@ QUERIES = {
     "get_session": """
         SELECT id, user_id, state, created_at, updated_at 
         FROM sessions 
-        WHERE id = $1
+        WHERE id = %s
     """,
     
     "update_session_state": """
         UPDATE sessions 
-        SET state = $2, updated_at = NOW() 
-        WHERE id = $1
+        SET state = %s, updated_at = NOW() 
+        WHERE id = %s
     """,
     
     "get_user_sessions": """
         SELECT id, user_id, state, created_at, updated_at 
         FROM sessions 
-        WHERE user_id = $1 
+        WHERE user_id = %s 
         ORDER BY updated_at DESC 
-        LIMIT $2
+        LIMIT %s
     """,
     
     # Event operations
     "insert_event": """
         INSERT INTO events (id, session_id, event_type, event_data) 
-        VALUES ($1, $2, $3, $4)
+        VALUES (%s, %s, %s, %s)
     """,
     
     "get_session_events": """
         SELECT id, session_id, event_type, event_data, timestamp 
         FROM events 
-        WHERE session_id = $1 
+        WHERE session_id = %s 
         ORDER BY timestamp ASC
     """,
     
     "get_recent_events": """
         SELECT id, session_id, event_type, event_data, timestamp 
         FROM events 
-        WHERE session_id = $1 
+        WHERE session_id = %s 
         ORDER BY timestamp DESC 
-        LIMIT $2
+        LIMIT %s
     """,
     
     # Artifact operations
     "insert_artifact": """
         INSERT INTO artifacts (id, session_id, filename, content_type, file_size, file_path, metadata) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """,
     
     "get_artifact": """
         SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at 
         FROM artifacts 
-        WHERE id = $1
+        WHERE id = %s
     """,
     
     "get_session_artifacts": """
         SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at 
         FROM artifacts 
-        WHERE session_id = $1 
+        WHERE session_id = %s 
         ORDER BY created_at DESC
     """,
     
     # Memory operations
     "insert_memory": """
         INSERT INTO memory (id, session_id, user_id, content, embedding, metadata) 
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """,
     
     "get_session_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
-        WHERE session_id = $1 
+        WHERE session_id = %s 
         ORDER BY created_at DESC
     """,
     
     "get_user_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
-        WHERE user_id = $1 
+        WHERE user_id = %s 
         ORDER BY created_at DESC 
-        LIMIT $2
+        LIMIT %s
     """,
     
     "search_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
-        WHERE content ILIKE $1 
-        AND (session_id = $2 OR user_id = $3)
+        WHERE content ILIKE %s 
+        AND (session_id = %s OR user_id = %s)
         ORDER BY created_at DESC 
-        LIMIT $4
+        LIMIT %s
     """,
     
     "search_memory_by_embedding": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at,
-               (embedding <=> $1) AS distance
+               (embedding <=> %s) AS distance
         FROM memory 
-        WHERE (session_id = $2 OR user_id = $3)
-        ORDER BY embedding <=> $1 
-        LIMIT $4
+        WHERE (session_id = %s OR user_id = %s)
+        ORDER BY embedding <=> %s 
+        LIMIT %s
     """,
 }
 

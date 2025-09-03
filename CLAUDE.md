@@ -30,6 +30,19 @@ This repository hosts a multi-chapter demo-driven textbook for Google's Agent De
 - **Run paper finding agent**: `uv run adk run textbook-adk-ch02/paper_finding`
 - **Web interface**: `uv run adk web` (then select paper_finding)
 
+#### Chapter 7 (PostgreSQL Runtime)
+- **Setup PostgreSQL runtime**: `cd textbook-adk-ch07-runtime && make dev-setup`
+- **Start PostgreSQL services**: `cd textbook-adk-ch07-runtime && make dev-up`
+- **Run database migrations**: `cd textbook-adk-ch07-runtime && make migrate`
+- **Test PostgreSQL services**: `uv run python textbook-adk-ch07-runtime/examples/test_services.py`
+- **Run agent examples**: `uv run python textbook-adk-ch07-runtime/examples/run_examples.py`
+- **Interactive agent demo**: `uv run python textbook-adk-ch07-runtime/examples/run_examples.py --interactive`
+- **Run with ADK CLI**: `cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent`
+- **Run with ADK Web**: `cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent` (then open http://127.0.0.1:8000)
+- **Check services status**: `uv run python textbook-adk-ch07-runtime/examples/run_examples.py --check`
+- **Check migration status**: `cd textbook-adk-ch07-runtime && make status`
+- **Stop services**: `cd textbook-adk-ch07-runtime && make dev-down`
+
 ## Architecture Overview
 
 ### Project Structure
@@ -37,6 +50,7 @@ The repository contains multiple chapters, each demonstrating increasingly compl
 
 - **Chapter 1** (`textbook-adk-ch01/`): Config-only agents using YAML configuration
 - **Chapter 2** (`textbook-adk-ch02/`): Python-based agents with custom tools and evaluation
+- **Chapter 7** (`textbook-adk-ch07-runtime/`): Custom ADK runtime with PostgreSQL persistence
 
 ### ADK Agent Architecture
 Agents follow a consistent pattern:

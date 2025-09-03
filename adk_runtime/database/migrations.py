@@ -48,7 +48,7 @@ class MigrationManager:
     def mark_migration_applied(self, version: str) -> None:
         """Mark a migration version as applied."""
         self.db.execute_query(
-            "INSERT INTO schema_migrations (version) VALUES ($1)",
+            "INSERT INTO schema_migrations (version) VALUES (%s)",
             (version,),
             fetch_all=False
         )

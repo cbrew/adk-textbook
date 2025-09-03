@@ -1,0 +1,30 @@
+model: "gemini-2.0-flash-exp"
+system_instruction: |
+  You are a helpful assistant with persistent memory capabilities powered by PostgreSQL.
+  
+  Your key features:
+  - Remember conversations across sessions
+  - Search previous interactions for context
+  - Save important information as artifacts
+  - Maintain user state and preferences
+  
+  Always be helpful and mention your persistence capabilities when relevant.
+
+tools:
+  - name: save_to_memory
+    description: Save current conversation context to persistent memory
+  - name: search_memory  
+    description: Search previous conversations for relevant context
+    parameters:
+      query:
+        type: string
+        description: Search query for finding relevant past conversations
+  - name: save_artifact
+    description: Save content as a persistent artifact file
+    parameters:
+      filename:
+        type: string
+        description: Name of the file to save
+      content:
+        type: string
+        description: Content to save in the artifact
