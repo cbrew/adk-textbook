@@ -408,7 +408,7 @@ class PostgreSQLChatDriver:
         """
         Clear all sessions for the current user and app.
         
-        Returns:
+        Returns:.
             Dictionary with cleanup result
         """
         if not self.runtime:
@@ -492,8 +492,9 @@ class PostgreSQLChatDriver:
             if content_type.startswith('text/'):
                 artifact_part = types.Part(text=content)
             else:
-                # For binary content, convert string to bytes
-                artifact_part = types.Part(data=content.encode('utf-8'), mime_type=content_type)
+                # For non-text content, treat as text with appropriate content type
+                # The PostgreSQL service will handle the content appropriately
+                artifact_part = types.Part(text=content)
             
             # Use correct ADK method name: save_artifact
             version = await artifact_service.save_artifact(
@@ -1165,7 +1166,10 @@ async def get_artifact_cli(filename: str):
             print(f"   📄 Filename: {result['filename']}")
             print(f"   📝 Content Type: {result['content_type']}")
             print(f"   📊 Size: {result['size']} bytes")
-            print(f"   📅 Created: {result['created_at']}")
+            if 'created_at' in result and result['created_at']:
+                print(f"   📅 Created: {result['created_at']}")
+            else:
+                print(f"   📅 Created: Not available")
             print("\\n📄 Content:")
             print("-" * 30)
             print(result['content'])
