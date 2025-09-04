@@ -382,29 +382,33 @@ uv run adk web postgres_chat_agent \
 | **ADK Web** | ✅ ADK's DatabaseSessionService → PostgreSQL | ❌ ADK defaults | ❌ ADK defaults |
 | **Our main.py** | ✅ Our PostgreSQL SessionService | ✅ Our PostgreSQL MemoryService | ✅ Our PostgreSQL ArtifactService |
 
-#### What Works ✅ **EVERYTHING**
+#### What Works with ADK Web + PostgreSQL Database
 
-- **Session State**: Changes made by agent tools are immediately visible in the web UI
-- **Real-time Updates**: Session state updates in real-time through PostgreSQL  
-- **Standard ADK Web Interface**: Full compatibility with ADK's web UI features
-- **Complete Schema Compatibility**: Database fully compatible with ADK's expectations
-- **Session Management**: Create, retrieve, list, update, delete - all working perfectly
-- **Persistent State**: All agent state preserved across sessions and web UI interactions
+- **Database Schema Compatibility**: PostgreSQL database schema works with ADK's DatabaseSessionService
+- **Session Persistence**: ADK web can read/write session data to/from PostgreSQL
+- **Basic Web Interface**: Standard ADK web interface functionality operates normally
 
-#### Technical Achievement
+#### What Does NOT Work
 
-Through systematic analysis of ADK's actual `DatabaseSessionService` implementation, we achieved **complete schema compatibility**:
+- **Custom Service Integration**: ADK web ignores our PostgreSQL service implementations
+- **Memory Service**: ADK web uses default memory service, not our PostgreSQL MemoryService  
+- **Artifact Service**: ADK web uses default artifact service, not our PostgreSQL ArtifactService
+- **Custom Runtime Features**: PostgreSQL-specific features only available in direct Python execution
+
+#### Technical Implementation
+
+Database schema compatibility achieved through analysis of ADK's `DatabaseSessionService`:
 - ✅ Composite primary keys `(app_name, user_id, id)`
-- ✅ Full events table with all 17 required columns  
-- ✅ Proper JSONB handling for ADK's `DynamicJSON` type
-- ✅ Complete data migration preserving existing information
+- ✅ Events table with required columns  
+- ✅ JSONB handling for ADK's `DynamicJSON` type
+- ✅ Data migration preserving existing information
 
 #### Technical Details
 
-The integration works through **complete database schema compatibility**:
-- **Same Database**: Agent runtime and web server share the same PostgreSQL database
-- **ADK-Compatible Schema**: Our schema matches ADK's `DatabaseSessionService` exactly
-- **Native Integration**: No service URI flags needed - full compatibility achieved
+The database compatibility works through:
+- **Shared Database**: Agent runtime and web server use the same PostgreSQL database
+- **Schema Compatibility**: Our schema works with ADK's `DatabaseSessionService`
+- **Limited Integration**: Only session data is shared; memory and artifact services remain separate
 
 **Database Schema Highlights:**
 - `sessions` table: Composite primary key `(app_name, user_id, id)`
@@ -424,11 +428,11 @@ The integration works through **complete database schema compatibility**:
 scripts\start_web_with_postgres.bat
 ```
 
-Both scripts automatically:
+Both scripts:
 - Check PostgreSQL connectivity
 - Apply required database migrations for ADK compatibility  
-- Start the web server with full PostgreSQL integration
-- **Enable complete end-to-end agent workflow with web UI**
+- Start the web server pointing to PostgreSQL database
+- Enable basic ADK web UI functionality with PostgreSQL storage
 
 ### Testing Your Agent
 
