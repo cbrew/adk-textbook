@@ -236,15 +236,15 @@ uv run python textbook-adk-ch07-runtime/examples/run_examples.py --check
 
 #### 6. Run with ADK Tools
 ```bash
-# Option A: Command line interface (uses our custom runtime)
-cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent
+# Option A: Direct PostgreSQL agent (uses our custom PostgreSQL services)
+cd textbook-adk-ch07-runtime && uv run python postgres_chat_agent/main.py
 
-# Option B: Web interface (uses our custom runtime)  
-cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent
-# Then open http://127.0.0.1:8000 in your browser
+# Option B: Standard ADK commands (uses ADK's default services, NOT PostgreSQL)
+cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent  # Uses ADK defaults
+cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent   # Uses ADK defaults
 
-# Both options demonstrate the pedagogical goals by using our custom PostgreSQL runtime
-# rather than ADK's built-in database services
+# IMPORTANT: Only Option A uses our custom PostgreSQL runtime!
+# ADK CLI commands (adk run, adk web) connect their own services, ignoring our custom ones
 ```
 
 ### Proper ADK Service Integration
@@ -355,9 +355,9 @@ uv run adk web
 uv run adk eval path/to/your/tests/
 ```
 
-### ADK Web UI Integration ✅ **FULLY FUNCTIONAL**
+### ADK Web UI Integration ✅ **DATABASE COMPATIBILITY ONLY**
 
-The PostgreSQL runtime provides **complete integration** with ADK's built-in web UI through full schema compatibility:
+The PostgreSQL runtime provides **database schema compatibility** with ADK's built-in web UI, but does not use our custom service implementations:
 
 #### Quick Start with Web UI
 
@@ -373,11 +373,14 @@ uv run adk web postgres_chat_agent \
 
 #### Integration Status
 
-| Service | Status | Description |
-|---------|--------|-------------|
-| **Session Service** | ✅ **Full Integration** | Complete compatibility with ADK's DatabaseSessionService |
-| **Memory Service** | ✅ **Custom + Compatible** | Custom PostgreSQL service + session integration works |
-| **Artifact Service** | ✅ **Custom + Compatible** | Custom PostgreSQL service + session integration works |
+**Important Distinction:**
+- **`adk web` with `--session_service_uri`**: Uses ADK's built-in `DatabaseSessionService`, just pointing to our PostgreSQL database (schema compatible)
+- **`python main.py`**: Uses our custom PostgreSQL service implementations with full runtime integration
+
+| Approach | Session Service | Memory Service | Artifact Service |
+|----------|----------------|---------------|------------------|
+| **ADK Web** | ✅ ADK's DatabaseSessionService → PostgreSQL | ❌ ADK defaults | ❌ ADK defaults |
+| **Our main.py** | ✅ Our PostgreSQL SessionService | ✅ Our PostgreSQL MemoryService | ✅ Our PostgreSQL ArtifactService |
 
 #### What Works ✅ **EVERYTHING**
 

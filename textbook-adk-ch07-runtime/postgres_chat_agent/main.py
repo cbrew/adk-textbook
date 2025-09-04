@@ -4,6 +4,11 @@ Interactive chat agent with PostgreSQL persistence.
 
 This demonstrates the same pattern as saptak's adk-masterclass example
 but using our custom PostgreSQL services instead of SQLite.
+
+IMPORTANT: This implementation only works when run directly (python main.py).
+The standard ADK CLI commands (adk web, adk run) use ADK's default services,
+not our custom PostgreSQL services. To use PostgreSQL services, run this
+script directly or use the programmatic Runner approach shown here.
 """
 
 import os
