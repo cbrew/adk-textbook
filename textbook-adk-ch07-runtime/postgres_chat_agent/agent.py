@@ -225,6 +225,38 @@ async def create_runner_with_postgresql_services():
 # But the real integration happens when we create a Runner with our services
 root_agent = agent
 
+# Custom runner factory for ADK CLI integration
+async def create_runner(agent, app_name: str = None, **kwargs):
+    """
+    Custom runner factory that ADK CLI can use to create a Runner
+    with our PostgreSQL services instead of default ones.
+    """
+    logger.info("🔄 ADK CLI requesting Runner creation with PostgreSQL services...")
+    
+    # Initialize our PostgreSQL runtime
+    runtime = await ensure_runtime_initialized()
+    
+    # Get our custom service implementations
+    session_service = runtime.get_session_service()
+    memory_service = runtime.get_memory_service()
+    artifact_service = runtime.get_artifact_service()
+    
+    logger.info("🔌 Creating ADK Runner with PostgreSQL services...")
+    
+    # Create ADK Runner with our custom PostgreSQL services
+    # This replaces ADK's default services with our implementations
+    runner = Runner(
+        agent=agent,
+        app_name=app_name or "postgres_chat_agent",
+        session_service=session_service,     # Our PostgreSQL session service
+        memory_service=memory_service,       # Our PostgreSQL memory service  
+        artifact_service=artifact_service,   # Our PostgreSQL artifact service
+        **kwargs
+    )
+    
+    logger.info("✅ ADK Runner configured with custom PostgreSQL services!")
+    return runner
+
 
 # For demonstration purposes, let's show how the Runner integration would work
 if __name__ == "__main__":
