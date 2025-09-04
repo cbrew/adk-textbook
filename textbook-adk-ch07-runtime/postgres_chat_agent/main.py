@@ -25,6 +25,118 @@ from utils import call_agent_async
 # Load environment variables
 load_dotenv()
 
+async def handle_slash_command(command, session_service, memory_service, artifact_service, app_name, user_id, session_id):
+    """Handle slash commands for direct service access."""
+    parts = command.strip().split(' ', 1)
+    cmd = parts[0].lower()
+    arg = parts[1] if len(parts) > 1 else ""
+    
+    if cmd == '/help':
+        print("📚 Available Slash Commands:")
+        print("  /memory <query>     - Search research memory directly")
+        print("  /save <topic>       - Save current discussion topic to memory")
+        print("  /artifacts          - List saved research artifacts")
+        print("  /session            - Show current session information")
+        print("  /help               - Show this help message")
+        
+    elif cmd == '/memory':
+        if not arg:
+            print("💭 Usage: /memory <search query>")
+            print("   Example: /memory machine learning papers")
+            return
+            
+        print(f"🔍 Searching research memory for: '{arg}'")
+        try:
+            response = await memory_service.search_memory(
+                app_name=app_name,
+                user_id=user_id,
+                query=arg
+            )
+            
+            if not response.memories:
+                print(f"📝 No research memory found for '{arg}'. Start a conversation to build memory!")
+            else:
+                print(f"📚 Found {len(response.memories)} relevant research memories:")
+                for i, memory in enumerate(response.memories[:5], 1):
+                    content_preview = str(memory.content)[:150] + "..." if len(str(memory.content)) > 150 else str(memory.content)
+                    print(f"  {i}. {content_preview}")
+                    
+        except Exception as e:
+            print(f"❌ Memory search failed: {e}")
+            
+    elif cmd == '/save':
+        topic = arg if arg else "current research discussion"
+        print(f"💾 Saving '{topic}' to research memory...")
+        
+        try:
+            # Create a session entry to save to memory
+            session = await session_service.get_session(
+                app_name=app_name,
+                user_id=user_id,
+                session_id=session_id
+            )
+            
+            # Add current session context to memory
+            await memory_service.add_session_to_memory(session)
+            
+            # Update session state
+            updated_state = session.state.copy()
+            updated_state["memory_saves"] = updated_state.get("memory_saves", 0) + 1
+            updated_state["last_memory_save"] = topic
+            
+            await session_service.update_session_state(
+                session_id=session_id,
+                state=updated_state,
+                app_name=app_name,
+                user_id=user_id
+            )
+            
+            print(f"✅ Saved '{topic}' to research memory! (Total saves: {updated_state['memory_saves']})")
+            
+        except Exception as e:
+            print(f"❌ Memory save failed: {e}")
+            
+    elif cmd == '/artifacts':
+        print("📁 Listing research artifacts...")
+        try:
+            artifacts = await artifact_service.list_artifact_keys(
+                app_name=app_name,
+                user_id=user_id,
+                session_id=session_id
+            )
+            
+            if not artifacts:
+                print("📄 No artifacts found. Use save_artifact tool to create research documents!")
+            else:
+                print(f"📚 Found {len(artifacts)} research artifact(s):")
+                for i, artifact_key in enumerate(artifacts, 1):
+                    print(f"  {i}. {artifact_key}")
+                    
+        except Exception as e:
+            print(f"❌ Artifact listing failed: {e}")
+            
+    elif cmd == '/session':
+        print("📱 Current Research Session Information:")
+        try:
+            session = await session_service.get_session(
+                app_name=app_name,
+                user_id=user_id,
+                session_id=session_id
+            )
+            
+            print(f"  🆔 Session ID: {session.id}")
+            print(f"  👤 User ID: {user_id}")
+            print(f"  📅 Created: {session.created_at}")
+            print(f"  🔄 Updated: {session.updated_at}")
+            print(f"  📊 State: {session.state}")
+            
+        except Exception as e:
+            print(f"❌ Session info retrieval failed: {e}")
+            
+    else:
+        print(f"❓ Unknown command: {cmd}")
+        print("💡 Type /help for available commands")
+
 async def main():
     """Main agent loop with PostgreSQL persistence."""
     print("🐘 Initializing PostgreSQL Chat Agent...")
@@ -104,12 +216,20 @@ async def main():
     print("✅ Runner created with PostgreSQL backend!")
     
     # Interactive chat loop
-    print("\n" + "=" * 60)
-    print("🐘 PostgreSQL Chat Agent Ready!")
-    print("💡 Features: Persistent sessions, semantic memory, artifact storage")
-    print("🛠️  Available tools: search_memory, save_to_memory, save_artifact, list_artifacts, get_session_info")
-    print("⚡ Type 'exit' or 'quit' to end")
-    print("=" * 60)
+    print("\n" + "=" * 70)
+    print("🎓 Academic Research Assistant - PostgreSQL Edition")
+    print("💡 Features: Persistent research memory, academic artifact storage, session continuity")
+    print("🛠️  Available tools: search_memory, save_to_memory, save_artifact, list_artifacts")
+    print("")
+    print("📚 Slash Commands for Direct Service Access:")
+    print("  /memory <query>     - Search research memory directly")
+    print("  /save <topic>       - Save current discussion to memory")
+    print("  /artifacts          - List saved research artifacts")
+    print("  /session            - Show current session info")
+    print("  /help               - Show this help message")
+    print("")
+    print("⚡ Type 'exit' or 'quit' to end | Focus: Academic research workflows")
+    print("=" * 70)
     
     try:
         while True:
@@ -121,8 +241,20 @@ async def main():
             
             if user_input.strip() == '':
                 continue
+            
+            # Handle slash commands for direct service access
+            if user_input.startswith('/'):
+                try:
+                    await handle_slash_command(
+                        user_input, session_service, memory_service, 
+                        artifact_service, app_name, user_id, session_id
+                    )
+                    continue
+                except Exception as e:
+                    print(f"❌ Slash command error: {e}")
+                    continue
                 
-            print("🤖 Agent: ", end="", flush=True)
+            print("🎓 Assistant: ", end="", flush=True)
             
             try:
                 # Use the utility function to call agent
