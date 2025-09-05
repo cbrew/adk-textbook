@@ -7,14 +7,10 @@ for academic research, including artifact storage with event sourcing.
 """
 
 import asyncio
-import sys
-from pathlib import Path
 
-# Add the parent directory to Python path
-sys.path.append(str(Path(__file__).parent.parent))
-
-from postgres_chat_agent.agent import create_runner
+# Module imports configured via pyproject.toml
 from google.genai import types
+from postgres_chat_agent.agent import create_runner
 
 
 async def demonstrate_research_workflow():
@@ -25,39 +21,39 @@ async def demonstrate_research_workflow():
     print("=" * 60)
     print("📚 Demonstrating: Artifact storage with event sourcing")
     print()
-    
+
     # Create runner with PostgreSQL services
     print("🔄 Initializing ADK Runner with PostgreSQL services...")
     runner = await create_runner(None, "postgres_chat_agent")
     print("✅ Runner initialized with custom PostgreSQL backend!")
     print()
-    
+
     # Session ID for this demo
     demo_session = "demo-research-session-001"
     demo_user = "researcher_alice"
-    
+
     try:
         print("=" * 60)
         print("📋 SCENARIO: Literature Review Research Project")
         print("=" * 60)
         print()
-        
+
         # 1. Research Discussion - ADK handles this with memory indexing
         print("1️⃣ **Research Discussion with Agent**")
         print("   User asks about machine learning bias in healthcare")
-        
+
         research_query = types.Content(
-            role="user", 
+            role="user",
             parts=[types.Part(text="I'm researching bias in machine learning models for healthcare. Can you help me understand the key challenges and suggest approaches for mitigation?")]
         )
-        
+
         print("   🤖 Agent responds with comprehensive analysis...")
         response = await runner.run_async(
-            user_id=demo_user, 
-            session_id=demo_session, 
+            user_id=demo_user,
+            session_id=demo_session,
             content=research_query
         )
-        
+
         # Extract agent response
         agent_response = ""
         for event in response.events:
@@ -67,10 +63,10 @@ async def demonstrate_research_workflow():
                         agent_response = part.text[:200] + "..." if len(part.text) > 200 else part.text
                         break
                 break
-        
+
         print(f"   📝 Agent response: {agent_response}")
         print()
-        
+
         # 2. Save Research Bibliography as Artifact
         print("2️⃣ **Saving Research Bibliography (PostgreSQL BYTEA Storage)**")
         bibliography = """# ML Bias in Healthcare - Key References
@@ -87,20 +83,20 @@ async def demonstrate_research_workflow():
 ## Recent Developments
 6. Pfohl, S. R. et al. (2021). "The role of machine learning in clinical decision-making." Nature Reviews Disease Primers.
 """
-        
+
         # Create content for artifact saving
         save_content = types.Content(
             role="user",
             parts=[types.Part(text=f"save_artifact('ml_healthcare_bias_bibliography.md', '{bibliography}')")]
         )
-        
+
         print("   💾 Saving bibliography to PostgreSQL...")
         save_response = await runner.run_async(
             user_id=demo_user,
-            session_id=demo_session, 
+            session_id=demo_session,
             content=save_content
         )
-        
+
         # Check if artifact was saved
         for event in save_response.events:
             if hasattr(event, 'get_function_responses'):
@@ -108,11 +104,11 @@ async def demonstrate_research_workflow():
                 for response in responses:
                     if hasattr(response, 'response') and 'Successfully saved' in str(response.response):
                         print("   ✅ Bibliography saved to PostgreSQL BYTEA storage!")
-                        print(f"   📊 Storage: Small file (< 1MB) → PostgreSQL BYTEA")
-                        print(f"   🔗 Event sourcing: Artifact creation indexed for search")
+                        print("   📊 Storage: Small file (< 1MB) → PostgreSQL BYTEA")
+                        print("   🔗 Event sourcing: Artifact creation indexed for search")
                         break
         print()
-        
+
         # 3. Save Research Notes as Another Artifact
         print("3️⃣ **Saving Research Notes (Larger File → Filesystem)**")
         detailed_notes = """# Detailed Research Notes: ML Bias in Healthcare
@@ -205,32 +201,32 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
             role="user",
             parts=[types.Part(text=f"save_artifact('ml_bias_detailed_notes.md', '{detailed_notes[:1000]}...[truncated for demo]')")]
         )
-        
+
         print("   💾 Saving detailed notes...")
         notes_response = await runner.run_async(
             user_id=demo_user,
             session_id=demo_session,
             content=notes_content
         )
-        
+
         print("   ✅ Research notes saved!")
-        print(f"   📊 Storage: Large file (> 1MB) → Filesystem with PostgreSQL metadata")
-        print(f"   🔗 Event sourcing: Second artifact creation event indexed")
+        print("   📊 Storage: Large file (> 1MB) → Filesystem with PostgreSQL metadata")
+        print("   🔗 Event sourcing: Second artifact creation event indexed")
         print()
-        
+
         # 4. List All Artifacts
         print("4️⃣ **Listing Research Artifacts**")
         list_content = types.Content(
             role="user",
             parts=[types.Part(text="list_artifacts()")]
         )
-        
+
         list_response = await runner.run_async(
             user_id=demo_user,
             session_id=demo_session,
             content=list_content
         )
-        
+
         print("   📁 Retrieved artifacts from PostgreSQL:")
         for event in list_response.events:
             if hasattr(event, 'get_function_responses'):
@@ -241,53 +237,53 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
                         print("   ✅ Notes: ml_bias_detailed_notes.md")
                         break
         print()
-        
+
         # 5. Search Memory (Including Artifact Events)
         print("5️⃣ **Searching Research Memory (Including Artifact Events)**")
         search_content = types.Content(
             role="user",
             parts=[types.Part(text="search_memory('machine learning bias')")]
         )
-        
+
         search_response = await runner.run_async(
             user_id=demo_user,
             session_id=demo_session,
             content=search_content
         )
-        
+
         print("   🔍 Memory search results (includes artifact creation events):")
         print("   📝 Found conversation about ML bias challenges")
         print("   📁 Found artifact creation: Bibliography saved")
         print("   📁 Found artifact creation: Research notes saved")
         print("   💡 Event sourcing enables comprehensive research history!")
         print()
-        
+
         # 6. Session Continuity
         print("6️⃣ **Session Continuity Demonstration**")
         session_content = types.Content(
             role="user",
             parts=[types.Part(text="get_session_info(include_details='full')")]
         )
-        
+
         session_response = await runner.run_async(
             user_id=demo_user,
             session_id=demo_session,
             content=session_content
         )
-        
+
         print("   📱 Session state persisted in PostgreSQL:")
         print("   ✅ Research artifacts: 2 files saved")
         print("   ✅ Memory entries: Indexed and searchable")
         print("   ✅ Event history: Complete audit trail")
         print("   💡 Can resume research in future sessions!")
         print()
-        
+
         print("=" * 60)
         print("🎯 **KEY BENEFITS DEMONSTRATED**")
         print("=" * 60)
         print("📊 **Hybrid Storage Strategy**:")
         print("   • Small files (< 1MB): PostgreSQL BYTEA for fast access")
-        print("   • Large files (> 1MB): Filesystem with PostgreSQL metadata") 
+        print("   • Large files (> 1MB): Filesystem with PostgreSQL metadata")
         print()
         print("🔗 **Event Sourcing Integration**:")
         print("   • Artifact creation → ADK Events with artifact_delta")
@@ -304,12 +300,12 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
         print("   • Research context maintained over time")
         print("   • Professional academic workflow support")
         print()
-        
+
     except Exception as e:
         print(f"❌ Demo error: {e}")
         import traceback
         traceback.print_exc()
-    
+
     finally:
         # Cleanup
         print("🧹 Cleaning up demo session...")
@@ -317,7 +313,7 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
             # Get services and clean up test data
             session_service = runner.session_service
             artifact_service = runner.artifact_service
-            
+
             # Delete test artifacts
             await artifact_service.delete_artifact(
                 app_name="postgres_chat_agent",
@@ -326,21 +322,21 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
                 filename="ml_healthcare_bias_bibliography.md"
             )
             await artifact_service.delete_artifact(
-                app_name="postgres_chat_agent", 
+                app_name="postgres_chat_agent",
                 user_id=demo_user,
                 session_id=demo_session,
                 filename="ml_bias_detailed_notes.md"
             )
-            
+
             # Delete test session
             await session_service.delete_session(
                 app_name="postgres_chat_agent",
                 user_id=demo_user,
                 session_id=demo_session
             )
-            
+
             print("✅ Demo cleanup complete!")
-            
+
         except Exception as e:
             print(f"⚠️ Cleanup warning: {e}")
 

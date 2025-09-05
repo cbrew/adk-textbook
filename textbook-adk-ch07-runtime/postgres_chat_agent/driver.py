@@ -44,9 +44,9 @@ import logging
 import uuid
 from datetime import datetime
 
-from google.genai import types
 from google.adk.events import Event
 from google.adk.events.event_actions import EventActions
+from google.genai import types
 
 from adk_runtime.runtime.adk_runtime import PostgreSQLADKRuntime
 
@@ -228,7 +228,7 @@ class PostgreSQLChatDriver:
 
             # Create proper ADK events for the conversation
             events_created = await self._create_conversation_events(session, message, response)
-            
+
             # Add the updated session (with new events) to memory using event sourcing
             await memory_service.add_session_to_memory(session)
 
@@ -738,33 +738,33 @@ class PostgreSQLChatDriver:
             Number of events created
         """
         from google.genai import types
-        
+
         events_created = 0
-        
+
         try:
             # Create user message event
             user_content = types.Content(
                 role="user",
                 parts=[types.Part(text=message)]
             )
-            
+
             user_event = Event(
                 author="user",
                 content=user_content,
                 invocation_id=f"msg_{Event.new_id()}",
                 actions=EventActions()  # User events typically have no actions
             )
-            
+
             # Add user event to session
             session.events.append(user_event)
             events_created += 1
-            
+
             # Create agent response event with state_delta
             agent_content = types.Content(
-                role="model", 
+                role="model",
                 parts=[types.Part(text=response)]
             )
-            
+
             # Create state delta for conversation update
             conversation_state = {
                 "last_interaction": datetime.now().isoformat(),
@@ -772,25 +772,25 @@ class PostgreSQLChatDriver:
                 "conversation_topic": self._extract_topic_from_message(message),
                 "agent_response_length": len(response)
             }
-            
+
             # Create agent event with state_delta action
             agent_actions = EventActions()
             agent_actions.state_delta = conversation_state
-            
+
             agent_event = Event(
                 author=self.app_name,  # Agent name as author
                 content=agent_content,
                 invocation_id=f"resp_{Event.new_id()}",
                 actions=agent_actions
             )
-            
+
             # Add agent event to session
             session.events.append(agent_event)
             events_created += 1
-            
+
             logger.info(f"✅ Created {events_created} ADK events for conversation")
             return events_created
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to create conversation events: {e}")
             return events_created
@@ -804,10 +804,10 @@ class PostgreSQLChatDriver:
             'database', 'postgresql', 'sql', 'query', 'table',
             'python', 'programming', 'development', 'experiment'
         }
-        
+
         message_lower = message.lower()
         found_topics = [topic for topic in academic_topics if topic in message_lower]
-        
+
         if found_topics:
             return ", ".join(found_topics[:3])  # Return up to 3 topics
         else:

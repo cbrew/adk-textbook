@@ -53,7 +53,7 @@ def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
     try:
         # Search memory through ADK context (uses our PostgreSQL service with artifact event indexing)
         memories = tool_context.search_memory(query)
-        
+
         # Format results for display
         results = []
         for i, memory in enumerate(memories[:5], 1):  # Show top 5 results
@@ -64,14 +64,14 @@ def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
                     if hasattr(part, 'text') and part.text:
                         content_text = part.text[:150] + ("..." if len(part.text) > 150 else "")
                         break
-            
+
             results.append({
                 "rank": i,
                 "content_preview": content_text,
                 "author": memory.author,
                 "timestamp": memory.timestamp
             })
-        
+
         return {
             "result": f"🔍 Found {len(memories)} memories matching '{query}'",
             "query": query,
@@ -80,7 +80,7 @@ def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
             "service": "PostgreSQL Memory Service with Artifact Event Indexing",
             "note": "Search includes conversation history and artifact creation events for comprehensive results"
         }
-        
+
     except Exception as e:
         return {
             "result": f"❌ Memory search failed for '{query}': {str(e)}",
@@ -104,21 +104,21 @@ def save_to_memory(tool_context: ToolContext, note: str = "current conversation"
     try:
         # Create memory content
         memory_content = f"Research session note: {note}"
-        
+
         # Add to memory through ADK context (uses our PostgreSQL service)
         # Note: ADK automatically handles memory persistence during conversation flow
         # This tool demonstrates explicit memory addition for user notes
-        
+
         # Update session state to indicate memory was added
         if not tool_context.state.get('saved_notes'):
             tool_context.state['saved_notes'] = []
-        
+
         tool_context.state['saved_notes'].append({
             'note': note,
             'content': memory_content,
             'timestamp': datetime.utcnow().isoformat()
         })
-        
+
         return {
             "result": f"💾 Added research note to persistent memory: '{note}'",
             "note": note,
@@ -126,7 +126,7 @@ def save_to_memory(tool_context: ToolContext, note: str = "current conversation"
             "service": "PostgreSQL Memory Service with Event Sourcing",
             "note_detail": "Memory will be indexed and searchable in future sessions"
         }
-        
+
     except Exception as e:
         return {
             "result": f"❌ Failed to save to memory: {str(e)}",
@@ -151,13 +151,13 @@ def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dic
     try:
         # Create artifact Part from content
         artifact_part = types.Part(text=content)
-        
+
         # Save artifact through ADK context (uses our PostgreSQL service)
         version = tool_context.save_artifact(filename, artifact_part)
-        
+
         # Determine storage method based on file size
         storage_method = "PostgreSQL BYTEA" if len(content.encode('utf-8')) <= 1024*1024 else "Filesystem"
-        
+
         return {
             "result": f"✅ Successfully saved '{filename}' version {version}",
             "filename": filename,
@@ -167,7 +167,7 @@ def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dic
             "service": "PostgreSQL Artifact Service with Event Sourcing",
             "note": "Artifact saved and indexed for semantic search via event sourcing"
         }
-        
+
     except Exception as e:
         return {
             "result": f"❌ Failed to save artifact '{filename}': {str(e)}",
@@ -191,13 +191,13 @@ def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, 
     try:
         # Get artifacts from ADK context (uses our PostgreSQL service)
         artifacts = tool_context.list_artifacts()
-        
+
         # Apply filter if specified
         if filter != "all" and artifacts:
             filtered_artifacts = [a for a in artifacts if filter.lower() in a.lower()]
         else:
             filtered_artifacts = artifacts
-        
+
         return {
             "result": f"📁 Found {len(artifacts)} total artifacts, showing {len(filtered_artifacts)} matching '{filter}'",
             "artifacts": filtered_artifacts,
@@ -207,7 +207,7 @@ def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, 
             "service": "PostgreSQL Artifact Service",
             "note": "Artifacts retrieved from PostgreSQL with hybrid storage (BYTEA + filesystem)"
         }
-        
+
     except Exception as e:
         return {
             "result": f"❌ Failed to list artifacts: {str(e)}",
@@ -231,7 +231,7 @@ def get_session_info(tool_context: ToolContext, include_details: str = "basic") 
     try:
         # Get session state from ADK context (uses our PostgreSQL service)
         session_state = dict(tool_context.state)
-        
+
         # Basic session info
         session_info = {
             "result": "📱 Retrieved session from PostgreSQL with persistent state",
@@ -239,7 +239,7 @@ def get_session_info(tool_context: ToolContext, include_details: str = "basic") 
             "state_keys": list(session_state.keys()),
             "service": "PostgreSQL Session Service"
         }
-        
+
         if include_details == "full":
             session_info.update({
                 "session_state": session_state,
@@ -248,9 +248,9 @@ def get_session_info(tool_context: ToolContext, include_details: str = "basic") 
             })
         else:
             session_info["note"] = "Basic session info - use include_details='full' for complete state"
-        
+
         return session_info
-        
+
     except Exception as e:
         return {
             "result": f"❌ Failed to retrieve session info: {str(e)}",
