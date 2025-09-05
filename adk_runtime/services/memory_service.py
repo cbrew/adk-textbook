@@ -7,6 +7,7 @@ Provides semantic memory storage using local PostgreSQL with vector embeddings.
 import json
 import uuid
 import logging
+from pathlib import Path
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime
 
@@ -392,6 +393,40 @@ class PostgreSQLMemoryService(BaseMemoryService):
                     if field in state_delta and state_delta[field]:
                         value_words = str(state_delta[field]).lower().replace('_', ' ').split()
                         keywords.extend([w for w in value_words if len(w) > 3])
+            
+            # Extract from artifact_delta (artifact creation/update events)
+            if hasattr(event, 'actions') and event.actions and hasattr(event.actions, 'artifact_delta') and event.actions.artifact_delta:
+                artifact_delta = event.actions.artifact_delta
+                
+                # Add artifact-related keywords
+                keywords.append("artifact")
+                keywords.append("file")
+                keywords.append("document")
+                
+                # Extract filename keywords
+                for filename, version in artifact_delta.items():
+                    filename_words = str(filename).lower().replace('.', ' ').replace('_', ' ').replace('-', ' ').split()
+                    keywords.extend([w for w in filename_words if len(w) > 2])
+                    
+                    # Add file extension as keyword
+                    if '.' in filename:
+                        extension = filename.split('.')[-1].lower()
+                        keywords.append(extension)
+                    
+                    # Add version info
+                    keywords.append(f"version_{version}")
+                
+                # Add storage-related keywords from text content
+                if hasattr(event, 'content') and event.content and hasattr(event.content, 'parts'):
+                    for part in event.content.parts:
+                        if hasattr(part, 'text') and part.text:
+                            text = part.text.lower()
+                            if 'postgresql' in text or 'bytea' in text:
+                                keywords.append("postgresql_storage")
+                            if 'filesystem' in text:
+                                keywords.append("filesystem_storage")
+                            if 'bytes' in text:
+                                keywords.append("binary_data")
         
         except Exception as e:
             logger.debug(f"Failed to extract keywords from event: {e}")
@@ -435,6 +470,12 @@ class PostgreSQLMemoryService(BaseMemoryService):
                 if state_info:
                     summary_parts.append(f"State: {state_info}")
             
+            # Add artifact_delta information for artifact events
+            if hasattr(event, 'actions') and event.actions and hasattr(event.actions, 'artifact_delta') and event.actions.artifact_delta:
+                artifact_info = self._summarize_artifact_delta(event.actions.artifact_delta)
+                if artifact_info:
+                    summary_parts.append(f"Artifacts: {artifact_info}")
+            
             return " | ".join(summary_parts)
         
         except Exception as e:
@@ -471,6 +512,29 @@ class PostgreSQLMemoryService(BaseMemoryService):
         except Exception as e:
             logger.debug(f"Failed to summarize state_delta: {e}")
             return "state_update"
+    
+    def _summarize_artifact_delta(self, artifact_delta: Dict[str, int]) -> str:
+        """Create a brief summary of artifact_delta changes for indexing."""
+        try:
+            summary_parts = []
+            
+            # Process each artifact in the delta
+            for filename, version in artifact_delta.items():
+                # Extract file info
+                file_base = Path(filename).stem
+                file_ext = Path(filename).suffix
+                
+                # Create concise summary
+                if file_ext:
+                    summary_parts.append(f"{file_base}{file_ext} v{version}")
+                else:
+                    summary_parts.append(f"{filename} v{version}")
+            
+            return ", ".join(summary_parts[:3])  # Limit to 3 files for readability
+            
+        except Exception as e:
+            logger.debug(f"Failed to summarize artifact_delta: {e}")
+            return "artifact_created"
     
     def _extract_event_topics(self, event) -> List[str]:
         """Extract topic keywords from event content."""

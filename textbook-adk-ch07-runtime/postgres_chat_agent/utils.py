@@ -1,7 +1,6 @@
 """
 Utility functions for PostgreSQL chat agent.
 
-Adapted from saptak's adk-masterclass example to work with our PostgreSQL services.
 """
 
 from google.genai import types

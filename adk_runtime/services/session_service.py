@@ -222,17 +222,71 @@ class PostgreSQLSessionService(BaseSessionService):
         
         return events
     
-    def save_event(self, session_id: str, event: Event) -> None:
-        """Save an event to the database."""
+    def save_event(self, session_id: str, event: Event) -> str:
+        """Save an event to the database and return the event ID."""
         try:
             event_data = event.model_dump()
+            
+            # Determine event type from event characteristics
+            event_type = self._determine_event_type(event)
+            
+            # Use the event ID if it exists, otherwise generate one
+            db_event_id = event.id if event.id else str(uuid.uuid4())
+            
             self.db.execute_query(
                 QUERIES["insert_event"],
-                (str(uuid.uuid4()), session_id, event.event_type, serialize_json(event_data)),
+                (db_event_id, session_id, event_type, serialize_json(event_data)),
                 fetch_all=False
             )
+            
+            return db_event_id
+            
         except Exception as e:
             logger.error(f"Failed to save event for session {session_id}: {e}")
+            raise
+    
+    def _determine_event_type(self, event: Event) -> str:
+        """Determine event type based on event characteristics."""
+        try:
+            # Check for actions to determine event type
+            if hasattr(event, 'actions') and event.actions:
+                if hasattr(event.actions, 'artifact_delta') and event.actions.artifact_delta:
+                    return 'artifact_created'
+                if hasattr(event.actions, 'state_delta') and event.actions.state_delta:
+                    return 'state_updated'
+                if hasattr(event.actions, 'transfer_to_agent') and event.actions.transfer_to_agent:
+                    return 'agent_transfer'
+                if hasattr(event.actions, 'escalate') and event.actions.escalate:
+                    return 'escalation'
+            
+            # Check for content type
+            if hasattr(event, 'content') and event.content:
+                if hasattr(event.content, 'parts') and event.content.parts:
+                    return 'content_message'
+            
+            # Check for function calls/responses
+            if hasattr(event, 'get_function_calls'):
+                try:
+                    calls = event.get_function_calls()
+                    if calls:
+                        return 'function_call'
+                except:
+                    pass
+            
+            if hasattr(event, 'get_function_responses'):
+                try:
+                    responses = event.get_function_responses()
+                    if responses:
+                        return 'function_response'
+                except:
+                    pass
+            
+            # Default fallback
+            return 'generic_event'
+            
+        except Exception as e:
+            logger.debug(f"Failed to determine event type: {e}")
+            return 'unknown_event'
     
     def update_session_state(self, session_id: str, state: Dict[str, Any], app_name: str, user_id: str) -> None:
         """Update session state in the database."""

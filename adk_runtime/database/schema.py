@@ -5,7 +5,7 @@ Simple, transparent SQL schema optimized for ADK's event-driven architecture.
 """
 
 # Current schema version for migration management
-SCHEMA_VERSION = "001"
+SCHEMA_VERSION = "002"
 
 # Core table creation SQL - simple and efficient
 SCHEMA_SQL = {
@@ -85,6 +85,21 @@ SCHEMA_SQL = {
         );
     """,
     
+    "006_enhance_artifacts_postgresql_storage": """
+        -- Add BYTEA storage column for PostgreSQL artifact storage
+        ALTER TABLE artifacts ADD COLUMN IF NOT EXISTS file_data BYTEA;
+        
+        -- Add event reference for event sourcing integration
+        ALTER TABLE artifacts ADD COLUMN IF NOT EXISTS event_id UUID REFERENCES events(id) ON DELETE SET NULL;
+        
+        -- Add storage type indicator (postgresql/filesystem)
+        ALTER TABLE artifacts ADD COLUMN IF NOT EXISTS storage_type VARCHAR(20) DEFAULT 'filesystem';
+        
+        -- Add indexes for the new columns
+        CREATE INDEX IF NOT EXISTS idx_artifacts_event_id ON artifacts(event_id);
+        CREATE INDEX IF NOT EXISTS idx_artifacts_storage_type ON artifacts(storage_type);
+    """,
+    
 }
 
 # Optimized queries for common operations
@@ -141,20 +156,27 @@ QUERIES = {
     
     # Artifact operations
     "insert_artifact": """
-        INSERT INTO artifacts (id, session_id, filename, content_type, file_size, file_path, metadata) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO artifacts (id, session_id, filename, content_type, file_size, file_path, metadata, file_data, event_id, storage_type) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """,
     
     "get_artifact": """
-        SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at 
+        SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
         FROM artifacts 
         WHERE id = %s
     """,
     
     "get_session_artifacts": """
-        SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at 
+        SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
         FROM artifacts 
         WHERE session_id = %s 
+        ORDER BY created_at DESC
+    """,
+    
+    "get_artifact_by_filename": """
+        SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
+        FROM artifacts 
+        WHERE session_id = %s AND filename = %s
         ORDER BY created_at DESC
     """,
     

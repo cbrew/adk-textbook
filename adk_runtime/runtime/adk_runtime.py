@@ -46,7 +46,8 @@ class PostgreSQLADKRuntime:
         self.memory_service = PostgreSQLMemoryService(self.db_manager)
         self.artifact_service = PostgreSQLArtifactService(
             self.db_manager, 
-            self.artifact_storage_path
+            self.artifact_storage_path,
+            self.session_service  # Pass session service for event sourcing
         )
         
         self._initialized = False
