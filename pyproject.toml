@@ -7,12 +7,14 @@ dependencies = [
     # Core ADK dependencies (all chapters)
     "google-adk[eval]>=1.13.0",
     "pydantic>=2.0.0",
-    "pydantic-settings>=2.8.1", 
+    "pydantic-settings>=2.8.1",
     "python-dotenv>=1.0.0",
-    
     # Chapter 7: PostgreSQL Runtime dependencies
     "psycopg2-binary>=2.9.0",
     "asyncpg>=0.28.0",
+    # Chapter 7: Web UI Plugin System dependencies
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
 ]
 
 [project.optional-dependencies]
@@ -68,6 +70,10 @@ select = ["E", "F", "I", "N", "W", "UP"]
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["adk_runtime*", "textbook*"]
+
+# Add Chapter 7 modules to PYTHONPATH
+[tool.setuptools.package-data]
+"*" = ["*.py", "*.yaml", "*.yml", "*.json", "*.md", "*.txt"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
