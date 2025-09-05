@@ -22,31 +22,32 @@ Prerequisites:
     cd textbook-adk-ch07-runtime && make dev-setup
 """
 
+import argparse
 import asyncio
 import sys
-import argparse
 
-from basic_agent import PersistentChatAgent, run_interactive_demo, run_automated_example
+from basic_agent import run_automated_example, run_interactive_demo
 from test_services import main as test_services_main
+
 from adk_runtime.runtime.adk_runtime import PostgreSQLADKRuntime
 
 
 async def check_services():
     """Check if PostgreSQL services are available."""
     print("🔍 Checking PostgreSQL services...")
-    
+
     try:
         runtime = await PostgreSQLADKRuntime.create_and_initialize()
-        
+
         print("✅ PostgreSQL runtime: OK")
-        print("✅ Session service: OK") 
+        print("✅ Session service: OK")
         print("✅ Memory service: OK")
         print("✅ Artifact service: OK")
         print("\n🎉 All services are ready!")
-        
+
         await runtime.shutdown()
         return True
-        
+
     except Exception as e:
         print(f"❌ Service check failed: {e}")
         print("\n💡 To fix this, run:")
@@ -57,40 +58,40 @@ async def check_services():
 async def test_agent_tools():
     """Test the agent tools integration."""
     print("🧪 Testing PostgreSQL agent tools integration...")
-    
+
     from persistent_chat_agent.agent import PersistentChatTools
-    
+
     tools = PersistentChatTools("tool_test_agent")
-    
+
     try:
         print("\n1. Initializing tools...")
         await tools.initialize()
         print("   ✅ Tools initialized")
-        
+
         print("\n2. Testing save_to_memory...")
         result = await tools.save_to_memory()
         print(f"   {result}")
-        
+
         print("\n3. Testing search_memory...")
         result = await tools.search_memory("test conversation")
         print(f"   {result}")
-        
+
         print("\n4. Testing save_artifact...")
         result = await tools.save_artifact(
             "tool_test.txt",
             "This artifact was created during tool testing.\n\nContents:\n- Tool integration test\n- PostgreSQL persistence\n- ADK compatibility"
         )
         print(f"   {result}")
-        
+
         print("\n✅ Agent tools test completed successfully!")
-        
+
     except Exception as e:
         print(f"❌ Agent tools test failed: {e}")
         return False
-    
+
     finally:
         await tools.cleanup()
-    
+
     return True
 
 
@@ -108,39 +109,39 @@ Examples:
   %(prog)s --test-services    # Run full service test suite
         """
     )
-    
+
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--interactive', action='store_true', 
+    group.add_argument('--interactive', action='store_true',
                       help='Run interactive chat demo')
     group.add_argument('--test-tools', action='store_true',
-                      help='Test agent tools integration')  
+                      help='Test agent tools integration')
     group.add_argument('--check', action='store_true',
                       help='Check PostgreSQL services status')
     group.add_argument('--test-services', action='store_true',
                       help='Run full service test suite')
-    
+
     args = parser.parse_args()
-    
+
     print("🐘 PostgreSQL Agent Examples")
     print("=" * 40)
-    
+
     if args.check:
         asyncio.run(check_services())
-    
+
     elif args.test_services:
         print("🧪 Running full service test suite...")
         test_services_main()
-    
+
     elif args.test_tools:
         success = asyncio.run(test_agent_tools())
         if not success:
             sys.exit(1)
-    
+
     elif args.interactive:
         print("🚀 Starting interactive demo...")
         print("💡 Make sure services are running: make dev-setup")
         asyncio.run(run_interactive_demo())
-    
+
     else:
         print("🤖 Running automated example...")
         print("💡 Make sure services are running: make dev-setup")

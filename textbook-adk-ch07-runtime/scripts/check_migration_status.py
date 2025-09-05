@@ -3,8 +3,8 @@
 Check database migration status.
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add parent directory to path to import adk_runtime
@@ -23,18 +23,18 @@ def main():
         username=os.getenv("DB_USER", "adk_user"),
         password=os.getenv("DB_PASSWORD", "adk_password")
     )
-    
+
     db = DatabaseManager(config)
-    
+
     try:
         db.initialize()
         mgr = MigrationManager(db)
         status = mgr.get_migration_status()
-        
+
         print("Migration Status:")
         for key, value in status.items():
             print(f"  {key}: {value}")
-        
+
     except Exception as e:
         print(f"Error checking migration status: {e}")
         sys.exit(1)

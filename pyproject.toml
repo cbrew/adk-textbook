@@ -61,6 +61,8 @@ warn_unused_configs = true
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.setuptools.packages.find]
@@ -70,3 +72,8 @@ include = ["adk_runtime*", "textbook*"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.405",
+]
