@@ -37,23 +37,20 @@ python postgres_chat_agent/driver.py --list-sessions    # List all sessions
 python postgres_chat_agent/driver.py --search-memory "machine learning"
 ```
 
-### 3. Basic Examples
-**Features**: Simple demonstrations of PostgreSQL integration
+### 3. Database Setup and Testing
+**Features**: Essential database initialization and service validation
 ```bash
-# Automated demo
-python examples/run_examples.py
+# Initialize database (required for first setup)
+python examples/setup_database.py
 
-# Interactive demo
-python examples/run_examples.py --interactive
-
-# Service checks
-python examples/run_examples.py --check
+# Test all PostgreSQL services
+python examples/test_services.py
 ```
 
 ## 🔧 Development Setup
 
 ### Prerequisites
-- **Python 3.11+**
+- **Python 3.12+**
 - **uv package manager** ([install here](https://docs.astral.sh/uv/))
 - **Podman** (`brew install podman` on Mac)
 

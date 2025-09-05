@@ -115,7 +115,6 @@ def list_artifacts(filter: str = "all") -> dict[str, Any]:
         "artifacts": artifacts,
         "filter": filter,
         "service": "PostgreSQL Artifact Service",
-        "note": "This tool demonstrates PostgreSQL artifact service integration via ADK Runner",
     }
 
 

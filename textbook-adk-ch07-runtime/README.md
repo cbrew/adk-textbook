@@ -60,14 +60,14 @@ adk-textbook/                 # Project root
 │   │   ├── unit/             # Unit tests
 │   │   ├── integration/      # Integration tests
 │   │   └── fixtures/         # Test data
-│   ├── examples/             # Example usage
+│   ├── examples/             # Database utilities
 │   │   ├── setup_database.py     # Database setup and testing
-│   │   ├── test_services.py      # Service integration tests
-│   │   ├── basic_agent.py        # Complete runnable agent example
-│   │   ├── run_examples.py       # Easy script to run all examples
-│   │   └── persistent_chat_agent/ # ADK YAML agent with PostgreSQL
-│   │       ├── root_agent.yaml   # Agent configuration
-│   │       └── agent.py          # Tool implementations
+│   │   └── test_services.py      # Service integration tests
+│   ├── postgres_chat_agent/  # Complete PostgreSQL integration (Event Sourcing)
+│   │   ├── main.py           # Academic research assistant
+│   │   ├── driver.py         # Comprehensive PostgreSQL service driver
+│   │   ├── agent.py          # ADK agent with PostgreSQL tools
+│   │   └── utils.py          # Utility functions
 │   ├── scripts/              # Utility scripts
 │   │   ├── check_migration_status.py  # Check database migration status
 │   │   └── reset_database.py     # Reset database (development only)
@@ -121,8 +121,8 @@ make dev-up          # Start PostgreSQL containers
 make migrate         # Run database migrations
 make test            # Verify everything works
 
-# Run database setup example (from textbook root)
-cd .. && uv run python textbook-adk-ch07-runtime/examples/setup_database.py
+# Run database setup (from chapter directory)
+python examples/setup_database.py
 ```
 
 ### Manual Setup (without Make)
@@ -143,7 +143,7 @@ cd textbook-adk-ch07-runtime/docker && podman compose up -d
 
 # Wait for containers to start, then run migrations
 sleep 10
-cd .. && uv run python textbook-adk-ch07-runtime/examples/setup_database.py
+python examples/setup_database.py
 
 # Run tests to verify setup
 uv run pytest textbook-adk-ch07-runtime/tests/ -v
@@ -214,52 +214,11 @@ By completing this chapter, you'll understand:
 
 Once your PostgreSQL runtime is set up, you can start agents that use the database services for persistence. Here are the key patterns:
 
-### Runnable Examples
+### Main Applications
 
-The `examples/` directory contains complete, runnable examples:
+The PostgreSQL runtime provides two main applications for different use cases:
 
-#### 1. Quick Start - Automated Example
-```bash
-# From textbook root directory:
-uv run python textbook-adk-ch07-runtime/examples/run_examples.py
-```
-
-This runs an automated demonstration of PostgreSQL services integration.
-
-#### 2. Interactive Chat Demo
-```bash
-# Interactive agent with persistent conversations:
-uv run python textbook-adk-ch07-runtime/examples/run_examples.py --interactive
-```
-
-Features an interactive chat agent that demonstrates:
-- Persistent conversation sessions across restarts
-- Semantic memory search of past conversations  
-- Artifact storage for saving conversations
-- Session management and state persistence
-
-#### 3. Direct Agent Example
-```bash
-# Run the basic agent directly:
-uv run python textbook-adk-ch07-runtime/examples/basic_agent.py
-
-# Or interactive mode:
-uv run python textbook-adk-ch07-runtime/examples/basic_agent.py --interactive
-```
-
-#### 4. Test Tools Integration
-```bash
-# Test agent tools with PostgreSQL:
-uv run python textbook-adk-ch07-runtime/examples/run_examples.py --test-tools
-```
-
-#### 5. Service Status Check
-```bash
-# Verify all services are working:
-uv run python textbook-adk-ch07-runtime/examples/run_examples.py --check
-```
-
-#### 6. PostgreSQL Chat Agent (Event Sourcing Implementation) ⭐
+#### 1. PostgreSQL Chat Agent (Event Sourcing Implementation) ⭐
 ```bash
 # Interactive Academic Research Assistant with PostgreSQL Event Sourcing
 cd textbook-adk-ch07-runtime && uv run python postgres_chat_agent/main.py
@@ -283,7 +242,18 @@ python postgres_chat_agent/driver.py --interactive       # Full-featured driver 
 - ✅ **State Management**: Session state tracking with conversation topics and metadata
 - ✅ **PostgreSQL Integration**: Uses all three custom PostgreSQL services
 
-#### 7. Standard ADK Commands (Limited PostgreSQL Integration)
+#### 2. Database Setup and Service Testing
+
+**Essential utilities for database initialization and service validation:**
+```bash
+# Initialize database (required for first setup)
+python examples/setup_database.py
+
+# Test all PostgreSQL services  
+python examples/test_services.py
+```
+
+#### 3. Standard ADK Commands (Limited PostgreSQL Integration)
 ```bash
 # Option B: Standard ADK commands (uses ADK's default services, NOT PostgreSQL)
 cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent  # Uses ADK defaults
@@ -567,12 +537,15 @@ Both scripts:
 Verify your agent works with PostgreSQL services:
 
 ```bash
-# Run the service tests to ensure PostgreSQL is working
+# Test PostgreSQL services
 cd textbook-adk-ch07-runtime
-uv run python examples/test_services.py
+python examples/test_services.py
 
-# Run your agent tests
-uv run pytest path/to/your/agent/tests/ -v
+# Test event sourcing implementation
+python postgres_chat_agent/driver.py --test-memory
+
+# Run full test suite
+uv run pytest tests/ -v
 ```
 
 ### Environment Variables
