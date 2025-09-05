@@ -462,20 +462,27 @@ The PostgreSQL runtime provides **database schema compatibility** with ADK's bui
 #### Quick Start with Web UI
 
 ```bash
-# Use the provided script for easy setup
-./scripts/start_web_with_postgres.sh
+# Use the new PostgreSQL plugin system (full integration)
+./run_postgres_web_ui.sh
 
-# Or run manually
-uv run adk web postgres_chat_agent \
-    --session_service_uri "postgresql://adk_user:adk_password@localhost:5432/adk_runtime" \
-    --port 8000
+# Or Python launcher (cross-platform)
+python run_postgres_web_ui.py
+
+# With custom configuration
+./run_postgres_web_ui.sh postgres_chat_agent --port 8080 --host 0.0.0.0
 ```
 
 #### Integration Status
 
-**Important Distinction:**
-- **`adk web` with `--session_service_uri`**: Uses ADK's built-in `DatabaseSessionService`, just pointing to our PostgreSQL database (schema compatible)
-- **`python main.py`**: Uses our custom PostgreSQL service implementations with full runtime integration
+**New PostgreSQL Web UI Plugin System:**
+- **Full service integration**: All three services (session, memory, artifact) use our custom PostgreSQL implementations
+- **Plugin architecture**: Extensible URL-based service resolution
+- **Complete feature set**: Sessions, semantic memory, and artifact management all work in the web UI
+- **Production-ready**: Comprehensive error handling and service checks
+
+**Legacy Options:**
+- **`adk web` with `--session_service_uri`**: Uses only ADK's built-in `DatabaseSessionService` (sessions only)
+- **`python main.py`**: Full CLI experience with all custom services
 
 | Approach | Session Service | Memory Service | Artifact Service |
 |----------|----------------|---------------|------------------|
@@ -516,23 +523,10 @@ The database compatibility works through:
 - `app_states` & `user_states`: Full support for ADK's state management
 - JSONB columns: Compatible with ADK's `DynamicJSON` SQLAlchemy type
 
-#### Scripts
+#### Additional Documentation
 
-**Unix/Mac:**
-```bash
-./scripts/start_web_with_postgres.sh
-```
-
-**Windows:**
-```cmd
-scripts\start_web_with_postgres.bat
-```
-
-Both scripts:
-- Check PostgreSQL connectivity
-- Apply required database migrations for ADK compatibility  
-- Start the web server pointing to PostgreSQL database
-- Enable basic ADK web UI functionality with PostgreSQL storage
+For complete usage documentation including troubleshooting and advanced configuration, see:
+- [README_POSTGRES_WEB_UI.md](README_POSTGRES_WEB_UI.md) - Complete PostgreSQL Web UI guide
 
 ### Testing Your Agent
 
