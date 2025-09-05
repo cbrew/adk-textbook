@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 class ADKWebPlugin(ABC):
     """
     Base class for ADK Web plugins.
-    
     Plugins can provide custom services that override ADK's default implementations.
     This enables features like PostgreSQL backends, custom storage solutions, etc.
     """
@@ -94,7 +93,7 @@ class ADKWebPlugin(ABC):
     def get_custom_routes(self) -> dict[str, Any]:
         """
         Return custom FastAPI routes to add to the web interface.
-        Format: {"/custom/route": {"handler": async_function, "methods": ["GET", "POST"]}}
+        Format: {"/custom/route": {"handler": func, "methods": ["GET", "POST"]}}
         """
         return {}
 
@@ -125,7 +124,6 @@ class PluginManager:
     async def load_plugin(self, plugin_path: Path) -> None:
         """
         Load a plugin from a Python file.
-        
         Args:
             plugin_path: Path to the plugin file
         """
@@ -166,7 +164,9 @@ class PluginManager:
             await plugin_instance.initialize()
 
             self.plugins[plugin_instance.name] = plugin_instance
-            logger.info(f"Loaded plugin: {plugin_instance.name} v{plugin_instance.version}")
+            logger.info(
+                f"Loaded plugin: {plugin_instance.name} v{plugin_instance.version}"
+            )
 
         except Exception as e:
             logger.error(f"Failed to load plugin {plugin_path}: {e}")
@@ -175,7 +175,6 @@ class PluginManager:
     async def load_plugins_from_directory(self, plugins_dir: Path) -> None:
         """
         Load all plugins from a directory.
-        
         Args:
             plugins_dir: Directory containing plugin files
         """
@@ -256,7 +255,10 @@ class PluginManager:
             plugin_routes = plugin.get_custom_routes()
             for route, config in plugin_routes.items():
                 if route in routes:
-                    logger.warning(f"Route {route} already exists, overriding with plugin {plugin.name}")
+                    logger.warning(
+                        f"Route {route} already exists, overriding with plugin "
+                        f"{plugin.name}"
+                    )
                 routes[route] = {
                     **config,
                     "plugin": plugin.name
@@ -294,10 +296,8 @@ plugin_manager = PluginManager()
 async def initialize_plugin_system(plugins_dir: Path | None = None) -> PluginManager:
     """
     Initialize the plugin system.
-    
     Args:
         plugins_dir: Directory containing plugins (defaults to ./plugins)
-    
     Returns:
         The initialized plugin manager
     """

@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 class PostgreSQLWebPlugin(ADKWebPlugin):
     """
     Plugin that provides PostgreSQL-backed services to ADK Web UI.
-    
     This plugin replaces ADK's default services with our custom PostgreSQL
-    implementations, enabling persistent storage and event sourcing in the web interface.
+    implementations, enabling persistent storage and event sourcing in the web
+    interface.
     """
 
     def __init__(self):
@@ -42,7 +42,10 @@ class PostgreSQLWebPlugin(ADKWebPlugin):
 
     @property
     def description(self) -> str:
-        return "PostgreSQL backend services for ADK Web UI with hybrid artifact storage and event sourcing"
+        return (
+            "PostgreSQL backend services for ADK Web UI with hybrid artifact "
+            "storage and event sourcing"
+        )
 
     async def initialize(self) -> None:
         """Initialize the PostgreSQL runtime and services."""
@@ -86,7 +89,9 @@ class PostgreSQLWebPlugin(ADKWebPlugin):
             raise RuntimeError("PostgreSQL plugin not initialized")
 
         service = self._runtime.get_memory_service()
-        logger.info("🧠 Providing PostgreSQL memory service with artifact indexing to web UI")
+        logger.info(
+            "🧠 Providing PostgreSQL memory service with artifact indexing to web UI"
+        )
         return service
 
     def get_artifact_service(self):
@@ -95,21 +100,25 @@ class PostgreSQLWebPlugin(ADKWebPlugin):
             raise RuntimeError("PostgreSQL plugin not initialized")
 
         service = self._runtime.get_artifact_service()
-        logger.info("📁 Providing PostgreSQL artifact service with hybrid storage to web UI")
+        logger.info(
+            "📁 Providing PostgreSQL artifact service with hybrid storage to web UI"
+        )
         return service
 
     def get_runner_factory(self) -> Callable[..., Any] | None:
         """
         Return a factory function for creating runners with PostgreSQL services.
-        
-        This factory will be used by the web UI instead of ADK's default runner creation.
+        This factory will be used by the web UI instead of ADK's default runner
+        creation.
         """
         async def create_postgresql_runner(agent, app_name, **kwargs):
             """Create a Runner with our PostgreSQL services."""
             if not self._initialized or not self._runtime:
                 raise RuntimeError("PostgreSQL plugin not initialized")
 
-            logger.info(f"🏗️ Creating Runner with PostgreSQL services for app: {app_name}")
+            logger.info(
+                f"🏗️ Creating Runner with PostgreSQL services for app: {app_name}"
+            )
 
             # Import here to avoid circular imports
             from google.adk.runners import Runner

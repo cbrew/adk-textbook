@@ -8,7 +8,6 @@ services into the web UI through the plugin architecture.
 
 Usage:
     python web_ui/adk_web_with_plugins.py postgres_chat_agent
-    
 Then open: http://127.0.0.1:8000
 """
 
@@ -29,7 +28,6 @@ logger = logging.getLogger(__name__)
 class PluginAwareADKWeb:
     """
     Enhanced ADK Web server that integrates with the plugin system.
-    
     This server loads plugins and uses them to override ADK's default services,
     enabling custom database backends and other service implementations.
     """
@@ -89,11 +87,17 @@ class PluginAwareADKWeb:
                 # Apply service overrides if available
                 runner_kwargs = {}
                 if "session_service" in service_overrides:
-                    runner_kwargs["session_service"] = service_overrides["session_service"]
+                    runner_kwargs["session_service"] = service_overrides[
+                        "session_service"
+                    ]
                 if "memory_service" in service_overrides:
-                    runner_kwargs["memory_service"] = service_overrides["memory_service"]
+                    runner_kwargs["memory_service"] = service_overrides[
+                        "memory_service"
+                    ]
                 if "artifact_service" in service_overrides:
-                    runner_kwargs["artifact_service"] = service_overrides["artifact_service"]
+                    runner_kwargs["artifact_service"] = service_overrides[
+                        "artifact_service"
+                    ]
 
                 self.runner = Runner(
                     agent=agent,
@@ -162,7 +166,9 @@ class PluginAwareADKWeb:
                     "response": response_text,
                     "session_id": session_id,
                     "service_info": {
-                        "using_postgresql": "postgresql_backend" in plugin_manager.get_active_plugins(),
+                        "using_postgresql": (
+                            "postgresql_backend" in plugin_manager.get_active_plugins()
+                        ),
                         "services": list(plugin_manager.get_service_overrides().keys())
                     }
                 }
@@ -196,7 +202,10 @@ class PluginAwareADKWeb:
             methods = route_config.get("methods", ["GET"])
             plugin_name = route_config.get("plugin", "unknown")
 
-            logger.info(f"📡 Adding plugin route: {route_path} [{', '.join(methods)}] from {plugin_name}")
+            logger.info(
+                f"📡 Adding plugin route: {route_path} "
+                f"[{', '.join(methods)}] from {plugin_name}"
+            )
 
             # Add the route to FastAPI
             for method in methods:
@@ -211,7 +220,11 @@ class PluginAwareADKWeb:
         for plugin_name, static_dir in static_dirs.items():
             mount_path = f"/static/{plugin_name}"
             logger.info(f"📁 Mounting static files: {mount_path} -> {static_dir}")
-            self.app.mount(mount_path, StaticFiles(directory=str(static_dir)), name=f"static_{plugin_name}")
+            self.app.mount(
+                mount_path,
+                StaticFiles(directory=str(static_dir)),
+                name=f"static_{plugin_name}",
+            )
 
     async def shutdown(self):
         """Shutdown the web server and plugins."""
@@ -223,10 +236,11 @@ class PluginAwareADKWeb:
             logger.error(f"❌ Error during shutdown: {e}")
 
 
-async def run_adk_web_with_plugins(agent_path: str, host: str = "127.0.0.1", port: int = 8000):
+async def run_adk_web_with_plugins(
+    agent_path: str, host: str = "127.0.0.1", port: int = 8000
+):
     """
     Run the ADK web server with plugin support.
-    
     Args:
         agent_path: Path to the agent to load
         host: Host to bind to
