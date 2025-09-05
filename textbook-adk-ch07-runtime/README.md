@@ -2,6 +2,31 @@
 
 This chapter implements a production-grade ADK runtime with local PostgreSQL persistence, providing an alternative to Google Cloud services while maintaining full ADK compatibility.
 
+## 🚀 Quick Start
+
+**Want to jump right in?** Here's the fastest way to get the PostgreSQL Chat Agent running:
+
+```bash
+# From the textbook root directory:
+cd textbook-adk-ch07-runtime
+
+# Complete setup (requires Podman/Docker):
+make dev-setup
+
+# Run the academic research assistant with event sourcing:
+python postgres_chat_agent/main.py --interactive
+
+# Try the comprehensive driver demo:
+python postgres_chat_agent/driver.py --interactive
+```
+
+**Features you'll get immediately:**
+- 🎓 Academic research assistant optimized for professional academics  
+- 💾 Persistent conversation memory across sessions
+- 🔍 Semantic search of research discussions
+- 📄 Research artifact storage and management
+- ⚡ Event sourcing with proper ADK events and state_delta actions
+
 ## Overview
 
 Build a custom ADK runtime that provides:
@@ -234,17 +259,120 @@ uv run python textbook-adk-ch07-runtime/examples/run_examples.py --test-tools
 uv run python textbook-adk-ch07-runtime/examples/run_examples.py --check
 ```
 
-#### 6. Run with ADK Tools
+#### 6. PostgreSQL Chat Agent (Event Sourcing Implementation) ⭐
 ```bash
-# Option A: Direct PostgreSQL agent (uses our custom PostgreSQL services)
+# Interactive Academic Research Assistant with PostgreSQL Event Sourcing
 cd textbook-adk-ch07-runtime && uv run python postgres_chat_agent/main.py
 
+# Command line options:
+python postgres_chat_agent/main.py --interactive          # Interactive chat mode
+python postgres_chat_agent/main.py --list-sessions        # List all persistent sessions  
+python postgres_chat_agent/main.py --test-memory         # Test memory service functionality
+python postgres_chat_agent/main.py --search-memory "ML"  # Search research memory
+python postgres_chat_agent/main.py --test-artifacts      # Test artifact service
+
+# Or use the comprehensive driver directly:
+python postgres_chat_agent/driver.py --interactive       # Full-featured driver demo
+```
+
+**Key Features of the PostgreSQL Chat Agent:**
+- ✅ **Event Sourcing Architecture**: Proper ADK events with state_delta actions
+- ✅ **Academic Focus**: Research-oriented workflows and memory management
+- ✅ **Persistent Memory**: Conversations indexed and searchable across sessions
+- ✅ **Slash Commands**: `/memory`, `/save`, `/artifacts`, `/session` for direct service access
+- ✅ **State Management**: Session state tracking with conversation topics and metadata
+- ✅ **PostgreSQL Integration**: Uses all three custom PostgreSQL services
+
+#### 7. Standard ADK Commands (Limited PostgreSQL Integration)
+```bash
 # Option B: Standard ADK commands (uses ADK's default services, NOT PostgreSQL)
 cd textbook-adk-ch07-runtime && uv run adk run postgres_chat_agent  # Uses ADK defaults
 cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent   # Uses ADK defaults
 
-# IMPORTANT: Only Option A uses our custom PostgreSQL runtime!
+# IMPORTANT: Only the Python scripts above use our custom PostgreSQL runtime!
 # ADK CLI commands (adk run, adk web) connect their own services, ignoring our custom ones
+```
+
+## Event Sourcing Implementation ⭐
+
+The PostgreSQL Chat Agent (`postgres_chat_agent/`) demonstrates a complete **event sourcing architecture** using proper ADK events with state_delta actions:
+
+### Architecture Overview
+
+```python
+# Event Creation (postgres_chat_agent/driver.py)
+async def _create_conversation_events(self, session, message: str, response: str):
+    """Create proper ADK events for user message and agent response with state changes."""
+    
+    # 1. User message event
+    user_event = Event(
+        author="user",
+        content=types.Content(role="user", parts=[types.Part(text=message)]),
+        invocation_id=f"msg_{Event.new_id()}",
+        actions=EventActions()  # No actions for user events
+    )
+    
+    # 2. Agent response event with state_delta
+    conversation_state = {
+        "last_interaction": datetime.now().isoformat(),
+        "message_count": len(session.events),
+        "conversation_topic": self._extract_topic_from_message(message),
+        "agent_response_length": len(response)
+    }
+    
+    agent_event = Event(
+        author=self.app_name,
+        content=types.Content(role="model", parts=[types.Part(text=response)]),
+        invocation_id=f"resp_{Event.new_id()}",
+        actions=EventActions(state_delta=conversation_state)  # State changes
+    )
+```
+
+### Memory Service Event Sourcing
+
+```python
+# Memory Indexing (adk_runtime/services/memory_service.py)
+async def add_session_to_memory(self, session: "Session") -> None:
+    """Creates searchable memory indexes for session events (event sourcing approach)."""
+    
+    for event in session.events:
+        # Create memory index entry that references the event (no content duplication)
+        await self._index_event_if_searchable(session, event)
+
+async def _index_event_if_searchable(self, session, event):
+    """Create memory index entry for an event if it contains searchable content."""
+    
+    # Extract keywords and create summary (no full content duplication)
+    keywords = self._extract_event_keywords(event)
+    content_summary = self._create_event_summary(event)
+    
+    # Handle state_delta events specially
+    if hasattr(event, 'actions') and event.actions and event.actions.state_delta:
+        state_info = self._summarize_state_delta(event.actions.state_delta)
+        content_summary += f" | State: {state_info}"
+        keywords.extend(["state_update", "interaction", "conversation"])
+```
+
+### Key Event Sourcing Benefits
+
+- **✅ No Content Duplication**: Memory stores indexes that reference events, not duplicate content
+- **✅ Proper ADK Events**: Uses official ADK Event structure with state_delta actions
+- **✅ Audit Trail**: Complete history of state changes through events
+- **✅ Searchable State**: State information (topics, message counts, timestamps) is indexed
+- **✅ Event Classification**: Events classified as `text_message`, `state_update`, etc.
+- **✅ Data Integrity**: Single source of truth maintained in event stream
+
+### Testing Event Sourcing
+
+```bash
+# Test event creation and indexing
+cd textbook-adk-ch07-runtime
+python postgres_chat_agent/driver.py --test-memory
+
+# Example output:
+# ✅ Created 2 ADK events for conversation
+# 📝 Memory indexes created: User message + Agent response with state_delta
+# 🔍 Search results show both content and state information
 ```
 
 ### Proper ADK Service Integration
@@ -499,28 +627,54 @@ python textbook-adk-ch07-runtime/scripts/check_migration_status.py
 
 ## Status
 
-🚧 **In Development** - This chapter is currently being implemented on the `feature/postgresql-runtime` branch.
+✅ **Complete** - This chapter demonstrates a production-ready ADK runtime with PostgreSQL persistence and event sourcing.
 
-### Current Features
+### Completed Features
 - ✅ PostgreSQL database schema and migrations
 - ✅ SessionService with JSONB state storage  
 - ✅ ArtifactService with file system backing
-- ✅ MemoryService with pgvector support
+- ✅ MemoryService with pgvector support and event sourcing
 - ✅ Development environment with Docker Compose V2
 - ✅ Comprehensive testing suite
 - ✅ **ADK Web UI integration** with PostgreSQL session service
-- ✅ Automated setup scripts for web interface
+- ✅ **Event Sourcing Implementation** with proper ADK events and state_delta actions
+- ✅ **Academic Research Agent** with persistent memory and slash commands
+- ✅ **PostgreSQL Chat Driver** demonstrating complete service integration
+- ✅ Automated setup scripts for development and testing
 
-### Coming Soon
-- 🚧 Complete agent examples with PostgreSQL integration
-- 🚧 Event-driven runner and orchestration logic
-- 🚧 Production deployment guides
-- 🚧 Performance optimization and monitoring
+### Key Achievements
+- ✅ **Event Sourcing Architecture**: Proper ADK events with state_delta actions for session updates
+- ✅ **Memory Service Event Indexing**: No content duplication, references to authoritative events
+- ✅ **Academic Research Workflows**: Professional academic tools with persistent research memory
+- ✅ **Complete Service Integration**: All three PostgreSQL services (Session, Memory, Artifact) working together
+- ✅ **Type Safety**: Full pyright type checking compliance throughout codebase
 
 ## Next Steps
 
 1. ✅ ~~Implement core database models and migrations~~
 2. ✅ ~~Build PostgreSQL-backed service implementations~~
-3. 🚧 Create event-driven runner and orchestration logic
-4. 🚧 Add comprehensive agent examples and documentation
-5. 🚧 Document deployment and operational considerations
+3. ✅ ~~Create event-driven runner and orchestration logic~~
+4. ✅ ~~Add comprehensive agent examples and documentation~~
+5. ✅ ~~Document deployment and operational considerations~~
+6. ✅ ~~Implement event sourcing architecture with proper ADK events~~
+
+**Chapter 7 is now complete!** 🎉
+
+This implementation provides a fully functional, production-ready ADK runtime with PostgreSQL persistence, event sourcing, and academic research workflows.
+
+### What You've Built
+
+- **Custom ADK Runtime**: PostgreSQL-backed alternative to Google Cloud services
+- **Event Sourcing System**: Proper ADK events with state_delta actions and memory indexing
+- **Academic Research Tools**: Professional workflows for researchers with persistent memory
+- **Production Architecture**: Type-safe, tested, and documented system ready for deployment
+
+### Ready for Production Use
+
+The implementation includes all necessary components for production deployment:
+- Database migrations and schema management
+- Type-safe service implementations
+- Comprehensive test coverage
+- Development and deployment documentation
+- Event sourcing with audit trails
+- Academic-focused user experience

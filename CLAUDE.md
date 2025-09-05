@@ -95,3 +95,6 @@ textbook-adk-ch02/paper_finding/
 - **uv package manager** for dependency management
 - **pytest** with asyncio support for testing
 - **Google ADK[eval]** as core framework with evaluation extras
+- Testing style: we don't accept failures, we never just say "expected" and move on. We fix things right away, going deep if needed. Type errors and exceptions often reflect poor design. We don't ignore them.
+- even for the smallest changes, we always uses ruff and pyright to catch type errors before testing
+- we systematically use type annotations to surface assumptions about variables, functions and methods
