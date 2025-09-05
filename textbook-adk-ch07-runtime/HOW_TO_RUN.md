@@ -206,7 +206,8 @@ podman unshare chown 999:999 ~/.local/share/containers/storage/volumes/
 ## 📚 Documentation
 
 - **README.md**: Complete documentation and architecture
-- **HOW_TO_RUN.md**: This file - quick start guide
+- **HOW_TO_RUN.md**: This file - quick start guide  
+- **EVENT_SOURCING_GUIDE.md**: Complete guide to event sourcing in ADK (start here if new to event sourcing!)
 - **postgres_chat_agent/**: Event sourcing implementation
 - **examples/**: Basic integration examples
 - **tests/**: Test suite and validation

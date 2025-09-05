@@ -267,6 +267,8 @@ cd textbook-adk-ch07-runtime && uv run adk web postgres_chat_agent   # Uses ADK 
 
 The PostgreSQL Chat Agent (`postgres_chat_agent/`) demonstrates a complete **event sourcing architecture** using proper ADK events with state_delta actions:
 
+> **📚 New to Event Sourcing?** Read our comprehensive [Event Sourcing Guide](EVENT_SOURCING_GUIDE.md) which explains what event sourcing is, why it's useful, and how our implementation connects to the ADK specification.
+
 ### Architecture Overview
 
 ```python
