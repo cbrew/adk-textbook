@@ -49,13 +49,17 @@ dev-up:
 	@echo "Ensuring Podman auth configuration..."
 	@mkdir -p ~/.config/containers
 	@test -f ~/.config/containers/auth.json || echo '{"auths": {}}' > ~/.config/containers/auth.json
+	@echo "Creating persistent data directories..."
+	@mkdir -p docker/data/postgres docker/data/postgres-vector
 	@echo "Using Podman..."
 	cd docker && (command -v podman-compose > /dev/null 2>&1 && podman-compose up -d || DOCKER_COMPOSE_PROVIDER="" podman compose up -d)
-	@echo "Waiting for PostgreSQL to start..."
+	@echo "Waiting for PostgreSQL instances to start..."
 	@sleep 10
 	@echo "Development environment ready"
-	@echo "PostgreSQL with pgvector: localhost:5432"
+	@echo "Main PostgreSQL with pgvector: localhost:5432"
+	@echo "Vector PostgreSQL with pgvector: localhost:5433"
 	@echo "Database: adk_runtime, User: adk_user"
+	@echo "Data persisted to: docker/data/postgres/ and docker/data/postgres-vector/"
 
 # Stop development environment  
 dev-down:

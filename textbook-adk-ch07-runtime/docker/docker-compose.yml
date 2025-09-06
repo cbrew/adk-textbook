@@ -12,7 +12,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data:Z
+      # Mount local directory for persistent data storage
+      - ./data/postgres:/var/lib/postgresql/data:Z
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:Z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U adk_user -d adk_runtime"]
@@ -25,8 +26,30 @@ services:
     # Add security options for better Podman compatibility
     security_opt:
       - label=disable
-    # Set user for Podman rootless mode
-    user: "999:999"
 
-volumes:
-  postgres_data:
+  postgres-vector:
+    image: pgvector/pgvector:pg15
+    container_name: adk-postgres-vector
+    environment:
+      POSTGRES_DB: adk_runtime
+      POSTGRES_USER: adk_user
+      POSTGRES_PASSWORD: adk_password
+      # Podman-friendly settings
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"
+    volumes:
+      # Mount local directory for persistent data storage
+      - ./data/postgres-vector:/var/lib/postgresql/data:Z
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adk_user -d adk_runtime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # Use 'no' instead of 'unless-stopped' for better Podman compatibility
+    restart: "no"
+    # Add security options for better Podman compatibility
+    security_opt:
+      - label=disable

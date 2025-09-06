@@ -46,7 +46,7 @@ AI Response               Persistent Storage
 **Artifact Service:**
 - Stores research documents, notes, bibliographies
 - Version-controlled academic artifact management
-- File-based persistence with PostgreSQL metadata
+- Pure PostgreSQL BYTEA storage (up to 25MB per file)
 
 ## Installation & Setup
 
