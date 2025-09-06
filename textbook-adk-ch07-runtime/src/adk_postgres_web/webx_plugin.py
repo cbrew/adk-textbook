@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 """
-PostgreSQL runtime services plugin for ADK web UI.
+PostgreSQL runtime services plugin for ADK Web UI (adk-webx).
 
 Registers custom schemes to wire PostgreSQL-based session, memory, and artifact
-services from our Chapter 7 runtime into the ADK web UI plugin system.
+services from our Chapter 7 runtime into the adk-webx plugin system.
+
+This integrates with the adk-webx command and its service_loader system.
 
 Usage:
     adk-webx --agent-dir ./postgres_chat_agent \
              --session-service "postgres-runtime:" \
              --memory-service "postgres-runtime:" \
              --artifact-service "postgres-runtime:" \
-             --plugin python:examples.postgres_runtime_plugin
+             --plugin python:adk_postgres_web.webx_plugin
 """
 
 import logging
 from typing import Any
 from urllib.parse import ParseResult
 
+# Import from adk_webx since this plugin is for the webx system
 from adk_webx.service_loader import register_scheme
 
 logger = logging.getLogger(__name__)
-
 
 # Global runtime instance (shared across services)
 _runtime_instance = None
@@ -61,7 +63,7 @@ def _get_or_create_runtime():
                 asyncio.set_event_loop(loop)
             
             loop.run_until_complete(_runtime_instance.initialize())
-            logger.info("✅ PostgreSQL ADK runtime instance created and initialized")
+            logger.info("✅ PostgreSQL ADK runtime instance created and initialized for webx")
 
         except ImportError as e:
             raise ValueError(
@@ -99,5 +101,5 @@ register_scheme("memory", "postgres-runtime", _postgres_memory_factory)
 register_scheme("artifact", "postgres-runtime", _postgres_artifact_factory)
 
 logger.info(
-    "🔌 PostgreSQL runtime plugin registered for session, memory, and artifact services"
+    "🔌 PostgreSQL runtime plugin registered for adk-webx session, memory, and artifact services"
 )

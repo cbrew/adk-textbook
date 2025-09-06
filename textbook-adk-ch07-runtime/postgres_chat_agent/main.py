@@ -235,7 +235,7 @@ async def main():
         "💡 Features: Persistent research memory, academic artifact storage, session continuity"
     )
     print(
-        "🛠️  Available tools: search_memory, save_to_memory, save_artifact, list_artifacts"
+        "🛠️  Available tools: search_research_memory, track_research_progress, save_artifact, list_artifacts"
     )
     print("")
     print("📚 Slash Commands for Direct Service Access:")

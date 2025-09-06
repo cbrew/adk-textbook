@@ -49,6 +49,7 @@ from google.adk.cli.utils import envs
 from google.adk.cli.utils import evals
 from google.adk.cli.utils.agent_change_handler import AgentChangeEventHandler
 from google.adk.cli.utils.agent_loader import AgentLoader
+from .service_loader import load_service
 
 logger = logging.getLogger("google_adk." + __name__)
 
@@ -108,7 +109,9 @@ def get_fast_api_app(
 
   # Build the Memory service
   if memory_service_uri:
-    if memory_service_uri.startswith("rag://"):
+    if memory_service_uri.startswith("python:"):
+      memory_service = load_service(memory_service_uri, "memory")
+    elif memory_service_uri.startswith("rag://"):
       from google.adk.memory.vertex_ai_rag_memory_service import VertexAiRagMemoryService
 
       rag_corpus = memory_service_uri.split("://")[1]
@@ -137,7 +140,9 @@ def get_fast_api_app(
 
   # Build the Session service
   if session_service_uri:
-    if session_service_uri.startswith("agentengine://"):
+    if session_service_uri.startswith("python:"):
+      session_service = load_service(session_service_uri, "session")
+    elif session_service_uri.startswith("agentengine://"):
       agent_engine_id_or_resource_name = session_service_uri.split("://")[1]
       project, location, agent_engine_id = _parse_agent_engine_resource_name(
           agent_engine_id_or_resource_name
@@ -161,7 +166,9 @@ def get_fast_api_app(
 
   # Build the Artifact service
   if artifact_service_uri:
-    if artifact_service_uri.startswith("gs://"):
+    if artifact_service_uri.startswith("python:"):
+      artifact_service = load_service(artifact_service_uri, "artifact")
+    elif artifact_service_uri.startswith("gs://"):
       gcs_bucket = artifact_service_uri.split("://")[1]
       artifact_service = GcsArtifactService(bucket_name=gcs_bucket)
     else:
@@ -232,7 +239,9 @@ def get_fast_api_app(
     )
 
   if web:
-    BASE_DIR = Path(__file__).parent.resolve()
+    # Use ADK's browser assets, not our local directory
+    import google.adk.cli
+    BASE_DIR = Path(google.adk.cli.__file__).parent.resolve()
     ANGULAR_DIST_PATH = BASE_DIR / "browser"
     extra_fast_api_args.update(
         web_assets_dir=ANGULAR_DIST_PATH,

@@ -39,20 +39,23 @@ async def ensure_runtime_initialized():
     return _runtime
 
 
-def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
+async def search_research_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
     """
-    Search persistent memory including artifact events using PostgreSQL memory service.
+    Search past research discussions and findings from previous sessions.
 
     Args:
-        query: Search query for relevant memories and artifacts
+        query: Search query for relevant research memories
         tool_context: ADK tool context with memory service access
 
     Returns:
         Dictionary with search results
     """
     try:
-        # Search memory through ADK context (uses our PostgreSQL service with artifact event indexing)
-        memories = tool_context.search_memory(query)
+        # Search memory through ADK context (uses our PostgreSQL service)
+        search_response = await tool_context.search_memory(query)
+        
+        # Extract memories list from the SearchMemoryResponse
+        memories = search_response.memories if hasattr(search_response, 'memories') else []
 
         # Format results for display
         results = []
@@ -73,12 +76,12 @@ def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
             })
 
         return {
-            "result": f"🔍 Found {len(memories)} memories matching '{query}'",
+            "result": f"🔍 Found {len(memories)} research memories matching '{query}'",
             "query": query,
             "memories": results,
             "total_found": len(memories),
-            "service": "PostgreSQL Memory Service with Artifact Event Indexing",
-            "note": "Search includes conversation history and artifact creation events for comprehensive results"
+            "service": "PostgreSQL Memory Service",
+            "note": "Memories are created automatically from research conversations and discussions"
         }
 
     except Exception as e:
@@ -90,53 +93,71 @@ def search_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
         }
 
 
-def save_to_memory(tool_context: ToolContext, note: str = "current conversation") -> dict[str, Any]:
+async def track_research_progress(topic: str, findings: str, tool_context: ToolContext) -> dict[str, Any]:
     """
-    Save conversation state to memory using PostgreSQL memory service.
+    Track research progress by updating session state. ADK will automatically
+    convert session conversations into searchable memories.
 
     Args:
-        note: Description of what to save
-        tool_context: ADK tool context with memory service access
+        topic: Research topic being tracked
+        findings: Key findings or insights to remember
+        tool_context: ADK tool context with session state access
 
     Returns:
-        Dictionary confirming the save operation
+        Dictionary confirming the tracking
     """
     try:
-        # Create memory content
-        memory_content = f"Research session note: {note}"
+        # Update session state with research progress (ADK will convert to memories automatically)
+        if not tool_context.state.get('research_topics'):
+            tool_context.state['research_topics'] = []
 
-        # Add to memory through ADK context (uses our PostgreSQL service)
-        # Note: ADK automatically handles memory persistence during conversation flow
-        # This tool demonstrates explicit memory addition for user notes
+        research_entry = {
+            'topic': topic,
+            'findings': findings,
+            'timestamp': datetime.utcnow().isoformat(),
+            'session_note': f"Research on {topic}: {findings}"
+        }
+        
+        tool_context.state['research_topics'].append(research_entry)
+        
+        # Also update current research focus
+        tool_context.state['current_research_focus'] = topic
+        tool_context.state['last_research_update'] = datetime.utcnow().isoformat()
 
-        # Update session state to indicate memory was added
-        if not tool_context.state.get('saved_notes'):
-            tool_context.state['saved_notes'] = []
-
-        tool_context.state['saved_notes'].append({
-            'note': note,
-            'content': memory_content,
-            'timestamp': datetime.utcnow().isoformat()
-        })
+        # CRITICAL FIX: Actually persist the state changes to the database
+        # Get session info from the invocation context
+        session_info = tool_context._invocation_context.session
+        app_name = tool_context._invocation_context.app_name  
+        user_id = tool_context._invocation_context.user_id
+        
+        # Persist the updated state to the session service
+        session_service = tool_context._invocation_context.session_service
+        if hasattr(session_service, 'update_session_state'):
+            session_service.update_session_state(
+                session_id=session_info.id,
+                state=dict(tool_context.state),
+                app_name=app_name,
+                user_id=user_id
+            )
 
         return {
-            "result": f"💾 Added research note to persistent memory: '{note}'",
-            "note": note,
-            "content": memory_content,
-            "service": "PostgreSQL Memory Service with Event Sourcing",
-            "note_detail": "Memory will be indexed and searchable in future sessions"
+            "result": f"📚 Tracked research progress on '{topic}' (persisted to PostgreSQL)",
+            "topic": topic,
+            "findings": findings,
+            "total_topics": len(tool_context.state['research_topics']),
+            "service": "PostgreSQL Session Service (state persisted)",
+            "note": "Research progress saved to database - ADK will create searchable memories from conversations"
         }
 
     except Exception as e:
         return {
-            "result": f"❌ Failed to save to memory: {str(e)}",
-            "note": note,
-            "error": str(e),
-            "service": "PostgreSQL Memory Service"
+            "result": f"❌ Failed to track research progress: {str(e)}",
+            "topic": topic,
+            "error": str(e)
         }
 
 
-def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dict[str, Any]:
+async def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dict[str, Any]:
     """
     Save artifact using PostgreSQL-backed artifact service with event sourcing.
 
@@ -153,7 +174,7 @@ def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dic
         artifact_part = types.Part(text=content)
 
         # Save artifact through ADK context (uses our PostgreSQL service)
-        version = tool_context.save_artifact(filename, artifact_part)
+        version = await tool_context.save_artifact(filename, artifact_part)
 
         # Determine storage method based on file size
         storage_method = "PostgreSQL BYTEA" if len(content.encode('utf-8')) <= 1024*1024 else "Filesystem"
@@ -177,7 +198,7 @@ def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dic
         }
 
 
-def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, Any]:
+async def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, Any]:
     """
     List artifacts stored in PostgreSQL artifact service.
 
@@ -190,7 +211,7 @@ def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, 
     """
     try:
         # Get artifacts from ADK context (uses our PostgreSQL service)
-        artifacts = tool_context.list_artifacts()
+        artifacts = await tool_context.list_artifacts()
 
         # Apply filter if specified
         if filter != "all" and artifacts:
@@ -217,43 +238,47 @@ def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, 
         }
 
 
-def get_session_info(tool_context: ToolContext, include_details: str = "basic") -> dict[str, Any]:
+def get_research_session_status(tool_context: ToolContext, include_details: str = "basic") -> dict[str, Any]:
     """
-    Get session information from PostgreSQL session service.
+    Get current research session status and progress.
 
     Args:
         include_details: Level of detail to include ("basic", "full")
         tool_context: ADK tool context with session access
 
     Returns:
-        Dictionary with session information
+        Dictionary with research session information
     """
     try:
         # Get session state from ADK context (uses our PostgreSQL service)
         session_state = dict(tool_context.state)
 
-        # Basic session info
+        # Basic research session info
+        research_topics = session_state.get('research_topics', [])
+        current_focus = session_state.get('current_research_focus', 'None')
+        
         session_info = {
-            "result": "📱 Retrieved session from PostgreSQL with persistent state",
-            "has_saved_notes": bool(session_state.get('saved_notes')),
-            "state_keys": list(session_state.keys()),
+            "result": "📚 Retrieved research session status",
+            "current_research_focus": current_focus,
+            "topics_explored": len(research_topics),
+            "has_research_progress": len(research_topics) > 0,
             "service": "PostgreSQL Session Service"
         }
 
         if include_details == "full":
             session_info.update({
+                "research_topics": research_topics,
                 "session_state": session_state,
-                "saved_notes_count": len(session_state.get('saved_notes', [])),
-                "note": "Full session state retrieved from PostgreSQL with event sourcing support"
+                "note": "Full research session state - conversations will be automatically converted to searchable memories"
             })
         else:
-            session_info["note"] = "Basic session info - use include_details='full' for complete state"
+            session_info["note"] = "Research session persisted in PostgreSQL - memories created automatically from conversations"
 
         return session_info
 
     except Exception as e:
         return {
-            "result": f"❌ Failed to retrieve session info: {str(e)}",
+            "result": f"❌ Failed to retrieve research session status: {str(e)}",
             "error": str(e),
             "include_details": include_details,
             "service": "PostgreSQL Session Service"
@@ -278,13 +303,13 @@ You are an **Academic Research Assistant** that demonstrates PostgreSQL-backed A
 - Provide continuity for long-term research projects
 
 🛠️ **PostgreSQL Service Integration** (for pedagogical demonstration):
-- `search_memory` - Search past academic conversations and research discussions
-- `save_to_memory` - Preserve important research insights for future sessions  
+- `search_research_memory` - Search past academic conversations and research discussions
+- `track_research_progress` - Track research topics and findings via session state
 - `save_artifact` - Store research documents, bibliographies, and analysis
 - `list_artifacts` - Review saved academic materials and research outputs
-- `get_session_info` - Check research session continuity and progress tracking
+- `get_research_session_status` - Check research session continuity and progress
 
-💡 **Key Learning**: All persistence comes from custom PostgreSQL services integrated into ADK's Runner infrastructure, not default ADK services. Perfect for academic workflows requiring long-term memory and artifact management.
+💡 **Key Learning**: All persistence comes from custom PostgreSQL services integrated into ADK's Runner infrastructure, not default ADK services. Memory is created automatically from conversations - no manual saving needed!
 
 Focus on helping with academic research while demonstrating how PostgreSQL services enable persistent, professional academic workflows!
 """
@@ -295,11 +320,11 @@ agent = Agent(
     name="postgres_chat_agent",
     instruction=agent_instruction,
     tools=[
-        search_memory,
-        save_to_memory,
+        search_research_memory,
+        track_research_progress,
         save_artifact,
         list_artifacts,
-        get_session_info,
+        get_research_session_status,
     ],
 )
 

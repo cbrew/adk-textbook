@@ -149,7 +149,7 @@ def main():
         '--session-service', 'postgres-runtime:',
         '--memory-service', 'postgres-runtime:',
         '--artifact-service', 'postgres-runtime:',
-        '--plugin', 'python:examples.postgres_runtime_plugin'
+        '--plugin', 'python:adk_postgres_web.webx_plugin'
     ]
 
     # Execute the command

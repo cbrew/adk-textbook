@@ -1,39 +1,32 @@
-#!/usr/bin/env python3
 """
-PostgreSQL runtime services plugin for ADK web UI.
+PostgreSQL service factories for ADK Web UI integration.
 
-Registers custom schemes to wire PostgreSQL-based session, memory, and artifact
-services from our Chapter 7 runtime into the ADK web UI plugin system.
+Provides factory functions for PostgreSQL-backed session, memory, and artifact
+services that can be used with python: URLs in the service_loader system.
 
 Usage:
-    adk-webx --agent-dir ./postgres_chat_agent \
-             --session-service "postgres-runtime:" \
-             --memory-service "postgres-runtime:" \
-             --artifact-service "postgres-runtime:" \
-             --plugin python:examples.postgres_runtime_plugin
+    adk-postgres-web --session_service_uri "python:adk_postgres_web.postgres_services:create_session_service"
+    adk-postgres-web --memory_service_uri "python:adk_postgres_web.postgres_services:create_memory_service"  
+    adk-postgres-web --artifact_service_uri "python:adk_postgres_web.postgres_services:create_artifact_service"
 """
 
 import logging
+import os
 from typing import Any
-from urllib.parse import ParseResult
-
-from adk_webx.service_loader import register_scheme
 
 logger = logging.getLogger(__name__)
-
 
 # Global runtime instance (shared across services)
 _runtime_instance = None
 
 
 def _get_or_create_runtime():
-    """Get or create the shared runtime instance (synchronous)."""
+    """Get or create the shared PostgreSQL runtime instance."""
     global _runtime_instance
     if _runtime_instance is None:
         try:
             # Import here to avoid import errors if adk_runtime not available
             import asyncio
-            import os
 
             from adk_runtime.database.connection import DatabaseConfig
             from adk_runtime.runtime.adk_runtime import PostgreSQLADKRuntime
@@ -75,29 +68,22 @@ def _get_or_create_runtime():
     return _runtime_instance
 
 
-def _postgres_session_factory(parsed: ParseResult, kwargs: dict[str, Any]):
+def create_session_service(**kwargs: Any):
     """Factory function for PostgreSQL session service."""
     runtime = _get_or_create_runtime()
+    logger.info("🔗 Created PostgreSQL session service")
     return runtime.get_session_service()
 
 
-def _postgres_memory_factory(parsed: ParseResult, kwargs: dict[str, Any]):
+def create_memory_service(**kwargs: Any):
     """Factory function for PostgreSQL memory service."""
     runtime = _get_or_create_runtime()
+    logger.info("🧠 Created PostgreSQL memory service")
     return runtime.get_memory_service()
 
 
-def _postgres_artifact_factory(parsed: ParseResult, kwargs: dict[str, Any]):
+def create_artifact_service(**kwargs: Any):
     """Factory function for PostgreSQL artifact service."""
     runtime = _get_or_create_runtime()
+    logger.info("📁 Created PostgreSQL artifact service")
     return runtime.get_artifact_service()
-
-
-# Register the PostgreSQL runtime scheme for all service types
-register_scheme("session", "postgres-runtime", _postgres_session_factory)
-register_scheme("memory", "postgres-runtime", _postgres_memory_factory)
-register_scheme("artifact", "postgres-runtime", _postgres_artifact_factory)
-
-logger.info(
-    "🔌 PostgreSQL runtime plugin registered for session, memory, and artifact services"
-)

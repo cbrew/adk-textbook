@@ -127,3 +127,4 @@ textbook-adk-ch02/paper_finding/
 - **Comprehensive coverage**: Unit tests, integration tests, evaluation tests
 - **Mock external dependencies**: Chapter 2 uses mocked academic APIs
 - **End-to-end validation**: Each chapter includes complete test suites
+- we don't do over general greps in unlikely places to find files. we reason carefully about where things are likely to be

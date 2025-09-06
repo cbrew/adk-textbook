@@ -83,11 +83,7 @@ def web(
 
     # Import the ADK fast_api module
     try:
-        import sys
-        from pathlib import Path
-        script_dir = Path(__file__).parent
-        sys.path.insert(0, str(script_dir))
-        from fast_api import get_fast_api_app
+        from .fast_api import get_fast_api_app
     except ImportError as e:
         click.secho(f"Error importing ADK: {e}", fg="red")
         return

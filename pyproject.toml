@@ -68,13 +68,17 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["adk_runtime*", "textbook*"]
+[tool.setuptools]
+packages = ["adk_runtime", "adk_webx", "adk_postgres_web", "examples", "examples.web_ui_plugins"]
+package-dir = {"adk_webx" = "textbook-adk-ch07-runtime/src/adk_webx", "adk_postgres_web" = "textbook-adk-ch07-runtime/src/adk_postgres_web", "examples" = "textbook-adk-ch07-runtime/examples"}
 
 # Add Chapter 7 modules to PYTHONPATH
 [tool.setuptools.package-data]
 "*" = ["*.py", "*.yaml", "*.yml", "*.json", "*.md", "*.txt"]
+
+[project.scripts]
+adk-webx = "adk_webx.cli:web"
+adk-postgres-web = "adk_postgres_web.cli:web"
 
 [build-system]
 requires = ["setuptools>=61.0"]
