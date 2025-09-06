@@ -58,26 +58,26 @@ pip install -e .
 
 ```bash
 # Basic usage with default postgres_chat_agent
-./run_postgres_web_ui.sh
+./scripts/run_postgres_web_ui.sh
 
 # Specify different agent directory
-./run_postgres_web_ui.sh my_agent
+./scripts/run_postgres_web_ui.sh my_agent
 
 # Custom host and port
-./run_postgres_web_ui.sh postgres_chat_agent --host 0.0.0.0 --port 8080
+./scripts/run_postgres_web_ui.sh postgres_chat_agent --host 0.0.0.0 --port 8080
 ```
 
 ### Method 2: Python Script (Cross-platform)
 
 ```bash
 # Basic usage
-python run_postgres_web_ui.py
+python scripts/run_postgres_web_ui.py
 
 # With custom configuration
-python run_postgres_web_ui.py postgres_chat_agent --host 127.0.0.1 --port 8000
+python scripts/run_postgres_web_ui.py postgres_chat_agent --host 127.0.0.1 --port 8000
 
 # Help and options
-python run_postgres_web_ui.py --help
+python scripts/run_postgres_web_ui.py --help
 ```
 
 ### Method 3: Direct CLI (Advanced)

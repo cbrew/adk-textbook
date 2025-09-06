@@ -466,7 +466,7 @@ The PostgreSQL runtime provides **database schema compatibility** with ADK's bui
 ./run_postgres_web_ui.sh
 
 # Or Python launcher (cross-platform)
-python run_postgres_web_ui.py
+python scripts/run_postgres_web_ui.py
 
 # With custom configuration
 ./run_postgres_web_ui.sh postgres_chat_agent --port 8080 --host 0.0.0.0
