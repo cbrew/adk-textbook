@@ -4,14 +4,15 @@ import json
 import httpx
 import uuid
 
-BASE_URL = "http://localhost:8000"
-APP_NAME = "simple_chat_agent"
-USER_ID = "u_123"
-SESSION_ID =  str(uuid.uuid4())
+
 
 
 
 class ADKConsumer:
+    BASE_URL = "http://localhost:8000"
+    APP_NAME = "simple_chat_agent"
+    USER_ID = "u_123"
+    SESSION_ID = str(uuid.uuid4())
     def __init__(self, client: httpx.AsyncClient):
         self.client: httpx.AsyncClient = client
 
@@ -22,11 +23,11 @@ class ADKConsumer:
         return cls(resource)
 
     async def message(self, text: str= "Talk to me about citation rings"):
-        run_sse_url = f"{BASE_URL}/run_sse"
+        run_sse_url = f"{self.BASE_URL}/run_sse"
         run_payload = {
-            "app_name": APP_NAME,
-            "user_id": USER_ID,
-            "session_id": SESSION_ID,
+            "app_name": self.APP_NAME,
+            "user_id": self.USER_ID,
+            "session_id": self.SESSION_ID,
             "new_message": {
                 "role": "user",
                 "parts": [{"text": text}],
@@ -53,7 +54,7 @@ class ADKConsumer:
 
 async def _init_consumer_async(client: httpx.AsyncClient) -> httpx.AsyncClient:
     "Helper function for creation of ADK consumer."
-    create_session_url = f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{SESSION_ID}"
+    create_session_url = f"{ADKConsumer.BASE_URL}/apps/{ADKConsumer.APP_NAME}/users/{ADKConsumer.USER_ID}/sessions/{ADKConsumer.SESSION_ID}"
     create_payload = {"state": {"key1": "value1", "key2": 42}}
     r = await client.post(create_session_url, json=create_payload)
     r.raise_for_status()
