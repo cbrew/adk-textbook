@@ -16,6 +16,10 @@ dependencies = [
     "click>=8.1.0",
     "fastapi>=0.104.0",
     "uvicorn>=0.24.0",
+    "python-fasthtml>=0.12.25",
+    # Chapter 8: UI Framework dependencies
+    "textual>=0.87.0",
+    "httpx>=0.28.0",
 ]
 
 [project.optional-dependencies]
