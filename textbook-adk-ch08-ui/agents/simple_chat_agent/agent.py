@@ -15,7 +15,7 @@ class SimpleChatAgent(Agent):
     
     def __init__(self):
         # Use model from environment with fallback
-        model_name = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-20241022")
+        model_name = os.getenv("ANTHROPIC_MODEL", "anthropic/claude-3-5-haiku-20241022")
         
         super().__init__(
             name="simple_chat_agent",

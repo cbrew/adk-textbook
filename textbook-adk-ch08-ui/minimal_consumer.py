@@ -2,11 +2,12 @@
 import asyncio
 import json
 import httpx
+import uuid
 
 BASE_URL = "http://localhost:8000"
 APP_NAME = "simple_chat_agent"
 USER_ID = "u_123"
-SESSION_ID = "s_124"
+SESSION_ID =  str(uuid.uuid4())
 
 async def main():
     async with httpx.AsyncClient(timeout=None) as client:
@@ -28,7 +29,7 @@ async def main():
                 "parts": [{"text": "Talk to me about citation rings"}],
             },
             # Optional but fine to include:
-            # "streaming": True,
+            "streaming": True,
         }
 
         async with client.stream("POST", run_sse_url, json=run_payload) as resp:

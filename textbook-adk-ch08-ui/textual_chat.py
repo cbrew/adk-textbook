@@ -21,6 +21,11 @@ from textual.reactive import reactive
 from dotenv import load_dotenv
 
 
+BASE_URL = "http://localhost:8000"
+APP_NAME = "simple_chat_agent"
+USER_ID = "u_123"
+SESSION_ID = "s_127"
+
 class ADKWebClient:
     """HTTP client for communicating with ADK web server."""
     
@@ -30,22 +35,13 @@ class ADKWebClient:
         self.http_client = httpx.AsyncClient(timeout=30.0)
     
     async def create_session(self) -> bool:
-        """Create a new ADK session (or verify server is ready)."""
-        # Try to get list of apps to verify server is ready
-        for attempt in range(5):
-            try:
-                response = await self.http_client.get(f"{self.base_url}/list-apps", timeout=5.0)
-                if response.status_code == 200:
-                    # Generate a simple session ID for our use
-                    import uuid
-                    self.session_id = str(uuid.uuid4())
-                    return True
-            except Exception:
-                # Server not ready yet, wait and try again
-                if attempt < 4:  # Don't sleep on last attempt
-                    await asyncio.sleep(2)
-                continue
-        return False
+        """Create a new ADK session."""
+        create_session_url = f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{SESSION_ID}"
+        create_payload = {"state": {"key1": "value1", "key2": 42}}
+        r = await self.http_client.post(create_session_url, json=create_payload)
+        r.raise_for_status()
+        print("Session upserted:", r.json().get("id", SESSION_ID))
+        self.session_id = SESSION_ID
     
     async def send_message(self, message: str) -> Optional[str]:
         """Send a message to the ADK agent and get response."""
@@ -54,18 +50,20 @@ class ADKWebClient:
         
         try:
             # Use the correct ADK API format
-            payload = {
-                "appName": "simple_chat_agent",
-                "userId": "user123", 
-                "sessionId": self.session_id,
-                "newMessage": {
-                    "parts": [{"text": message}]
-                }
+
+
+            run_payload = {
+                "app_name": APP_NAME,
+                "user_id": USER_ID,
+                "session_id": SESSION_ID,
+                "new_message": {
+                    "role": "user",
+                    "parts": [{"text": "Talk to me about citation rings"}],
+                },
             }
-            
             response = await self.http_client.post(
                 f"{self.base_url}/run",
-                json=payload
+                json=run_payload
             )
             
             if response.status_code == 200:
