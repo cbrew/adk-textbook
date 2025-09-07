@@ -21,7 +21,7 @@ def main():
         port=int(os.getenv("DB_PORT", "5432")),
         database=os.getenv("DB_NAME", "adk_runtime"),
         username=os.getenv("DB_USER", "adk_user"),
-        password=os.getenv("DB_PASSWORD", "adk_password")
+        password=os.getenv("DB_PASSWORD", "adk_password"),
     )
 
     db = DatabaseManager(config)

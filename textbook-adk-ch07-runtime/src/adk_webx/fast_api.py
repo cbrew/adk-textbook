@@ -1,4 +1,3 @@
-
 """
 FastAPI app factory with pluggable runtime services (standalone).
 
@@ -7,6 +6,7 @@ FastAPI app factory with pluggable runtime services (standalone).
 - Serves ADK web UI frontend assets for debugging interface.
 - Does not depend on ADK internals beyond optional service classes for defaults.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -18,24 +18,29 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from .service_loader import load_service
 
+
 def _try_import_inmemory():
     sess = mem = art = None
     try:
         from google.adk.sessions import InMemorySessionService  # type: ignore
+
         sess = InMemorySessionService()
     except Exception:
         pass
     try:
         from google.adk.memory import InMemoryMemoryService  # type: ignore
+
         mem = InMemoryMemoryService()
     except Exception:
         pass
     try:
         from google.adk.artifacts import InMemoryArtifactService  # type: ignore
+
         art = InMemoryArtifactService()
     except Exception:
         pass
     return sess, mem, art
+
 
 def get_fast_api_app(
     *,
@@ -87,12 +92,12 @@ def get_fast_api_app(
         """List available agents/apps in the specified directory."""
         try:
             agents = []
-            
+
             # If agent_dir is a specific agent, return it as the single app
             if agent_dir.exists():
                 has_agent_py = (agent_dir / "agent.py").exists()
                 has_yaml = any(agent_dir.glob("*.yaml")) or any(agent_dir.glob("*.yml"))
-                
+
                 if has_agent_py or has_yaml:
                     agents.append(agent_dir.name)
                 else:
@@ -100,11 +105,13 @@ def get_fast_api_app(
                     for item in agent_dir.iterdir():
                         if item.is_dir():
                             has_agent_py = (item / "agent.py").exists()
-                            has_yaml = any(item.glob("*.yaml")) or any(item.glob("*.yml"))
-                            
+                            has_yaml = any(item.glob("*.yaml")) or any(
+                                item.glob("*.yml")
+                            )
+
                             if has_agent_py or has_yaml:
                                 agents.append(item.name)
-            
+
             print(f"✅ Found {len(agents)} agents: {agents}")
             return agents
         except Exception as e:
@@ -115,12 +122,14 @@ def get_fast_api_app(
     try:
         # Try to find the ADK CLI module and locate browser assets
         import google.adk.cli
+
         adk_cli_path = Path(google.adk.cli.__file__).parent
         browser_assets_dir = adk_cli_path / "browser"
-        
+
         if browser_assets_dir.exists() and (browser_assets_dir / "index.html").exists():
             # Set up MIME types for JavaScript files
             import mimetypes
+
             mimetypes.add_type("application/javascript", ".js", True)
             mimetypes.add_type("text/javascript", ".js", True)
 
@@ -136,7 +145,9 @@ def get_fast_api_app(
             # Mount static assets
             app.mount(
                 "/dev-ui/",
-                StaticFiles(directory=str(browser_assets_dir), html=True, follow_symlink=True),
+                StaticFiles(
+                    directory=str(browser_assets_dir), html=True, follow_symlink=True
+                ),
                 name="static",
             )
             print(f"✅ Mounted ADK web UI assets from: {browser_assets_dir}")

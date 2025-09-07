@@ -22,7 +22,6 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON sessions(created_at);
         CREATE INDEX IF NOT EXISTS idx_sessions_state_gin ON sessions USING GIN(state);
     """,
-    
     "002_create_events": """
         CREATE TABLE IF NOT EXISTS events (
             id UUID PRIMARY KEY,
@@ -37,7 +36,6 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
         CREATE INDEX IF NOT EXISTS idx_events_data_gin ON events USING GIN(event_data);
     """,
-    
     "003_create_artifacts": """
         CREATE TABLE IF NOT EXISTS artifacts (
             id UUID PRIMARY KEY,
@@ -54,7 +52,6 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_artifacts_filename ON artifacts(filename);
         CREATE INDEX IF NOT EXISTS idx_artifacts_created_at ON artifacts(created_at);
     """,
-    
     "004_create_memory": """
         CREATE TABLE IF NOT EXISTS memory (
             id UUID PRIMARY KEY,
@@ -77,14 +74,12 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_memory_metadata_gin ON memory USING GIN(metadata);
         CREATE INDEX IF NOT EXISTS idx_memory_embedding ON memory USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
     """,
-    
     "005_create_migrations": """
         CREATE TABLE IF NOT EXISTS schema_migrations (
             version VARCHAR(10) PRIMARY KEY,
             applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
     """,
-    
     "006_enhance_artifacts_postgresql_storage": """
         -- Add BYTEA storage column for PostgreSQL artifact storage
         ALTER TABLE artifacts ADD COLUMN IF NOT EXISTS file_data BYTEA;
@@ -99,7 +94,6 @@ SCHEMA_SQL = {
         CREATE INDEX IF NOT EXISTS idx_artifacts_event_id ON artifacts(event_id);
         CREATE INDEX IF NOT EXISTS idx_artifacts_storage_type ON artifacts(storage_type);
     """,
-    
 }
 
 # Optimized queries for common operations
@@ -112,19 +106,16 @@ QUERIES = {
             state = EXCLUDED.state,
             updated_at = NOW()
     """,
-    
     "get_session": """
         SELECT id, user_id, state, created_at, updated_at 
         FROM sessions 
         WHERE id = %s
     """,
-    
     "update_session_state": """
         UPDATE sessions 
         SET state = %s, updated_at = NOW() 
         WHERE id = %s
     """,
-    
     "get_user_sessions": """
         SELECT id, user_id, state, created_at, updated_at 
         FROM sessions 
@@ -132,20 +123,17 @@ QUERIES = {
         ORDER BY updated_at DESC 
         LIMIT %s
     """,
-    
     # Event operations
     "insert_event": """
         INSERT INTO events (id, session_id, event_type, event_data) 
         VALUES (%s, %s, %s, %s)
     """,
-    
     "get_session_events": """
         SELECT id, session_id, event_type, event_data, timestamp 
         FROM events 
         WHERE session_id = %s 
         ORDER BY timestamp ASC
     """,
-    
     "get_recent_events": """
         SELECT id, session_id, event_type, event_data, timestamp 
         FROM events 
@@ -153,46 +141,39 @@ QUERIES = {
         ORDER BY timestamp DESC 
         LIMIT %s
     """,
-    
     # Artifact operations
     "insert_artifact": """
         INSERT INTO artifacts (id, session_id, filename, content_type, file_size, file_path, metadata, file_data, event_id, storage_type) 
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """,
-    
     "get_artifact": """
         SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
         FROM artifacts 
         WHERE id = %s
     """,
-    
     "get_session_artifacts": """
         SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
         FROM artifacts 
         WHERE session_id = %s 
         ORDER BY created_at DESC
     """,
-    
     "get_artifact_by_filename": """
         SELECT id, session_id, filename, content_type, file_size, file_path, metadata, created_at, file_data, event_id, storage_type 
         FROM artifacts 
         WHERE session_id = %s AND filename = %s
         ORDER BY created_at DESC
     """,
-    
     # Memory operations
     "insert_memory": """
         INSERT INTO memory (id, session_id, user_id, content, embedding, metadata) 
         VALUES (%s, %s, %s, %s, %s, %s)
     """,
-    
     "get_session_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
         WHERE session_id = %s 
         ORDER BY created_at DESC
     """,
-    
     "get_user_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
@@ -200,7 +181,6 @@ QUERIES = {
         ORDER BY created_at DESC 
         LIMIT %s
     """,
-    
     "search_memory": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at 
         FROM memory 
@@ -209,7 +189,6 @@ QUERIES = {
         ORDER BY created_at DESC 
         LIMIT %s
     """,
-    
     "search_memory_by_embedding": """
         SELECT id, session_id, user_id, content, embedding, metadata, created_at,
                (embedding <=> %s) AS distance
@@ -234,6 +213,6 @@ def get_all_schema_versions() -> list[str]:
     """Get all available schema versions in order."""
     versions = []
     for key in SCHEMA_SQL:
-        if key.startswith(('001_', '002_', '003_', '004_', '005_', '006_')):
-            versions.append(key.split('_')[0])
+        if key.startswith(("001_", "002_", "003_", "004_", "005_", "006_")):
+            versions.append(key.split("_")[0])
     return sorted(set(versions))

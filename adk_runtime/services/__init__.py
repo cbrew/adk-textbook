@@ -6,6 +6,6 @@ from .artifact_service import PostgreSQLArtifactService
 
 __all__ = [
     "PostgreSQLSessionService",
-    "PostgreSQLMemoryService", 
+    "PostgreSQLMemoryService",
     "PostgreSQLArtifactService",
 ]

@@ -6,7 +6,7 @@ services that can be used with python: URLs in the service_loader system.
 
 Usage:
     adk-postgres-web --session_service_uri "python:adk_postgres_web.postgres_services:create_session_service"
-    adk-postgres-web --memory_service_uri "python:adk_postgres_web.postgres_services:create_memory_service"  
+    adk-postgres-web --memory_service_uri "python:adk_postgres_web.postgres_services:create_memory_service"
     adk-postgres-web --artifact_service_uri "python:adk_postgres_web.postgres_services:create_artifact_service"
 """
 
@@ -33,17 +33,17 @@ def _get_or_create_runtime():
 
             # Create database config from environment
             db_config = DatabaseConfig(
-                host=os.getenv('POSTGRES_HOST', 'localhost'),
-                port=int(os.getenv('POSTGRES_PORT', '5432')),
-                username=os.getenv('POSTGRES_USER', 'adk_user'),
-                password=os.getenv('POSTGRES_PASSWORD', 'adk_password'),
-                database=os.getenv('POSTGRES_DB', 'adk_runtime')
+                host=os.getenv("POSTGRES_HOST", "localhost"),
+                port=int(os.getenv("POSTGRES_PORT", "5432")),
+                username=os.getenv("POSTGRES_USER", "adk_user"),
+                password=os.getenv("POSTGRES_PASSWORD", "adk_password"),
+                database=os.getenv("POSTGRES_DB", "adk_runtime"),
             )
 
             # Create runtime instance
             _runtime_instance = PostgreSQLADKRuntime(
                 database_config=db_config,
-                artifact_storage_path=os.getenv('ARTIFACT_STORAGE_PATH', './artifacts')
+                artifact_storage_path=os.getenv("ARTIFACT_STORAGE_PATH", "./artifacts"),
             )
 
             # Initialize the runtime synchronously
@@ -52,7 +52,7 @@ def _get_or_create_runtime():
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-            
+
             loop.run_until_complete(_runtime_instance.initialize())
             logger.info("✅ PostgreSQL ADK runtime instance created and initialized")
 

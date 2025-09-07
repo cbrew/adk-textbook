@@ -32,11 +32,7 @@ def check_postgres_connection(host: str, port: int, user: str, database: str) ->
     """Check if PostgreSQL is accessible."""
     try:
         conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            database=database,
-            connect_timeout=3
+            host=host, port=port, user=user, database=database, connect_timeout=3
         )
         conn.close()
         return True
@@ -54,31 +50,37 @@ def load_env_file(env_path: str = ".env"):
     with open(env_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
                 os.environ[key] = value
 
 
 def find_agents() -> list[str]:
     """Find available agent directories."""
     agents = []
-    for path in Path('.').iterdir():
-        if path.is_dir() and not path.name.startswith('.'):
-            if (path / 'agent.py').exists() or list(path.glob('*.yaml')):
+    for path in Path(".").iterdir():
+        if path.is_dir() and not path.name.startswith("."):
+            if (path / "agent.py").exists() or list(path.glob("*.yaml")):
                 agents.append(path.name)
     return agents
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Launch ADK Web UI with PostgreSQL services'
+        description="Launch ADK Web UI with PostgreSQL services"
     )
-    parser.add_argument('agent_dir', nargs='?', default='postgres_chat_agent',
-                       help='Agent directory (default: postgres_chat_agent)')
-    parser.add_argument('--host', default='127.0.0.1',
-                       help='Host to bind to (default: 127.0.0.1)')
-    parser.add_argument('--port', type=int, default=8000,
-                       help='Port to bind to (default: 8000)')
+    parser.add_argument(
+        "agent_dir",
+        nargs="?",
+        default="postgres_chat_agent",
+        help="Agent directory (default: postgres_chat_agent)",
+    )
+    parser.add_argument(
+        "--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)"
+    )
+    parser.add_argument(
+        "--port", type=int, default=8000, help="Port to bind to (default: 8000)"
+    )
 
     args = parser.parse_args()
 
@@ -99,12 +101,12 @@ def main():
     # Check PostgreSQL connections
     print("🔍 Checking PostgreSQL services...")
 
-    if not check_postgres_connection('localhost', 5432, 'adk_user', 'adk_runtime'):
+    if not check_postgres_connection("localhost", 5432, "adk_user", "adk_runtime"):
         print("❌ PostgreSQL not ready on port 5432!")
         print("Please start services with: make dev-up")
         sys.exit(1)
 
-    if not check_postgres_connection('localhost', 5433, 'adk_user', 'adk_runtime'):
+    if not check_postgres_connection("localhost", 5433, "adk_user", "adk_runtime"):
         print("❌ PostgreSQL vector DB not ready on port 5433!")
         print("Please start services with: make dev-up")
         sys.exit(1)
@@ -112,8 +114,8 @@ def main():
     print("✅ PostgreSQL services are running")
 
     # Check if adk_web_ui plugin package is available
-    adk_web_ui_path = Path('adk_web_ui')
-    pyproject_path = adk_web_ui_path / 'pyproject.toml'
+    adk_web_ui_path = Path("adk_web_ui")
+    pyproject_path = adk_web_ui_path / "pyproject.toml"
     if not adk_web_ui_path.exists() or not pyproject_path.exists():
         print("❌ ADK web UI plugin system not found!")
         print("Please ensure adk_web_ui/ directory contains the plugin system")
@@ -123,9 +125,9 @@ def main():
     print("🔧 Installing adk-service-plugins in development mode...")
     try:
         subprocess.run(
-            [sys.executable, '-m', 'pip', 'install', '-e', str(adk_web_ui_path)],
+            [sys.executable, "-m", "pip", "install", "-e", str(adk_web_ui_path)],
             check=True,
-            capture_output=True
+            capture_output=True,
         )
     except subprocess.CalledProcessError:
         print("❌ Failed to install adk-service-plugins")
@@ -142,14 +144,21 @@ def main():
 
     # Build command
     cmd = [
-        'adk-webx',
-        '--agent-dir', args.agent_dir,
-        '--host', args.host,
-        '--port', str(args.port),
-        '--session-service', 'postgres-runtime:',
-        '--memory-service', 'postgres-runtime:',
-        '--artifact-service', 'postgres-runtime:',
-        '--plugin', 'python:adk_postgres_web.webx_plugin'
+        "adk-webx",
+        "--agent-dir",
+        args.agent_dir,
+        "--host",
+        args.host,
+        "--port",
+        str(args.port),
+        "--session-service",
+        "postgres-runtime:",
+        "--memory-service",
+        "postgres-runtime:",
+        "--artifact-service",
+        "postgres-runtime:",
+        "--plugin",
+        "python:adk_postgres_web.webx_plugin",
     ]
 
     # Execute the command
@@ -162,6 +171,5 @@ def main():
         print("\n👋 Web UI stopped")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

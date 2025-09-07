@@ -295,7 +295,10 @@ async def main():
                     if current_session:
                         updated_state = current_session.state.copy()
                     else:
-                        updated_state = {"total_interactions": 0, "conversation_count": 0}
+                        updated_state = {
+                            "total_interactions": 0,
+                            "conversation_count": 0,
+                        }
                     updated_state["total_interactions"] = (
                         updated_state.get("total_interactions", 0) + 1
                     )

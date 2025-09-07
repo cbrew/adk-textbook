@@ -21,7 +21,7 @@ from paper_finding.config import Config, AgentModel
 def test_agent_model_defaults():
     """Test AgentModel default values."""
     model = AgentModel()
-    
+
     assert model.name == "paper_finding_agent"
     assert model.model == "gemini-2.5-flash"
 
@@ -29,7 +29,7 @@ def test_agent_model_defaults():
 def test_config_defaults():
     """Test Config default values."""
     config = Config()
-    
+
     assert config.app_name == "paper_finding_app"
     assert config.CLOUD_PROJECT == "my_project"
     assert config.CLOUD_LOCATION == "us-central1"
@@ -39,10 +39,7 @@ def test_config_defaults():
 
 def test_custom_agent_model():
     """Test custom AgentModel configuration."""
-    custom_model = AgentModel(
-        name="custom_paper_agent",
-        model="gemini-2.5-pro"
-    )
-    
+    custom_model = AgentModel(name="custom_paper_agent", model="gemini-2.5-pro")
+
     assert custom_model.name == "custom_paper_agent"
     assert custom_model.model == "gemini-2.5-pro"

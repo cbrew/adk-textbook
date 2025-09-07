@@ -16,8 +16,7 @@ from web_ui.plugin_system import initialize_plugin_system, plugin_manager
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -106,6 +105,7 @@ async def test_plugin_system():
     except Exception as e:
         print(f"❌ Plugin system test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

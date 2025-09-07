@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class DatabaseConfig(BaseModel):
     """Database connection configuration."""
-    
+
     host: str = "localhost"
     port: int = 5432
     database: str = "adk_runtime"
@@ -28,7 +28,7 @@ class DatabaseConfig(BaseModel):
     password: str = "adk_password"
     min_connections: int = 1
     max_connections: int = 20
-    
+
     @property
     def connection_string(self) -> str:
         return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
@@ -37,16 +37,16 @@ class DatabaseConfig(BaseModel):
 class DatabaseManager:
     """
     Direct PostgreSQL database manager with connection pooling.
-    
+
     Provides simple, safe database operations using raw SQL with parameter binding.
     No ORM overhead - just fast, transparent database access.
     """
-    
+
     def __init__(self, config: DatabaseConfig):
         self.config = config
         self._pool: Optional[psycopg2.pool.ThreadedConnectionPool] = None
         self._async_pool: Optional[asyncpg.Pool] = None
-        
+
     def initialize(self) -> None:
         """Initialize synchronous connection pool."""
         try:
@@ -58,13 +58,13 @@ class DatabaseManager:
                 database=self.config.database,
                 user=self.config.username,
                 password=self.config.password,
-                cursor_factory=RealDictCursor
+                cursor_factory=RealDictCursor,
             )
             logger.info("Database connection pool initialized")
         except Exception as e:
             logger.error(f"Failed to initialize database pool: {e}")
             raise
-    
+
     async def initialize_async(self) -> None:
         """Initialize asynchronous connection pool."""
         try:
@@ -75,19 +75,21 @@ class DatabaseManager:
                 user=self.config.username,
                 password=self.config.password,
                 min_size=self.config.min_connections,
-                max_size=self.config.max_connections
+                max_size=self.config.max_connections,
             )
             logger.info("Async database connection pool initialized")
         except Exception as e:
             logger.error(f"Failed to initialize async database pool: {e}")
             raise
-    
+
     @contextmanager
     def get_connection(self):
         """Get a database connection from the pool (context manager)."""
         if not self._pool:
-            raise RuntimeError("Database pool not initialized. Call initialize() first.")
-        
+            raise RuntimeError(
+                "Database pool not initialized. Call initialize() first."
+            )
+
         conn = None
         try:
             conn = self._pool.getconn()
@@ -100,30 +102,30 @@ class DatabaseManager:
         finally:
             if conn:
                 self._pool.putconn(conn)
-    
+
     def execute_query(
-        self, 
-        query: str, 
+        self,
+        query: str,
         params: Optional[Tuple] = None,
         fetch_one: bool = False,
-        fetch_all: bool = True
+        fetch_all: bool = True,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any], None]:
         """
         Execute a SQL query with safe parameter binding.
-        
+
         Args:
             query: SQL query with $1, $2, etc. placeholders
             params: Tuple of parameters to bind
             fetch_one: Return single row as dict
             fetch_all: Return all rows as list of dicts
-            
+
         Returns:
             Query results or None for non-SELECT queries
         """
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, params or ())
-                
+
                 if fetch_one:
                     result = cursor.fetchone()
                     return dict(result) if result else None
@@ -134,11 +136,13 @@ class DatabaseManager:
                     # For INSERT/UPDATE/DELETE
                     conn.commit()
                     return None
-    
-    def execute_transaction(self, operations: List[Tuple[str, Optional[Tuple]]]) -> None:
+
+    def execute_transaction(
+        self, operations: List[Tuple[str, Optional[Tuple]]]
+    ) -> None:
         """
         Execute multiple operations in a single transaction.
-        
+
         Args:
             operations: List of (query, params) tuples to execute
         """
@@ -152,18 +156,20 @@ class DatabaseManager:
                 conn.rollback()
                 logger.error(f"Transaction failed: {e}")
                 raise
-    
+
     async def execute_query_async(
         self,
         query: str,
         params: Optional[Tuple] = None,
         fetch_one: bool = False,
-        fetch_all: bool = True
+        fetch_all: bool = True,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any], None]:
         """Async version of execute_query."""
         if not self._async_pool:
-            raise RuntimeError("Async pool not initialized. Call initialize_async() first.")
-        
+            raise RuntimeError(
+                "Async pool not initialized. Call initialize_async() first."
+            )
+
         async with self._async_pool.acquire() as conn:
             if fetch_one:
                 result = await conn.fetchrow(query, *(params or ()))
@@ -174,13 +180,13 @@ class DatabaseManager:
             else:
                 await conn.execute(query, *(params or ()))
                 return None
-    
+
     def close(self) -> None:
         """Close connection pools."""
         if self._pool:
             self._pool.closeall()
             logger.info("Database connection pool closed")
-    
+
     async def close_async(self) -> None:
         """Close async connection pool."""
         if self._async_pool:

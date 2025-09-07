@@ -27,7 +27,9 @@ def main():
         sys.exit(1)
 
     # Confirmation prompt
-    response = input("WARNING: This will delete ALL data in the database. Continue? (yes/no): ")
+    response = input(
+        "WARNING: This will delete ALL data in the database. Continue? (yes/no): "
+    )
     if response.lower() not in ["yes", "y"]:
         print("Database reset cancelled.")
         sys.exit(0)
@@ -37,7 +39,7 @@ def main():
         port=int(os.getenv("DB_PORT", "5432")),
         database=os.getenv("DB_NAME", "adk_runtime"),
         username=os.getenv("DB_USER", "adk_user"),
-        password=os.getenv("DB_PASSWORD", "adk_password")
+        password=os.getenv("DB_PASSWORD", "adk_password"),
     )
 
     db = DatabaseManager(config)

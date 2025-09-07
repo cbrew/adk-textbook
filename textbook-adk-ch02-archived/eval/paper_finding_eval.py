@@ -44,7 +44,7 @@ async def test_eval_basic_search():
 async def test_eval_reading_list_management():
     """Test the agent's reading list management capabilities."""
     await AgentEvaluator.evaluate(
-        "paper_finding", 
+        "paper_finding",
         os.path.join(os.path.dirname(__file__), "eval_data/reading_list.test.json"),
         num_runs=1,
     )

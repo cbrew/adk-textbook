@@ -204,7 +204,7 @@ class PostgreSQLChatDriver:
         Save conversation by creating proper ADK events and adding to session.
 
         Args:
-            session_id: Session identifier  
+            session_id: Session identifier
             message: User message
             response: Agent response
 
@@ -227,12 +227,16 @@ class PostgreSQLChatDriver:
                 return {"success": False, "error": f"Session {session_id} not found"}
 
             # Create proper ADK events for the conversation
-            events_created = await self._create_conversation_events(session, message, response)
+            events_created = await self._create_conversation_events(
+                session, message, response
+            )
 
             # Add the updated session (with new events) to memory using event sourcing
             await memory_service.add_session_to_memory(session)
 
-            logger.info(f"💾 Added conversation events to session and indexed in memory: {session_id}")
+            logger.info(
+                f"💾 Added conversation events to session and indexed in memory: {session_id}"
+            )
             return {
                 "success": True,
                 "session_id": session_id,
@@ -332,7 +336,10 @@ class PostgreSQLChatDriver:
                         content_text = ""
                         if hasattr(memory, "content") and memory.content:
                             # Content is a types.Content object with parts
-                            if hasattr(memory.content, "parts") and memory.content.parts:
+                            if (
+                                hasattr(memory.content, "parts")
+                                and memory.content.parts
+                            ):
                                 for part in memory.content.parts:
                                     if hasattr(part, "text") and part.text:
                                         content_text += part.text + " "
@@ -399,7 +406,9 @@ class PostgreSQLChatDriver:
             memories_response = await memory_service.search_memory(
                 app_name=self.app_name, user_id=self.user_id, query=""
             )
-            memories = memories_response.memories[:limit] if memories_response.memories else []
+            memories = (
+                memories_response.memories[:limit] if memories_response.memories else []
+            )
 
             # Format memories for display
             formatted_memories = []
@@ -588,8 +597,14 @@ class PostgreSQLChatDriver:
                 if hasattr(artifact_part, "text") and artifact_part.text:
                     content = artifact_part.text
                     content_type = "text/plain"
-                elif hasattr(artifact_part, "inline_data") and artifact_part.inline_data and artifact_part.inline_data.data:
-                    content = artifact_part.inline_data.data.decode("utf-8", errors="ignore")
+                elif (
+                    hasattr(artifact_part, "inline_data")
+                    and artifact_part.inline_data
+                    and artifact_part.inline_data.data
+                ):
+                    content = artifact_part.inline_data.data.decode(
+                        "utf-8", errors="ignore"
+                    )
                     content_type = "application/octet-stream"
                 else:
                     content = str(artifact_part)
@@ -722,18 +737,20 @@ class PostgreSQLChatDriver:
             logger.error(f"❌ Error deleting artifact {filename}: {e}")
             return {"success": False, "error": str(e)}
 
-    async def _create_conversation_events(self, session, message: str, response: str) -> int:
+    async def _create_conversation_events(
+        self, session, message: str, response: str
+    ) -> int:
         """
         Create proper ADK events for user message and agent response with state changes.
-        
+
         This follows ADK event sourcing patterns where conversation updates generate
         events with state_delta actions for session state changes.
-        
+
         Args:
             session: The ADK session object
             message: User input message
             response: Agent response message
-            
+
         Returns:
             Number of events created
         """
@@ -743,16 +760,13 @@ class PostgreSQLChatDriver:
 
         try:
             # Create user message event
-            user_content = types.Content(
-                role="user",
-                parts=[types.Part(text=message)]
-            )
+            user_content = types.Content(role="user", parts=[types.Part(text=message)])
 
             user_event = Event(
                 author="user",
                 content=user_content,
                 invocation_id=f"msg_{Event.new_id()}",
-                actions=EventActions()  # User events typically have no actions
+                actions=EventActions(),  # User events typically have no actions
             )
 
             # Add user event to session
@@ -761,8 +775,7 @@ class PostgreSQLChatDriver:
 
             # Create agent response event with state_delta
             agent_content = types.Content(
-                role="model",
-                parts=[types.Part(text=response)]
+                role="model", parts=[types.Part(text=response)]
             )
 
             # Create state delta for conversation update
@@ -770,7 +783,7 @@ class PostgreSQLChatDriver:
                 "last_interaction": datetime.now().isoformat(),
                 "message_count": len(session.events),
                 "conversation_topic": self._extract_topic_from_message(message),
-                "agent_response_length": len(response)
+                "agent_response_length": len(response),
             }
 
             # Create agent event with state_delta action
@@ -781,7 +794,7 @@ class PostgreSQLChatDriver:
                 author=self.app_name,  # Agent name as author
                 content=agent_content,
                 invocation_id=f"resp_{Event.new_id()}",
-                actions=agent_actions
+                actions=agent_actions,
             )
 
             # Add agent event to session
@@ -799,10 +812,25 @@ class PostgreSQLChatDriver:
         """Extract simple topic keywords from user message."""
         # Simple topic extraction for academic/research domains
         academic_topics = {
-            'research', 'paper', 'study', 'analysis', 'data', 'model',
-            'algorithm', 'machine learning', 'deep learning', 'neural',
-            'database', 'postgresql', 'sql', 'query', 'table',
-            'python', 'programming', 'development', 'experiment'
+            "research",
+            "paper",
+            "study",
+            "analysis",
+            "data",
+            "model",
+            "algorithm",
+            "machine learning",
+            "deep learning",
+            "neural",
+            "database",
+            "postgresql",
+            "sql",
+            "query",
+            "table",
+            "python",
+            "programming",
+            "development",
+            "experiment",
         }
 
         message_lower = message.lower()

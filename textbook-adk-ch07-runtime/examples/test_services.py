@@ -29,16 +29,14 @@ async def test_session_service():
         session = await session_service.create_session(
             app_name="test_app",
             user_id="test_user",
-            state={"test_key": "test_value", "counter": 0}
+            state={"test_key": "test_value", "counter": 0},
         )
 
         logger.info(f"Created session: {session.id}")
 
         # Test session retrieval
         retrieved_session = await session_service.get_session(
-            app_name="test_app",
-            user_id="test_user",
-            session_id=session.id
+            app_name="test_app", user_id="test_user", session_id=session.id
         )
 
         if retrieved_session:
@@ -49,17 +47,14 @@ async def test_session_service():
 
         # Test session listing
         sessions_response = await session_service.list_sessions(
-            app_name="test_app",
-            user_id="test_user"
+            app_name="test_app", user_id="test_user"
         )
 
         logger.info(f"Found {len(sessions_response.sessions)} sessions")
 
         # Test session deletion
         await session_service.delete_session(
-            app_name="test_app",
-            user_id="test_user",
-            session_id=session.id
+            app_name="test_app", user_id="test_user", session_id=session.id
         )
 
         logger.info("✅ Session service tests passed!")
@@ -87,7 +82,7 @@ async def test_memory_service():
         session = await session_service.create_session(
             app_name="test_app",
             user_id="test_user",
-            state={"topic": "machine learning", "progress": "started"}
+            state={"topic": "machine learning", "progress": "started"},
         )
 
         # Test adding session to memory
@@ -96,18 +91,14 @@ async def test_memory_service():
 
         # Test memory search
         search_response = await memory_service.search_memory(
-            app_name="test_app",
-            user_id="test_user",
-            query="machine learning"
+            app_name="test_app", user_id="test_user", query="machine learning"
         )
 
         logger.info(f"Memory search returned {len(search_response.memories)} results")
 
         # Clean up test session
         await session_service.delete_session(
-            app_name="test_app",
-            user_id="test_user",
-            session_id=session.id
+            app_name="test_app", user_id="test_user", session_id=session.id
         )
 
         logger.info("✅ Memory service tests passed!")
@@ -133,13 +124,12 @@ async def test_artifact_service():
 
         # Create a real session first (needed for foreign key constraint)
         session = await session_service.create_session(
-            app_name="test_app",
-            user_id="test_user",
-            state={"artifact_test": True}
+            app_name="test_app", user_id="test_user", state={"artifact_test": True}
         )
 
         # Create test artifact
         from google.genai import types
+
         test_content = "This is a test artifact content"
         test_artifact = types.Part(text=test_content)
 
@@ -149,7 +139,7 @@ async def test_artifact_service():
             user_id="test_user",
             session_id=session.id,
             filename="test.txt",
-            artifact=test_artifact
+            artifact=test_artifact,
         )
 
         logger.info(f"Saved artifact version: {version}")
@@ -159,19 +149,17 @@ async def test_artifact_service():
             app_name="test_app",
             user_id="test_user",
             session_id=session.id,
-            filename="test.txt"
+            filename="test.txt",
         )
 
-        if loaded_artifact and hasattr(loaded_artifact, 'text'):
+        if loaded_artifact and hasattr(loaded_artifact, "text"):
             logger.info(f"Loaded artifact content: {loaded_artifact.text[:50]}...")
         else:
             raise Exception("Failed to load artifact or artifact has no text")
 
         # Test listing artifacts
         artifact_keys = await artifact_service.list_artifact_keys(
-            app_name="test_app",
-            user_id="test_user",
-            session_id=session.id
+            app_name="test_app", user_id="test_user", session_id=session.id
         )
 
         logger.info(f"Found artifacts: {artifact_keys}")
@@ -181,7 +169,7 @@ async def test_artifact_service():
             app_name="test_app",
             user_id="test_user",
             session_id=session.id,
-            filename="test.txt"
+            filename="test.txt",
         )
 
         logger.info(f"Artifact versions: {versions}")
@@ -191,14 +179,12 @@ async def test_artifact_service():
             app_name="test_app",
             user_id="test_user",
             session_id=session.id,
-            filename="test.txt"
+            filename="test.txt",
         )
 
         # Clean up test session
         await session_service.delete_session(
-            app_name="test_app",
-            user_id="test_user",
-            session_id=session.id
+            app_name="test_app", user_id="test_user", session_id=session.id
         )
 
         logger.info("✅ Artifact service tests passed!")

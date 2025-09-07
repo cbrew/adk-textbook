@@ -44,14 +44,16 @@ async def demonstrate_research_workflow():
 
         research_query = types.Content(
             role="user",
-            parts=[types.Part(text="I'm researching bias in machine learning models for healthcare. Can you help me understand the key challenges and suggest approaches for mitigation?")]
+            parts=[
+                types.Part(
+                    text="I'm researching bias in machine learning models for healthcare. Can you help me understand the key challenges and suggest approaches for mitigation?"
+                )
+            ],
         )
 
         print("   🤖 Agent responds with comprehensive analysis...")
         response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=research_query
+            user_id=demo_user, session_id=demo_session, content=research_query
         )
 
         # Extract agent response
@@ -59,8 +61,12 @@ async def demonstrate_research_workflow():
         for event in response.events:
             if event.content and event.content.role == "assistant":
                 for part in event.content.parts:
-                    if hasattr(part, 'text') and part.text:
-                        agent_response = part.text[:200] + "..." if len(part.text) > 200 else part.text
+                    if hasattr(part, "text") and part.text:
+                        agent_response = (
+                            part.text[:200] + "..."
+                            if len(part.text) > 200
+                            else part.text
+                        )
                         break
                 break
 
@@ -87,31 +93,38 @@ async def demonstrate_research_workflow():
         # Create content for artifact saving
         save_content = types.Content(
             role="user",
-            parts=[types.Part(text=f"save_artifact('ml_healthcare_bias_bibliography.md', '{bibliography}')")]
+            parts=[
+                types.Part(
+                    text=f"save_artifact('ml_healthcare_bias_bibliography.md', '{bibliography}')"
+                )
+            ],
         )
 
         print("   💾 Saving bibliography to PostgreSQL...")
         save_response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=save_content
+            user_id=demo_user, session_id=demo_session, content=save_content
         )
 
         # Check if artifact was saved
         for event in save_response.events:
-            if hasattr(event, 'get_function_responses'):
+            if hasattr(event, "get_function_responses"):
                 responses = event.get_function_responses()
                 for response in responses:
-                    if hasattr(response, 'response') and 'Successfully saved' in str(response.response):
+                    if hasattr(response, "response") and "Successfully saved" in str(
+                        response.response
+                    ):
                         print("   ✅ Bibliography saved to PostgreSQL BYTEA storage!")
                         print("   📊 Storage: Small file (< 1MB) → PostgreSQL BYTEA")
-                        print("   🔗 Event sourcing: Artifact creation indexed for search")
+                        print(
+                            "   🔗 Event sourcing: Artifact creation indexed for search"
+                        )
                         break
         print()
 
         # 3. Save Research Notes as Another Artifact
         print("3️⃣ **Saving Research Notes (Larger File → Filesystem)**")
-        detailed_notes = """# Detailed Research Notes: ML Bias in Healthcare
+        detailed_notes = (
+            """# Detailed Research Notes: ML Bias in Healthcare
 
 ## Executive Summary
 Machine learning bias in healthcare represents one of the most critical challenges in medical AI deployment. This research compilation examines systemic biases, their sources, and evidence-based mitigation strategies.
@@ -195,18 +208,22 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
 *Research compiled by: Alice Researcher*
 *Date: Research Session 2025*
 *Status: Literature Review Phase - In Progress*
-""" * 2  # Make it larger to trigger filesystem storage
+"""
+            * 2
+        )  # Make it larger to trigger filesystem storage
 
         notes_content = types.Content(
             role="user",
-            parts=[types.Part(text=f"save_artifact('ml_bias_detailed_notes.md', '{detailed_notes[:1000]}...[truncated for demo]')")]
+            parts=[
+                types.Part(
+                    text=f"save_artifact('ml_bias_detailed_notes.md', '{detailed_notes[:1000]}...[truncated for demo]')"
+                )
+            ],
         )
 
         print("   💾 Saving detailed notes...")
         notes_response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=notes_content
+            user_id=demo_user, session_id=demo_session, content=notes_content
         )
 
         print("   ✅ Research notes saved!")
@@ -217,22 +234,21 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
         # 4. List All Artifacts
         print("4️⃣ **Listing Research Artifacts**")
         list_content = types.Content(
-            role="user",
-            parts=[types.Part(text="list_artifacts()")]
+            role="user", parts=[types.Part(text="list_artifacts()")]
         )
 
         list_response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=list_content
+            user_id=demo_user, session_id=demo_session, content=list_content
         )
 
         print("   📁 Retrieved artifacts from PostgreSQL:")
         for event in list_response.events:
-            if hasattr(event, 'get_function_responses'):
+            if hasattr(event, "get_function_responses"):
                 responses = event.get_function_responses()
                 for response in responses:
-                    if hasattr(response, 'response') and 'artifacts' in str(response.response):
+                    if hasattr(response, "response") and "artifacts" in str(
+                        response.response
+                    ):
                         print("   ✅ Bibliography: ml_healthcare_bias_bibliography.md")
                         print("   ✅ Notes: ml_bias_detailed_notes.md")
                         break
@@ -242,13 +258,11 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
         print("5️⃣ **Searching Research Memory (Including Artifact Events)**")
         search_content = types.Content(
             role="user",
-            parts=[types.Part(text="search_memory('machine learning bias')")]
+            parts=[types.Part(text="search_memory('machine learning bias')")],
         )
 
         search_response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=search_content
+            user_id=demo_user, session_id=demo_session, content=search_content
         )
 
         print("   🔍 Memory search results (includes artifact creation events):")
@@ -262,13 +276,11 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
         print("6️⃣ **Session Continuity Demonstration**")
         session_content = types.Content(
             role="user",
-            parts=[types.Part(text="get_session_info(include_details='full')")]
+            parts=[types.Part(text="get_session_info(include_details='full')")],
         )
 
         session_response = await runner.run_async(
-            user_id=demo_user,
-            session_id=demo_session,
-            content=session_content
+            user_id=demo_user, session_id=demo_session, content=session_content
         )
 
         print("   📱 Session state persisted in PostgreSQL:")
@@ -304,6 +316,7 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
     except Exception as e:
         print(f"❌ Demo error: {e}")
         import traceback
+
         traceback.print_exc()
 
     finally:
@@ -319,20 +332,20 @@ Addressing ML bias in healthcare requires coordinated technical, policy, and soc
                 app_name="postgres_chat_agent",
                 user_id=demo_user,
                 session_id=demo_session,
-                filename="ml_healthcare_bias_bibliography.md"
+                filename="ml_healthcare_bias_bibliography.md",
             )
             await artifact_service.delete_artifact(
                 app_name="postgres_chat_agent",
                 user_id=demo_user,
                 session_id=demo_session,
-                filename="ml_bias_detailed_notes.md"
+                filename="ml_bias_detailed_notes.md",
             )
 
             # Delete test session
             await session_service.delete_session(
                 app_name="postgres_chat_agent",
                 user_id=demo_user,
-                session_id=demo_session
+                session_id=demo_session,
             )
 
             print("✅ Demo cleanup complete!")

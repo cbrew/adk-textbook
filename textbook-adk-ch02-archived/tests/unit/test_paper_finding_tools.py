@@ -21,14 +21,14 @@ from paper_finding.tools.tools import (
     get_reading_list,
     get_paper_recommendations,
     get_citation_network,
-    summarize_paper
+    summarize_paper,
 )
 
 
 def test_search_arxiv():
     """Test arXiv search functionality."""
     result = search_arxiv("machine learning", max_results=5)
-    
+
     assert "papers" in result
     assert "total_results" in result
     assert "query" in result
@@ -39,7 +39,7 @@ def test_search_arxiv():
 def test_add_to_reading_list():
     """Test adding paper to reading list."""
     result = add_to_reading_list("user123", "2101.00001", "high")
-    
+
     assert result["status"] == "success"
     assert "2101.00001" in result["message"]
     assert "high" in result["message"]
@@ -49,7 +49,7 @@ def test_add_to_reading_list():
 def test_get_reading_list():
     """Test retrieving reading list."""
     result = get_reading_list("user123")
-    
+
     assert "reading_list" in result
     assert "total_papers" in result
     assert "user_id" in result
@@ -60,12 +60,12 @@ def test_get_paper_recommendations():
     """Test paper recommendations."""
     interests = ["machine learning", "NLP"]
     result = get_paper_recommendations("user123", interests)
-    
+
     assert "recommendations" in result
     assert "total_recommendations" in result
     assert "based_on_interests" in result
     assert result["based_on_interests"] == interests
-    
+
     for rec in result["recommendations"]:
         assert "paper_id" in rec
         assert "title" in rec
@@ -76,7 +76,7 @@ def test_get_paper_recommendations():
 def test_get_citation_network():
     """Test citation network retrieval."""
     result = get_citation_network("2101.00001", depth=1)
-    
+
     assert "paper_id" in result
     assert "references" in result
     assert "cited_by" in result
@@ -88,7 +88,7 @@ def test_get_citation_network():
 def test_summarize_paper():
     """Test paper summarization."""
     result = summarize_paper("2101.00001")
-    
+
     assert "paper_id" in result
     assert "summary" in result
     assert "key_points" in result

@@ -39,7 +39,9 @@ async def ensure_runtime_initialized():
     return _runtime
 
 
-async def search_research_memory(query: str, tool_context: ToolContext) -> dict[str, Any]:
+async def search_research_memory(
+    query: str, tool_context: ToolContext
+) -> dict[str, Any]:
     """
     Search past research discussions and findings from previous sessions.
 
@@ -53,27 +55,33 @@ async def search_research_memory(query: str, tool_context: ToolContext) -> dict[
     try:
         # Search memory through ADK context (uses our PostgreSQL service)
         search_response = await tool_context.search_memory(query)
-        
+
         # Extract memories list from the SearchMemoryResponse
-        memories = search_response.memories if hasattr(search_response, 'memories') else []
+        memories = (
+            search_response.memories if hasattr(search_response, "memories") else []
+        )
 
         # Format results for display
         results = []
         for i, memory in enumerate(memories[:5], 1):  # Show top 5 results
             # Extract content preview
             content_text = ""
-            if hasattr(memory.content, 'parts'):
+            if hasattr(memory.content, "parts"):
                 for part in memory.content.parts:
-                    if hasattr(part, 'text') and part.text:
-                        content_text = part.text[:150] + ("..." if len(part.text) > 150 else "")
+                    if hasattr(part, "text") and part.text:
+                        content_text = part.text[:150] + (
+                            "..." if len(part.text) > 150 else ""
+                        )
                         break
 
-            results.append({
-                "rank": i,
-                "content_preview": content_text,
-                "author": memory.author,
-                "timestamp": memory.timestamp
-            })
+            results.append(
+                {
+                    "rank": i,
+                    "content_preview": content_text,
+                    "author": memory.author,
+                    "timestamp": memory.timestamp,
+                }
+            )
 
         return {
             "result": f"🔍 Found {len(memories)} research memories matching '{query}'",
@@ -81,7 +89,7 @@ async def search_research_memory(query: str, tool_context: ToolContext) -> dict[
             "memories": results,
             "total_found": len(memories),
             "service": "PostgreSQL Memory Service",
-            "note": "Memories are created automatically from research conversations and discussions"
+            "note": "Memories are created automatically from research conversations and discussions",
         }
 
     except Exception as e:
@@ -89,11 +97,13 @@ async def search_research_memory(query: str, tool_context: ToolContext) -> dict[
             "result": f"❌ Memory search failed for '{query}': {str(e)}",
             "query": query,
             "error": str(e),
-            "service": "PostgreSQL Memory Service"
+            "service": "PostgreSQL Memory Service",
         }
 
 
-async def track_research_progress(topic: str, findings: str, tool_context: ToolContext) -> dict[str, Any]:
+async def track_research_progress(
+    topic: str, findings: str, tool_context: ToolContext
+) -> dict[str, Any]:
     """
     Track research progress by updating session state. ADK will automatically
     convert session conversations into searchable memories.
@@ -108,56 +118,58 @@ async def track_research_progress(topic: str, findings: str, tool_context: ToolC
     """
     try:
         # Update session state with research progress (ADK will convert to memories automatically)
-        if not tool_context.state.get('research_topics'):
-            tool_context.state['research_topics'] = []
+        if not tool_context.state.get("research_topics"):
+            tool_context.state["research_topics"] = []
 
         research_entry = {
-            'topic': topic,
-            'findings': findings,
-            'timestamp': datetime.utcnow().isoformat(),
-            'session_note': f"Research on {topic}: {findings}"
+            "topic": topic,
+            "findings": findings,
+            "timestamp": datetime.utcnow().isoformat(),
+            "session_note": f"Research on {topic}: {findings}",
         }
-        
-        tool_context.state['research_topics'].append(research_entry)
-        
+
+        tool_context.state["research_topics"].append(research_entry)
+
         # Also update current research focus
-        tool_context.state['current_research_focus'] = topic
-        tool_context.state['last_research_update'] = datetime.utcnow().isoformat()
+        tool_context.state["current_research_focus"] = topic
+        tool_context.state["last_research_update"] = datetime.utcnow().isoformat()
 
         # CRITICAL FIX: Actually persist the state changes to the database
         # Get session info from the invocation context
         session_info = tool_context._invocation_context.session
-        app_name = tool_context._invocation_context.app_name  
+        app_name = tool_context._invocation_context.app_name
         user_id = tool_context._invocation_context.user_id
-        
+
         # Persist the updated state to the session service
         session_service = tool_context._invocation_context.session_service
-        if hasattr(session_service, 'update_session_state'):
+        if hasattr(session_service, "update_session_state"):
             session_service.update_session_state(
                 session_id=session_info.id,
                 state=dict(tool_context.state),
                 app_name=app_name,
-                user_id=user_id
+                user_id=user_id,
             )
 
         return {
             "result": f"📚 Tracked research progress on '{topic}' (persisted to PostgreSQL)",
             "topic": topic,
             "findings": findings,
-            "total_topics": len(tool_context.state['research_topics']),
+            "total_topics": len(tool_context.state["research_topics"]),
             "service": "PostgreSQL Session Service (state persisted)",
-            "note": "Research progress saved to database - ADK will create searchable memories from conversations"
+            "note": "Research progress saved to database - ADK will create searchable memories from conversations",
         }
 
     except Exception as e:
         return {
             "result": f"❌ Failed to track research progress: {str(e)}",
             "topic": topic,
-            "error": str(e)
+            "error": str(e),
         }
 
 
-async def save_artifact(filename: str, content: str, tool_context: ToolContext) -> dict[str, Any]:
+async def save_artifact(
+    filename: str, content: str, tool_context: ToolContext
+) -> dict[str, Any]:
     """
     Save artifact using PostgreSQL-backed artifact service with event sourcing.
 
@@ -177,7 +189,11 @@ async def save_artifact(filename: str, content: str, tool_context: ToolContext) 
         version = await tool_context.save_artifact(filename, artifact_part)
 
         # Determine storage method based on file size
-        storage_method = "PostgreSQL BYTEA" if len(content.encode('utf-8')) <= 1024*1024 else "Filesystem"
+        storage_method = (
+            "PostgreSQL BYTEA"
+            if len(content.encode("utf-8")) <= 1024 * 1024
+            else "Filesystem"
+        )
 
         return {
             "result": f"✅ Successfully saved '{filename}' version {version}",
@@ -186,7 +202,7 @@ async def save_artifact(filename: str, content: str, tool_context: ToolContext) 
             "content_length": len(content),
             "storage_method": storage_method,
             "service": "PostgreSQL Artifact Service with Event Sourcing",
-            "note": "Artifact saved and indexed for semantic search via event sourcing"
+            "note": "Artifact saved and indexed for semantic search via event sourcing",
         }
 
     except Exception as e:
@@ -194,11 +210,13 @@ async def save_artifact(filename: str, content: str, tool_context: ToolContext) 
             "result": f"❌ Failed to save artifact '{filename}': {str(e)}",
             "filename": filename,
             "error": str(e),
-            "service": "PostgreSQL Artifact Service"
+            "service": "PostgreSQL Artifact Service",
         }
 
 
-async def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict[str, Any]:
+async def list_artifacts(
+    tool_context: ToolContext, filter: str = "all"
+) -> dict[str, Any]:
     """
     List artifacts stored in PostgreSQL artifact service.
 
@@ -226,7 +244,7 @@ async def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict
             "filtered_count": len(filtered_artifacts),
             "filter": filter,
             "service": "PostgreSQL Artifact Service",
-            "note": "Artifacts retrieved from PostgreSQL with hybrid storage (BYTEA + filesystem)"
+            "note": "Artifacts retrieved from PostgreSQL with hybrid storage (BYTEA + filesystem)",
         }
 
     except Exception as e:
@@ -234,11 +252,13 @@ async def list_artifacts(tool_context: ToolContext, filter: str = "all") -> dict
             "result": f"❌ Failed to list artifacts: {str(e)}",
             "error": str(e),
             "filter": filter,
-            "service": "PostgreSQL Artifact Service"
+            "service": "PostgreSQL Artifact Service",
         }
 
 
-def get_research_session_status(tool_context: ToolContext, include_details: str = "basic") -> dict[str, Any]:
+def get_research_session_status(
+    tool_context: ToolContext, include_details: str = "basic"
+) -> dict[str, Any]:
     """
     Get current research session status and progress.
 
@@ -254,25 +274,29 @@ def get_research_session_status(tool_context: ToolContext, include_details: str 
         session_state = dict(tool_context.state)
 
         # Basic research session info
-        research_topics = session_state.get('research_topics', [])
-        current_focus = session_state.get('current_research_focus', 'None')
-        
+        research_topics = session_state.get("research_topics", [])
+        current_focus = session_state.get("current_research_focus", "None")
+
         session_info = {
             "result": "📚 Retrieved research session status",
             "current_research_focus": current_focus,
             "topics_explored": len(research_topics),
             "has_research_progress": len(research_topics) > 0,
-            "service": "PostgreSQL Session Service"
+            "service": "PostgreSQL Session Service",
         }
 
         if include_details == "full":
-            session_info.update({
-                "research_topics": research_topics,
-                "session_state": session_state,
-                "note": "Full research session state - conversations will be automatically converted to searchable memories"
-            })
+            session_info.update(
+                {
+                    "research_topics": research_topics,
+                    "session_state": session_state,
+                    "note": "Full research session state - conversations will be automatically converted to searchable memories",
+                }
+            )
         else:
-            session_info["note"] = "Research session persisted in PostgreSQL - memories created automatically from conversations"
+            session_info["note"] = (
+                "Research session persisted in PostgreSQL - memories created automatically from conversations"
+            )
 
         return session_info
 
@@ -281,7 +305,7 @@ def get_research_session_status(tool_context: ToolContext, include_details: str 
             "result": f"❌ Failed to retrieve research session status: {str(e)}",
             "error": str(e),
             "include_details": include_details,
-            "service": "PostgreSQL Session Service"
+            "service": "PostgreSQL Session Service",
         }
 
 

@@ -2,6 +2,6 @@
 
 from .agent import SimpleChatAgent
 
-__all__ = ["SimpleChatAgent","root_agent"]
+__all__ = ["SimpleChatAgent", "root_agent"]
 
 root_agent = SimpleChatAgent()

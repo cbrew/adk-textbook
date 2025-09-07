@@ -53,8 +53,8 @@ async def demonstrate_artifact_storage():
             state={
                 "research_topic": "ML Bias in Healthcare",
                 "phase": "literature_review",
-                "artifacts_created": 0
-            }
+                "artifacts_created": 0,
+            },
         )
         print(f"   ✅ Session created: {session.id[:8]}...")
         print(f"   📊 Initial state: {session.state}")
@@ -83,7 +83,7 @@ async def demonstrate_artifact_storage():
             user_id=user_id,
             session_id=session_id,
             filename="ml_bias_bibliography.md",
-            artifact=bibliography_part
+            artifact=bibliography_part,
         )
         print(f"   ✅ Saved as version {version} (PostgreSQL BYTEA storage)")
         print("   🔗 Event sourcing: artifact_delta event created and indexed")
@@ -91,7 +91,8 @@ async def demonstrate_artifact_storage():
 
         # 3. Save Large Research Notes (Filesystem)
         print("3️⃣ **Saving Research Notes (Large File → Filesystem)**")
-        large_notes = """# Comprehensive Research Notes: ML Bias in Healthcare
+        large_notes = (
+            """# Comprehensive Research Notes: ML Bias in Healthcare
 
 ## Executive Summary
 This extensive research compilation examines machine learning bias in healthcare applications, 
@@ -101,7 +102,9 @@ population health management, and precision medicine applications.
 
 ## Detailed Analysis
 [Content continues with extensive research notes...]
-""" + "Additional detailed content... " * 100  # Make it larger
+"""
+            + "Additional detailed content... " * 100
+        )  # Make it larger
 
         notes_part = types.Part(text=large_notes)
         print(f"   📄 File size: {len(large_notes.encode('utf-8'))} bytes")
@@ -112,7 +115,7 @@ population health management, and precision medicine applications.
             user_id=user_id,
             session_id=session_id,
             filename="ml_bias_detailed_notes.md",
-            artifact=notes_part
+            artifact=notes_part,
         )
         print(f"   ✅ Saved as version {version2} (Filesystem storage)")
         print("   🔗 Event sourcing: Second artifact_delta event created")
@@ -121,9 +124,7 @@ population health management, and precision medicine applications.
         # 4. List All Artifacts
         print("4️⃣ **Listing All Research Artifacts**")
         artifacts = await artifact_service.list_artifact_keys(
-            app_name=app_name,
-            user_id=user_id,
-            session_id=session_id
+            app_name=app_name, user_id=user_id, session_id=session_id
         )
         print("   📁 Artifacts in PostgreSQL:")
         for i, artifact in enumerate(artifacts, 1):
@@ -138,9 +139,9 @@ population health management, and precision medicine applications.
             app_name=app_name,
             user_id=user_id,
             session_id=session_id,
-            filename="ml_bias_bibliography.md"
+            filename="ml_bias_bibliography.md",
         )
-        if bib_artifact and hasattr(bib_artifact, 'text'):
+        if bib_artifact and hasattr(bib_artifact, "text"):
             print("   ✅ Bibliography loaded from PostgreSQL BYTEA")
             print(f"   📄 Content preview: {bib_artifact.text[:100]}...")
 
@@ -149,9 +150,9 @@ population health management, and precision medicine applications.
             app_name=app_name,
             user_id=user_id,
             session_id=session_id,
-            filename="ml_bias_detailed_notes.md"
+            filename="ml_bias_detailed_notes.md",
         )
-        if notes_artifact and hasattr(notes_artifact, 'text'):
+        if notes_artifact and hasattr(notes_artifact, "text"):
             print("   ✅ Notes loaded from filesystem")
             print(f"   📄 Content preview: {notes_artifact.text[:100]}...")
         print()
@@ -163,9 +164,11 @@ population health management, and precision medicine applications.
             "phase": "analysis",
             "artifacts_created": len(artifacts),
             "bibliography_ready": True,
-            "notes_comprehensive": True
+            "notes_comprehensive": True,
         }
-        session_service.update_session_state(session_id, updated_state, app_name, user_id)
+        session_service.update_session_state(
+            session_id, updated_state, app_name, user_id
+        )
         print("   ✅ Session state updated with research progress")
         print(f"   📊 New state: {updated_state}")
         print()
@@ -208,6 +211,7 @@ population health management, and precision medicine applications.
     except Exception as e:
         print(f"❌ Demo error: {e}")
         import traceback
+
         traceback.print_exc()
 
     finally:
@@ -221,16 +225,14 @@ population health management, and precision medicine applications.
                         app_name=app_name,
                         user_id=user_id,
                         session_id=session_id,
-                        filename=artifact
+                        filename=artifact,
                     )
                 except:
                     pass
 
             # Delete session
             await session_service.delete_session(
-                app_name=app_name,
-                user_id=user_id,
-                session_id=session_id
+                app_name=app_name, user_id=user_id, session_id=session_id
             )
             print("✅ Demo cleanup complete!")
 
