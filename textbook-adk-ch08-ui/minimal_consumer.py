@@ -45,10 +45,9 @@ class ADKConsumer:
                 if line.startswith("data: "):
                     try:
                         event = json.loads(line[len("data: "):])
+                        yield "Event:",event
                     except json.JSONDecodeError:
-                        print("Non-JSON SSE data:", line)
-                        continue
-                    print("Event:", event)
+                        yield "Non-JSON SSE data:",line
 
 
 
@@ -62,11 +61,17 @@ async def _init_consumer_async(client: httpx.AsyncClient) -> httpx.AsyncClient:
 
 
 
+def print_data(prefix: str,response: dict):
+    print(prefix,response)
+
+
+
 
 async def main():
     async with httpx.AsyncClient(timeout=None) as client:
         adk_consumer = await ADKConsumer.create(client)
-        await adk_consumer.message()
+        async for et,data in adk_consumer.message():
+            print_data(et,data)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Optional
+import uuid
 
 import httpx
 from textual.app import App, ComposeResult
@@ -27,6 +28,60 @@ USER_ID = "u_123"
 SESSION_ID = "s_127"
 
 
+
+
+class ADKConsumer:
+    BASE_URL = "http://localhost:8000"
+    APP_NAME = "simple_chat_agent"
+    USER_ID = "u_123"
+    SESSION_ID = str(uuid.uuid4())
+    def __init__(self, client: httpx.AsyncClient):
+        self.client: httpx.AsyncClient = client
+
+    @classmethod
+    async def create(cls, param):
+        # Perform async operations to get resources
+        resource = await _init_consumer_async(param)
+        return cls(resource)
+
+    async def message(self, text: str= "Talk to me about citation rings"):
+        run_sse_url = f"{self.BASE_URL}/run_sse"
+        run_payload = {
+            "app_name": self.APP_NAME,
+            "user_id": self.USER_ID,
+            "session_id": self.SESSION_ID,
+            "new_message": {
+                "role": "user",
+                "parts": [{"text": text}],
+            },
+            # Optional but fine to include:
+            "streaming": True,
+        }
+
+        async with self.client.stream("POST", run_sse_url, json=run_payload) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line:
+                    continue
+                # SSE lines look like: "data: {...json...}"
+                if line.startswith("data: "):
+                    try:
+                        event = json.loads(line[len("data: "):])
+                        yield "Event:",event
+                    except json.JSONDecodeError:
+                        yield "Non-JSON SSE data:",line
+
+
+
+async def _init_consumer_async(client: httpx.AsyncClient) -> httpx.AsyncClient:
+    "Helper function for creation of ADK consumer."
+    create_session_url = f"{ADKConsumer.BASE_URL}/apps/{ADKConsumer.APP_NAME}/users/{ADKConsumer.USER_ID}/sessions/{ADKConsumer.SESSION_ID}"
+    create_payload = {"state": {"key1": "value1", "key2": 42}}
+    r = await client.post(create_session_url, json=create_payload)
+    r.raise_for_status()
+    return client
+
+
 class ADKWebClient:
     """HTTP client for communicating with ADK web server."""
 
@@ -34,62 +89,17 @@ class ADKWebClient:
         self.base_url = base_url
         self.session_id: Optional[str] = None
         self.http_client = httpx.AsyncClient(timeout=30.0)
+        self.adk_consumer = None
 
     async def create_session(self) -> bool:
         """Create a new ADK session."""
-        create_session_url = (
-            f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{SESSION_ID}"
-        )
-        create_payload = {"state": {"key1": "value1", "key2": 42}}
-        r = await self.http_client.post(create_session_url, json=create_payload)
-        r.raise_for_status()
-        print("Session upserted:", r.json().get("id", SESSION_ID))
-        self.session_id = SESSION_ID
+        self.adk_consumer = await ADKConsumer.create(self.http_client)
 
     async def send_message(self, message: str) -> Optional[str]:
         """Send a message to the ADK agent and get response."""
-        if not self.session_id:
-            return None
 
-        try:
-            # Use the correct ADK API format
-
-            run_payload = {
-                "app_name": APP_NAME,
-                "user_id": USER_ID,
-                "session_id": SESSION_ID,
-                "new_message": {
-                    "role": "user",
-                    "parts": [{"text": "Talk to me about citation rings"}],
-                },
-            }
-            response = await self.http_client.post(
-                f"{self.base_url}/run", json=run_payload
-            )
-
-            if response.status_code == 200:
-                events = response.json()  # Response is array of events directly
-
-                # Extract agent response from events
-                for event in events:
-                    content = event.get("content")
-                    if content and isinstance(content, dict):
-                        parts = content.get("parts", [])
-                        for part in parts:
-                            if part.get("text"):
-                                return part["text"]
-
-                return "Agent response received but no text found."
-
-            # Better error reporting
-            try:
-                error_detail = response.text
-                return f"HTTP {response.status_code}: {error_detail[:100]}"
-            except:
-                return f"HTTP {response.status_code} error (no details available)"
-
-        except Exception as e:
-            return f"Connection error: {str(e)}"
+        async for sse_event in self.adk_consumer.message(text=message):
+            print(sse_event)
 
     async def close(self):
         """Close the HTTP client."""
