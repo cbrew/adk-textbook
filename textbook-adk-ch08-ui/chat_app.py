@@ -20,7 +20,7 @@ async def main():
                     # Get user input
                     user_input = input("\n👤 You: ").strip()
 
-                    if user_input.lower() in ['quit', 'exit', 'q']:
+                    if user_input.lower() in ["quit", "exit", "q"]:
                         print("👋 Goodbye!")
                         break
 
@@ -70,4 +70,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

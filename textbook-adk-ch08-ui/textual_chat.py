@@ -293,6 +293,7 @@ class ChatInterface(App):
 
     def _scroll_to_active(self, bubble: Markdown) -> None:
         """Scroll transcript to ensure `bubble` is visible after layout."""
+
         def _do_scroll() -> None:
             try:
                 bubble.scroll_visible()
@@ -300,6 +301,7 @@ class ChatInterface(App):
                 # If for any reason scroll_visible isn't available, do nothing;
                 # ScrollableContainer handles wheel / key scrolling.
                 pass
+
         # Run after next render/layout so geometry is final
         self.call_after_refresh(_do_scroll)
 

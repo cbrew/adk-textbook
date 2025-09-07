@@ -63,7 +63,7 @@ class ADKConsumer:
                     continue
                 if line.startswith("data: "):
                     try:
-                        event = json.loads(line[len("data: "):])
+                        event = json.loads(line[len("data: ") :])
                         yield "Event:", event
                     except json.JSONDecodeError:
                         yield "Non-JSON SSE data:", str(line)
@@ -91,4 +91,3 @@ class ADKChatApp:
         async for event_type, event_data in self.consumer.message(text):
             if event_type == "Event:" and isinstance(event_data, dict):
                 yield event_data
-
