@@ -2,10 +2,6 @@
 """
 Simple Textual chat interface for ADK agents.
 
-Uses ScrollableContainer + compact per-message Markdown bubbles.
-- Transcript is scrollable (ScrollableContainer).
-- Bubbles are compact (no extra vertical slack).
-- While streaming, we keep the active bubble in view.
 """
 
 import asyncio

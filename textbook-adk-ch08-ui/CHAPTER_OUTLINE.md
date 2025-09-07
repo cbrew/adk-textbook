@@ -78,6 +78,53 @@ scroll_to_active(markdown_widget)
 ### Agent Integration (`agents/simple_chat_agent/agent.py:14-25`)
 Simple ADK agent setup for UI testing with configurable models and basic conversational capabilities.
 
+## Running the Examples
+
+### Prerequisites
+**IMPORTANT**: All UI examples require the ADK web server to be running first. The examples connect to `http://localhost:8000` by default.
+
+#### Start ADK Server
+```bash
+# From the textbook-adk-ch08-ui directory
+cd agents
+uv run adk api_server
+```
+
+The server must be running before launching any of the UI examples. The server hosts the `simple_chat_agent` and provides the HTTP streaming API endpoints.
+
+### Example Execution
+
+#### 1. Minimal Consumer (`minimal_consumer.py`)
+```bash
+python minimal_consumer.py
+```
+- Connects to ADK server and streams a single hardcoded message
+- Outputs raw event data to console
+- Demonstrates basic ADK event consumption pattern
+
+#### 2. Interactive Console Chat (`chat_app.py`)
+```bash
+python chat_app.py
+```
+- Interactive terminal-based chat interface
+- Type messages and receive streaming responses
+- Type `quit`, `exit`, or `q` to end session
+- Handles connection errors gracefully
+
+#### 3. Advanced Textual UI (`textual_chat.py`)
+```bash
+python textual_chat.py
+```
+- Rich terminal UI with scrollable chat bubbles
+- Markdown rendering for formatted messages
+- Automatic ADK server management (starts/stops server)
+- Modern terminal interface with visual feedback
+
+### Troubleshooting
+- **Connection refused**: Ensure ADK server is running on port 8000
+- **Agent not found**: Verify `agents/simple_chat_agent/` directory exists
+- **Environment errors**: Check `.env` file for proper model configuration
+
 ## Chapter Learning Outcomes
 - Understanding ADK HTTP streaming API and SSE protocol
 - Building reusable consumer classes for ADK integration
