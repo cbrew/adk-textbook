@@ -6,104 +6,16 @@ This provides a terminal-based chat UI that integrates with the ADK web server.
 """
 
 import asyncio
-import json
-import os
 import subprocess
-import time
 from pathlib import Path
-from typing import Optional
-import uuid
 
 import httpx
-from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Button, Header, Footer, Input, RichLog, Static
-from textual.reactive import reactive
+from adk_consumer import ADKConsumer
 from dotenv import load_dotenv
-
-
-BASE_URL = "http://localhost:8000"
-APP_NAME = "simple_chat_agent"
-USER_ID = "u_123"
-SESSION_ID = "s_127"
-
-
-
-
-class ADKConsumer:
-    BASE_URL = "http://localhost:8000"
-    APP_NAME = "simple_chat_agent"
-    USER_ID = "u_123"
-    SESSION_ID = str(uuid.uuid4())
-    def __init__(self, client: httpx.AsyncClient):
-        self.client: httpx.AsyncClient = client
-
-    @classmethod
-    async def create(cls, param):
-        # Perform async operations to get resources
-        resource = await _init_consumer_async(param)
-        return cls(resource)
-
-    async def message(self, text: str= "Talk to me about citation rings"):
-        run_sse_url = f"{self.BASE_URL}/run_sse"
-        run_payload = {
-            "app_name": self.APP_NAME,
-            "user_id": self.USER_ID,
-            "session_id": self.SESSION_ID,
-            "new_message": {
-                "role": "user",
-                "parts": [{"text": text}],
-            },
-            # Optional but fine to include:
-            "streaming": True,
-        }
-
-        async with self.client.stream("POST", run_sse_url, json=run_payload) as resp:
-            resp.raise_for_status()
-            async for line in resp.aiter_lines():
-                if not line:
-                    continue
-                # SSE lines look like: "data: {...json...}"
-                if line.startswith("data: "):
-                    try:
-                        event = json.loads(line[len("data: "):])
-                        yield "Event:",event
-                    except json.JSONDecodeError:
-                        yield "Non-JSON SSE data:",line
-
-
-
-async def _init_consumer_async(client: httpx.AsyncClient) -> httpx.AsyncClient:
-    "Helper function for creation of ADK consumer."
-    create_session_url = f"{ADKConsumer.BASE_URL}/apps/{ADKConsumer.APP_NAME}/users/{ADKConsumer.USER_ID}/sessions/{ADKConsumer.SESSION_ID}"
-    create_payload = {"state": {"key1": "value1", "key2": 42}}
-    r = await client.post(create_session_url, json=create_payload)
-    r.raise_for_status()
-    return client
-
-
-class ADKWebClient:
-    """HTTP client for communicating with ADK web server."""
-
-    def __init__(self, base_url: str = "http://localhost:8000"):
-        self.base_url = base_url
-        self.session_id: Optional[str] = None
-        self.http_client = httpx.AsyncClient(timeout=30.0)
-        self.adk_consumer = None
-
-    async def create_session(self) -> bool:
-        """Create a new ADK session."""
-        self.adk_consumer = await ADKConsumer.create(self.http_client)
-
-    async def send_message(self, message: str) -> Optional[str]:
-        """Send a message to the ADK agent and get response."""
-
-        async for sse_event in self.adk_consumer.message(text=message):
-            print(sse_event)
-
-    async def close(self):
-        """Close the HTTP client."""
-        await self.http_client.aclose()
+from textual.app import App, ComposeResult
+from textual.containers import Container, Horizontal
+from textual.reactive import reactive
+from textual.widgets import Button, Footer, Header, Input, RichLog
 
 
 class ChatInterface(App):
@@ -113,43 +25,43 @@ class ChatInterface(App):
     Screen {
         layout: vertical;
     }
-    
+
     #chat-container {
         height: 1fr;
         border: solid $primary;
         margin: 1;
     }
-    
+
     #chat-log {
         height: 1fr;
         background: $surface;
         border: none;
         padding: 1;
     }
-    
+
     #input-container {
         height: auto;
         padding: 0 1;
         margin: 0 0 1 0;
     }
-    
+
     #message-input {
         width: 1fr;
     }
-    
+
     #send-button {
         width: auto;
         margin-left: 1;
     }
-    
+
     .user-message {
         color: $accent;
     }
-    
+
     .agent-message {
         color: $success;
     }
-    
+
     .system-message {
         color: $warning;
     }
@@ -162,8 +74,9 @@ class ChatInterface(App):
         super().__init__()
         self.message_count = 0
         self.agents_dir = agents_dir
-        self.adk_client: Optional[ADKWebClient] = None
-        self.adk_process: Optional[subprocess.Popen] = None
+        self.adk_consumer: ADKConsumer | None = None
+        self.http_client: httpx.AsyncClient | None = None
+        self.adk_process: subprocess.Popen | None = None
 
     def compose(self) -> ComposeResult:
         """Compose the chat interface layout."""
@@ -211,15 +124,13 @@ class ChatInterface(App):
                 # Wait a moment for server to be ready
                 await asyncio.sleep(2)
 
-                # Initialize client and create session
-                self.adk_client = ADKWebClient()
-                if await self.adk_client.create_session():
-                    self.connected = True
-                    self.add_system_message(
-                        "✅ Connected to ADK agent - Ready to chat!"
-                    )
-                else:
-                    self.add_system_message("❌ Failed to create ADK session")
+                # Initialize ADK consumer
+                self.http_client = httpx.AsyncClient(timeout=None)
+                self.adk_consumer = await ADKConsumer.create(self.http_client)
+                self.connected = True
+                self.add_system_message(
+                    "✅ Connected to ADK agent - Ready to chat!"
+                )
             else:
                 self.add_system_message("❌ Failed to start ADK web server")
         except Exception as e:
@@ -285,7 +196,7 @@ class ChatInterface(App):
         chat_log.write(f"[bold blue]User[/bold blue]: {message}")
 
         # Send message to ADK agent
-        if self.connected and self.adk_client:
+        if self.connected and self.adk_consumer:
             asyncio.create_task(self.handle_agent_response(message))
         else:
             self.add_system_message("❌ Not connected to ADK agent")
@@ -296,11 +207,27 @@ class ChatInterface(App):
             # Show thinking indicator
             self.add_system_message("🤔 Agent is thinking...")
 
-            # Get response from ADK agent
-            response = await self.adk_client.send_message(message)
+            # Get response from ADK agent via streaming
+            chat_log = self.query_one("#chat-log", RichLog)
 
-            if response:
-                self.add_agent_response(response)
+            # Collect agent response parts
+            agent_response_parts = []
+
+            if self.adk_consumer is None:
+                self.add_system_message("❌ ADK consumer not initialized")
+                return
+
+            async for event_type, event_data in self.adk_consumer.message(text=message):
+                if event_type == "Event:" and isinstance(event_data, dict):
+                    # Extract text from ADK SSE events
+                    text_chunk = self._extract_text_from_event(event_data)
+                    if text_chunk:
+                        agent_response_parts.append(text_chunk)
+
+            # Display complete agent response
+            if agent_response_parts:
+                full_response = "".join(agent_response_parts)
+                chat_log.write(f"[bold green]Agent[/bold green]: {full_response}")
             else:
                 self.add_system_message("❌ No response from agent")
 
@@ -310,8 +237,8 @@ class ChatInterface(App):
     async def on_exit(self) -> None:
         """Cleanup when exiting the application."""
         try:
-            if self.adk_client:
-                await self.adk_client.close()
+            if self.http_client:
+                await self.http_client.aclose()
 
             if self.adk_process and self.adk_process.poll() is None:
                 self.adk_process.terminate()
@@ -319,10 +246,24 @@ class ChatInterface(App):
         except Exception:
             pass  # Ignore cleanup errors
 
-    def add_agent_response(self, response: str) -> None:
-        """Add an agent response to the chat log."""
-        chat_log = self.query_one("#chat-log", RichLog)
-        chat_log.write(f"[bold green]Agent[/bold green]: {response}")
+    @staticmethod
+    def _extract_text_from_event(event: dict) -> str:
+        """Extract text content from ADK SSE event."""
+        # Check if this is an agent response with content
+        if event.get("author") and event.get("author") != "user":
+            content = event.get("content")
+            if content and isinstance(content, dict):
+                parts = content.get("parts", [])
+                for part in parts:
+                    if isinstance(part, dict) and "text" in part:
+                        return part["text"]
+            # Handle direct text in content
+            elif content and isinstance(content, str):
+                return content
+        # Handle events that might have direct text fields
+        elif "text" in event:
+            return event["text"]
+        return ""
 
     def add_system_message(self, message: str) -> None:
         """Add a system message to the chat log."""
