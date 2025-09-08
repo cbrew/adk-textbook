@@ -15,7 +15,7 @@ from event_extractor import extract_description_from_event
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, Input, Markdown
+from textual.widgets import Button, Footer, Header, Input, Markdown, TabbedContent, TabPane, DataTable
 
 
 class ChatInterface(App):
@@ -30,11 +30,20 @@ class ChatInterface(App):
         layout: vertical;
     }
 
-    /* Frame around the transcript area */
-    #chat-container {
+    /* TabbedContent styling */
+    TabbedContent {
         height: 1fr;
-        border: solid $primary;
         margin: 1;
+    }
+
+    /* Tab panes */
+    TabPane {
+        border: solid $primary;
+    }
+
+    /* Events table styling */
+    #events-table {
+        height: 1fr;
     }
 
     /* The scrollable transcript itself */
@@ -108,14 +117,22 @@ class ChatInterface(App):
         self.http_client: httpx.AsyncClient | None = None
         self.adk_process: subprocess.Popen | None = None
         self.current_agent_md: Markdown | None = None  # live bubble while streaming
+        self.event_records: list[dict] = []  # Store event records
+        self.active_tab = "chat"  # Track active tab
 
     def compose(self) -> ComposeResult:
-        """Compose the chat interface layout."""
+        """Compose the chat interface layout with tabs."""
         yield Header(show_clock=True)
-
-        with Container(id="chat-container"):
-            # Scrollable transcript
-            yield ScrollableContainer(id="chat-scroll")
+        
+        # Tabbed content with chat and events tabs
+        with TabbedContent(initial="chat"):
+            # Chat tab
+            with TabPane("Chat", id="chat"):
+                yield ScrollableContainer(id="chat-scroll")
+            
+            # Events tab  
+            with TabPane("Events", id="events"):
+                yield DataTable(id="events-table")
 
         with Horizontal(id="input-container"):
             yield Input(placeholder="Type your message here...", id="message-input")
@@ -126,6 +143,9 @@ class ChatInterface(App):
     def on_mount(self) -> None:
         """Initialize the chat interface and start ADK integration."""
         load_dotenv()
+
+        # Setup the events table
+        self._setup_events_table()
 
         # Initial messages
         self._append_markdown_bubble("system", "**💬 Chat Interface Started**")
@@ -228,6 +248,9 @@ class ChatInterface(App):
                 if event_type == "Event:" and isinstance(event_data, dict):
                     extracted = extract_description_from_event(event_data)
                     
+                    # Store event record for Events tab
+                    self._store_event_record(extracted)
+                    
                     # Handle different event types
                     if extracted["type"] == "STREAMING_TEXT_CHUNK":
                         if extracted["text"] and extracted["author"] != "user":
@@ -311,6 +334,43 @@ class ChatInterface(App):
     def add_system_message(self, message: str) -> None:
         """Add a system message to the chat."""
         self._append_markdown_bubble("system", message)
+        
+    def _setup_events_table(self) -> None:
+        """Setup the events table with columns."""
+        table = self.query_one("#events-table", DataTable)
+        table.add_columns("Time", "Type", "Author", "Text", "Function Calls", "Error")
+        
+            
+    def _store_event_record(self, extracted: dict) -> None:
+        """Store an event record and update the events table."""
+        import time
+        
+        # Create a simplified record for the table
+        record = {
+            "time": time.strftime("%H:%M:%S"),
+            "type": extracted.get("type", ""),
+            "author": extracted.get("author", "") or "",
+            "text": (extracted.get("text", "") or "")[:50] + ("..." if len(extracted.get("text", "") or "") > 50 else ""),
+            "function_calls": str(len(extracted.get("function_calls", []) or [])) if extracted.get("function_calls") else "",
+            "error": extracted.get("error", "") or ""
+        }
+        
+        # Store full record
+        self.event_records.append(extracted)
+        
+        # Add to table if events tab is active or table exists
+        try:
+            table = self.query_one("#events-table", DataTable)
+            table.add_row(
+                record["time"],
+                record["type"], 
+                record["author"],
+                record["text"],
+                record["function_calls"],
+                record["error"]
+            )
+        except Exception:
+            pass  # Table might not be ready yet
 
 
 def main():
