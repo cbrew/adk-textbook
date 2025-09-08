@@ -11,6 +11,7 @@ from pathlib import Path
 import httpx
 from adk_consumer import ADKConsumer
 from dotenv import load_dotenv
+from event_extractor import extract_description_from_event
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, ScrollableContainer
 from textual.reactive import reactive
@@ -225,16 +226,37 @@ class ChatInterface(App):
             # Keep the active bubble visible as tokens arrive
             async for event_type, event_data in self.adk_consumer.message(text=message):
                 if event_type == "Event:" and isinstance(event_data, dict):
-                    text_chunk = self._extract_text_from_event(event_data)
-                    if text_chunk:
-                        buffer.append(text_chunk)
-                        if self.current_agent_md:
-                            self.current_agent_md.update("".join(buffer))
-                            self._scroll_to_active(self.current_agent_md)
+                    extracted = extract_description_from_event(event_data)
+                    
+                    # Handle different event types
+                    if extracted["type"] == "STREAMING_TEXT_CHUNK":
+                        if extracted["text"] and extracted["author"] != "user":
+                            buffer.append(extracted["text"])
+                            if self.current_agent_md:
+                                await self.current_agent_md.update("".join(buffer))
+                                self._scroll_to_active(self.current_agent_md)
+                    elif extracted["type"] == "COMPLETE_TEXT":
+                        if extracted["text"] and extracted["author"] != "user":
+                            buffer.append(extracted["text"])
+                            if self.current_agent_md:
+                                await self.current_agent_md.update("".join(buffer))
+                                self._scroll_to_active(self.current_agent_md)
+                    elif extracted["type"] == "TOOL_CALL":
+                        if extracted["function_calls"]:
+                            tool_msg = f"*🔧 Calling {len(extracted['function_calls'])} tool(s)...*"
+                            self.add_system_message(tool_msg)
+                    elif extracted["type"] == "TOOL_RESULT":
+                        if extracted["function_responses"]:
+                            result_msg = f"*✅ Received {len(extracted['function_responses'])} tool result(s)*"
+                            self.add_system_message(result_msg)
+                    elif extracted["type"] == "ERROR":
+                        if extracted["error"]:
+                            error_msg = f"*❌ Agent error: {extracted['error']}*"
+                            self.add_system_message(error_msg)
 
             # remove the “thinking” notice after we’re done
             try:
-                thinking.remove()
+                await thinking.remove()
             except Exception:
                 pass
 
@@ -262,21 +284,6 @@ class ChatInterface(App):
         except Exception:
             pass  # Ignore cleanup errors
 
-    @staticmethod
-    def _extract_text_from_event(event: dict) -> str:
-        """Extract text content from ADK SSE event."""
-        if event.get("author") and event.get("author") != "user":
-            content = event.get("content")
-            if content and isinstance(content, dict):
-                parts = content.get("parts", [])
-                for part in parts:
-                    if isinstance(part, dict) and "text" in part:
-                        return part["text"]
-            elif content and isinstance(content, str):
-                return content
-        elif "text" in event:
-            return event["text"]
-        return ""
 
     def _append_markdown_bubble(self, role: str, md_text: str) -> Markdown:
         """Create and mount a Markdown bubble for a given role; returns the widget."""

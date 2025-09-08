@@ -3,6 +3,7 @@ import asyncio
 
 import httpx
 from adk_consumer import ADKChatApp
+from event_extractor import extract_description_from_event
 
 
 async def main():
@@ -32,27 +33,27 @@ async def main():
                     # Send message and stream response
                     response_text = ""
                     async for event in chat_app.send_message(user_input):
-                        # Handle ADK SSE events based on the documented structure
                         if isinstance(event, dict):
-                            # Check if this is an agent response with content
-                            if event.get("author") and event.get("author") != "user":
-                                content = event.get("content")
-                                if content and isinstance(content, dict):
-                                    parts = content.get("parts", [])
-                                    for part in parts:
-                                        if isinstance(part, dict) and "text" in part:
-                                            text = part["text"]
-                                            print(text, end="", flush=True)
-                                            response_text += text
-                                # Handle direct text in content
-                                elif content and isinstance(content, str):
-                                    print(content, end="", flush=True)
-                                    response_text += content
-                            # Handle events that might have direct text fields
-                            elif "text" in event:
-                                text = event["text"]
-                                print(text, end="", flush=True)
-                                response_text += text
+                            # Extract structured event information using event extractor
+                            extracted = extract_description_from_event(event)
+                            
+                            # Handle different event types
+                            if extracted["type"] == "STREAMING_TEXT_CHUNK":
+                                if extracted["text"] and extracted["author"] != "user":
+                                    print(extracted["text"], end="", flush=True)
+                                    response_text += extracted["text"]
+                            elif extracted["type"] == "COMPLETE_TEXT":
+                                if extracted["text"] and extracted["author"] != "user":
+                                    print(extracted["text"], end="", flush=True)
+                                    response_text += extracted["text"]
+                            elif extracted["type"] == "TOOL_CALL":
+                                if extracted["function_calls"]:
+                                    print(f"[🔧 Tool call: {len(extracted['function_calls'])} functions]", end="", flush=True)
+                            elif extracted["type"] == "TOOL_RESULT":
+                                if extracted["function_responses"]:
+                                    print(f"[✅ Tool results received]", end="", flush=True)
+                            elif extracted["type"] == "ERROR":
+                                print(f"\n❌ Agent error: {extracted['error']}", end="", flush=True)
 
                     print()  # New line after response
 
