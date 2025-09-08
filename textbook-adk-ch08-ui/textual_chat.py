@@ -13,9 +13,19 @@ from adk_consumer import ADKConsumer
 from dotenv import load_dotenv
 from event_extractor import extract_description_from_event
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, ScrollableContainer
+from textual.containers import Horizontal, ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, Input, Markdown, TabbedContent, TabPane, DataTable
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Header,
+    Input,
+    Markdown,
+    Static,
+    TabbedContent,
+    TabPane,
+)
 
 
 class ChatInterface(App):
@@ -44,6 +54,20 @@ class ChatInterface(App):
     /* Events table styling */
     #events-table {
         height: 1fr;
+    }
+
+    /* Artifacts table styling */
+    #artifacts-table {
+        height: 1fr;
+    }
+
+    /* Artifacts info styling */
+    #artifacts-info {
+        height: auto;
+        background: $panel;
+        border: solid $primary;
+        padding: 1;
+        margin: 1;
     }
 
     /* The scrollable transcript itself */
@@ -118,21 +142,31 @@ class ChatInterface(App):
         self.adk_process: subprocess.Popen | None = None
         self.current_agent_md: Markdown | None = None  # live bubble while streaming
         self.event_records: list[dict] = []  # Store event records
+        self.artifact_records: list[dict] = []  # Store artifact records
         self.active_tab = "chat"  # Track active tab
 
     def compose(self) -> ComposeResult:
         """Compose the chat interface layout with tabs."""
         yield Header(show_clock=True)
-        
-        # Tabbed content with chat and events tabs
+
+        # Tabbed content with chat, events, and artifacts tabs
         with TabbedContent(initial="chat"):
             # Chat tab
             with TabPane("Chat", id="chat"):
                 yield ScrollableContainer(id="chat-scroll")
-            
-            # Events tab  
+
+            # Events tab
             with TabPane("Events", id="events"):
                 yield DataTable(id="events-table")
+
+            # Artifacts tab
+            with TabPane("Artifacts", id="artifacts"):
+                yield Static(
+                    "📁 **Artifact Tracking**\n\n"
+                    "This pane shows artifacts created during the session.",
+                    id="artifacts-info"
+                )
+                yield DataTable(id="artifacts-table")
 
         with Horizontal(id="input-container"):
             yield Input(placeholder="Type your message here...", id="message-input")
@@ -144,8 +178,9 @@ class ChatInterface(App):
         """Initialize the chat interface and start ADK integration."""
         load_dotenv()
 
-        # Setup the events table
+        # Setup the events and artifacts tables
         self._setup_events_table()
+        self._setup_artifacts_table()
 
         # Initial messages
         self._append_markdown_bubble("system", "**💬 Chat Interface Started**")
@@ -247,10 +282,14 @@ class ChatInterface(App):
             async for event_type, event_data in self.adk_consumer.message(text=message):
                 if event_type == "Event:" and isinstance(event_data, dict):
                     extracted = extract_description_from_event(event_data)
-                    
+
                     # Store event record for Events tab
                     self._store_event_record(extracted)
-                    
+
+                    # Check for artifact updates
+                    if extracted.get("artifact_delta"):
+                        self._handle_artifact_update(extracted)
+
                     # Handle different event types
                     if extracted["type"] == "STREAMING_TEXT_CHUNK":
                         if extracted["text"] and extracted["author"] != "user":
@@ -266,11 +305,13 @@ class ChatInterface(App):
                                 self._scroll_to_active(self.current_agent_md)
                     elif extracted["type"] == "TOOL_CALL":
                         if extracted["function_calls"]:
-                            tool_msg = f"*🔧 Calling {len(extracted['function_calls'])} tool(s)...*"
+                            num_calls = len(extracted['function_calls'])
+                            tool_msg = f"*🔧 Calling {num_calls} tool(s)...*"
                             self.add_system_message(tool_msg)
                     elif extracted["type"] == "TOOL_RESULT":
                         if extracted["function_responses"]:
-                            result_msg = f"*✅ Received {len(extracted['function_responses'])} tool result(s)*"
+                            num_results = len(extracted['function_responses'])
+                            result_msg = f"*✅ Received {num_results} tool result(s)*"
                             self.add_system_message(result_msg)
                     elif extracted["type"] == "ERROR":
                         if extracted["error"]:
@@ -334,41 +375,118 @@ class ChatInterface(App):
     def add_system_message(self, message: str) -> None:
         """Add a system message to the chat."""
         self._append_markdown_bubble("system", message)
-        
+
     def _setup_events_table(self) -> None:
         """Setup the events table with columns."""
         table = self.query_one("#events-table", DataTable)
         table.add_columns("Time", "Type", "Author", "Text", "Function Calls", "Error")
-        
-            
+
+
     def _store_event_record(self, extracted: dict) -> None:
         """Store an event record and update the events table."""
         import time
-        
+
         # Create a simplified record for the table
         record = {
             "time": time.strftime("%H:%M:%S"),
             "type": extracted.get("type", ""),
             "author": extracted.get("author", "") or "",
-            "text": (extracted.get("text", "") or "")[:50] + ("..." if len(extracted.get("text", "") or "") > 50 else ""),
-            "function_calls": str(len(extracted.get("function_calls", []) or [])) if extracted.get("function_calls") else "",
+            "text": (
+                (extracted.get("text", "") or "")[:50] +
+                ("..." if len(extracted.get("text", "") or "") > 50 else "")
+            ),
+            "function_calls": (
+                str(len(extracted.get("function_calls", []) or []))
+                if extracted.get("function_calls") else ""
+            ),
             "error": extracted.get("error", "") or ""
         }
-        
+
         # Store full record
         self.event_records.append(extracted)
-        
+
         # Add to table if events tab is active or table exists
         try:
             table = self.query_one("#events-table", DataTable)
             table.add_row(
                 record["time"],
-                record["type"], 
+                record["type"],
                 record["author"],
                 record["text"],
                 record["function_calls"],
                 record["error"]
             )
+        except Exception:
+            pass  # Table might not be ready yet
+
+    def _setup_artifacts_table(self) -> None:
+        """Setup the artifacts table with columns."""
+        try:
+            table = self.query_one("#artifacts-table", DataTable)
+            table.add_columns("Time", "Filename", "Version", "Size (bytes)", "Status")
+        except Exception:
+            pass  # Table might not be ready yet
+
+    def _handle_artifact_update(self, extracted: dict) -> None:
+        """Handle artifact creation/update events."""
+        import time
+
+        artifact_delta = extracted.get("artifact_delta", {})
+        if not artifact_delta:
+            return
+
+        # Create artifact record
+        artifact_record = {
+            "time": time.strftime("%H:%M:%S"),
+            "filename": "Unknown",
+            "version": "Unknown",
+            "size_bytes": "Unknown",
+            "status": "Created",
+            "delta": artifact_delta
+        }
+
+        # Try to extract filename/version from the delta or function calls
+        function_calls = extracted.get("function_calls", [])
+        if function_calls:
+            for call in function_calls:
+                if isinstance(call, dict) and call.get("name") == "save_text_artifact":
+                    args = call.get("args", {})
+                    if "filename" in args:
+                        artifact_record["filename"] = args["filename"]
+                    if "text" in args:
+                        artifact_record["size_bytes"] = str(
+                            len(args["text"].encode("utf-8"))
+                        )
+
+        # Try to get version from artifact delta keys
+        if isinstance(artifact_delta, dict):
+            for key, value in artifact_delta.items():
+                if "version" in key.lower():
+                    artifact_record["version"] = str(value)
+                elif "filename" in key.lower():
+                    artifact_record["filename"] = str(value)
+                elif "size" in key.lower():
+                    artifact_record["size_bytes"] = str(value)
+
+        # Store the record
+        self.artifact_records.append(artifact_record)
+
+        # Add to artifacts table
+        try:
+            table = self.query_one("#artifacts-table", DataTable)
+            table.add_row(
+                artifact_record["time"],
+                artifact_record["filename"],
+                artifact_record["version"],
+                artifact_record["size_bytes"],
+                artifact_record["status"]
+            )
+
+            # Also show a system message about the artifact
+            self.add_system_message(
+                f"📁 Artifact created: {artifact_record['filename']}"
+            )
+
         except Exception:
             pass  # Table might not be ready yet
 
