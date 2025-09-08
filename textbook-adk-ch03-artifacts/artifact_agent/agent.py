@@ -27,13 +27,6 @@ async def save_text_artifact(text: str, filename: str, tool_context: ToolContext
                                                artifact=artifact)
     return {"status": "saved", "filename": filename, "version": version}
 
-
-
-
-
-
-
-
 # Create a simple Agent that uses the tool
 agent = LlmAgent(
     name="artifact_agent",
