@@ -1,8 +1,8 @@
 [project]
 name = "adk-textbook"
-version = "0.1.0"
+version = "0.1.1"
 description = "ADK textbook examples with agents and evaluation tools"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     # Core ADK dependencies (all chapters)
     "google-adk[eval]>=1.13.0",

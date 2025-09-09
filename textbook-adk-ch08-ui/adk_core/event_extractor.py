@@ -5,7 +5,7 @@ def extract_description_from_event(event: dict) -> dict:
     Returns a dict like:
     {
         "type": "USER_MESSAGE" | "STREAMING_TEXT_CHUNK" | "COMPLETE_TEXT"
-                | "TOOL_CALL" | "TOOL_RESULT" | "ARTIFACT_CREATION_CALL" 
+                | "TOOL_CALL" | "TOOL_RESULT" | "ARTIFACT_CREATION_CALL"
                 | "ARTIFACT_CREATION_RESPONSE" | "ARTIFACT_UPDATE"
                 | "STATE_OR_ARTIFACT_UPDATE" | "CONTROL_SIGNAL"
                 | "ERROR" | "OTHER",
@@ -48,13 +48,17 @@ def extract_description_from_event(event: dict) -> dict:
     text = "".join(text_parts) if text_parts else None
 
     # Partial flag can be at top-level or under content
-    partial = bool(event.get("partial") or (isinstance(content, dict) and content.get("partial")))
+    partial = bool(
+        event.get("partial") or (isinstance(content, dict) and content.get("partial"))
+    )
 
     # Tool/function calls & responses (ADK uses "function_*"; some samples use "tool_*")
     # Also extract from content.parts for newer ADK format
     function_calls = actions.get("function_calls") or actions.get("tool_calls")
-    function_responses = actions.get("function_responses") or actions.get("tool_responses")
-    
+    function_responses = actions.get("function_responses") or actions.get(
+        "tool_responses"
+    )
+
     # Enhanced function call extraction from content.parts
     if not function_calls and isinstance(content, dict):
         parts = content.get("parts") or []
@@ -62,13 +66,15 @@ def extract_description_from_event(event: dict) -> dict:
         for part in parts:
             if isinstance(part, dict) and "functionCall" in part:
                 func_call = part["functionCall"]
-                extracted_calls.append({
-                    "id": func_call.get("id"),
-                    "name": func_call.get("name"),
-                    "args": func_call.get("args", {}),
-                })
+                extracted_calls.append(
+                    {
+                        "id": func_call.get("id"),
+                        "name": func_call.get("name"),
+                        "args": func_call.get("args", {}),
+                    }
+                )
         function_calls = extracted_calls if extracted_calls else None
-    
+
     # Enhanced function response extraction from content.parts
     if not function_responses and isinstance(content, dict):
         parts = content.get("parts") or []
@@ -76,22 +82,28 @@ def extract_description_from_event(event: dict) -> dict:
         for part in parts:
             if isinstance(part, dict) and "functionResponse" in part:
                 func_response = part["functionResponse"]
-                extracted_responses.append({
-                    "id": func_response.get("id"),
-                    "name": func_response.get("name"),
-                    "response": func_response.get("response", {}),
-                })
+                extracted_responses.append(
+                    {
+                        "id": func_response.get("id"),
+                        "name": func_response.get("name"),
+                        "response": func_response.get("response", {}),
+                    }
+                )
         function_responses = extracted_responses if extracted_responses else None
 
     # State / artifact deltas
     state_delta = actions.get("state_delta") or None
     artifact_delta = actions.get("artifact_delta") or None
-    
+
     # Extract detailed artifact information from function calls
     artifact_details = None
     if function_calls:
         for call in function_calls:
-            if call.get("name") in ["save_text_artifact", "save_artifact", "create_artifact"]:
+            if call.get("name") in [
+                "save_text_artifact",
+                "save_artifact",
+                "create_artifact",
+            ]:
                 args = call.get("args", {})
                 artifact_details = {
                     "filename": args.get("filename"),
@@ -112,7 +124,11 @@ def extract_description_from_event(event: dict) -> dict:
     has_control = any(v is not None for v in control.values())
 
     # Long-running tool bookkeeping (optional)
-    long_running_tool_ids = event.get("long_running_tool_ids") or actions.get("long_running_tool_ids") or None
+    long_running_tool_ids = (
+        event.get("long_running_tool_ids")
+        or actions.get("long_running_tool_ids")
+        or None
+    )
 
     # Error hints (shape varies; normalize to a string if present)
     error_msg = None
@@ -133,13 +149,21 @@ def extract_description_from_event(event: dict) -> dict:
     # 3) artifact-related tool calls
     elif function_calls:
         # Check for artifact-specific operations
-        artifact_call = any(call.get("name") in ["save_text_artifact", "save_artifact", "create_artifact"] 
-                           for call in function_calls if isinstance(call, dict))
+        artifact_call = any(
+            call.get("name")
+            in ["save_text_artifact", "save_artifact", "create_artifact"]
+            for call in function_calls
+            if isinstance(call, dict)
+        )
         etype = "ARTIFACT_CREATION_CALL" if artifact_call else "TOOL_CALL"
     elif function_responses:
         # Check for artifact-specific responses
-        artifact_response = any(resp.get("name") in ["save_text_artifact", "save_artifact", "create_artifact"]
-                               for resp in function_responses if isinstance(resp, dict))
+        artifact_response = any(
+            resp.get("name")
+            in ["save_text_artifact", "save_artifact", "create_artifact"]
+            for resp in function_responses
+            if isinstance(resp, dict)
+        )
         etype = "ARTIFACT_CREATION_RESPONSE" if artifact_response else "TOOL_RESULT"
     # 4) control signals (transfer/escalate/skip_summarization/auth)
     elif has_control:
@@ -148,7 +172,9 @@ def extract_description_from_event(event: dict) -> dict:
     elif artifact_delta and not (function_calls or function_responses):
         etype = "ARTIFACT_UPDATE"
     # 6) state/artifact only (no text/tool/control)
-    elif (state_delta or artifact_delta) and not (text or function_calls or function_responses or has_control):
+    elif (state_delta or artifact_delta) and not (
+        text or function_calls or function_responses or has_control
+    ):
         etype = "STATE_OR_ARTIFACT_UPDATE"
     # 7) text streaming vs complete
     elif text and partial:

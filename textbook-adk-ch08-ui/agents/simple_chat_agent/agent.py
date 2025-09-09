@@ -9,8 +9,9 @@ import os
 
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
-from google.adk.tools import ToolContext, FunctionTool
+from google.adk.tools import FunctionTool, ToolContext
 from google.genai.types import Part
+
 
 async def save_text_artifact(text: str, filename: str, tool_context: ToolContext):
     """
@@ -24,8 +25,7 @@ async def save_text_artifact(text: str, filename: str, tool_context: ToolContext
         dict: status
     """
     artifact = Part.from_bytes(data=text.encode("utf-8"), mime_type="text/plain")
-    version = await tool_context.save_artifact(filename=filename,
-                                               artifact=artifact)
+    version = await tool_context.save_artifact(filename=filename, artifact=artifact)
     return {"status": "saved", "filename": filename, "version": version}
 
 
@@ -42,51 +42,54 @@ async def retrieve_artifact(filename: str, tool_context: ToolContext):
     try:
         # Load the artifact from the ADK artifact system using the correct method
         artifact = await tool_context.load_artifact(filename=filename)
-        
+
         if artifact is None:
             return {
                 "status": "error",
                 "error": f"Artifact '{filename}' not found",
-                "filename": filename
+                "filename": filename,
             }
-        
+
         # Extract the content using the correct ADK structure
         content = ""
         mime_type = "text/plain"
-        
-        if hasattr(artifact, 'inline_data') and artifact.inline_data:
+
+        if hasattr(artifact, "inline_data") and artifact.inline_data:
             # Access data via the inline_data property
-            if hasattr(artifact.inline_data, 'data') and artifact.inline_data.data:
+            if hasattr(artifact.inline_data, "data") and artifact.inline_data.data:
                 # Convert bytes to string if needed
                 if isinstance(artifact.inline_data.data, bytes):
                     content = artifact.inline_data.data.decode("utf-8")
                 else:
                     content = str(artifact.inline_data.data)
-            
+
             # Get MIME type
-            if hasattr(artifact.inline_data, 'mime_type') and artifact.inline_data.mime_type:
+            if (
+                hasattr(artifact.inline_data, "mime_type")
+                and artifact.inline_data.mime_type
+            ):
                 mime_type = artifact.inline_data.mime_type
-        
+
         return {
             "status": "success",
             "filename": filename,
             "content": content,
             "content_length": len(content),
-            "mime_type": mime_type
+            "mime_type": mime_type,
         }
-    
+
     except ValueError as e:
         # ValueError is specifically mentioned in ADK docs for artifact loading errors
         return {
             "status": "error",
             "error": f"Artifact '{filename}' not found: {str(e)}",
-            "filename": filename
+            "filename": filename,
         }
     except Exception as e:
         return {
             "status": "error",
             "error": f"Failed to retrieve artifact '{filename}': {str(e)}",
-            "filename": filename
+            "filename": filename,
         }
 
 
@@ -127,8 +130,5 @@ ARTIFACT RETRIEVAL:
 - You can retrieve the content of previously saved artifacts using the retrieve_artifact tool
 - When asked to "retrieve", "show content of", or "load" an artifact, use the retrieve_artifact tool with the filename
 - Example: "Please retrieve the content of artifact: example.txt" should call retrieve_artifact with filename="example.txt" """,
-            tools=[
-                FunctionTool(save_text_artifact),
-                FunctionTool(retrieve_artifact)
-            ]
+            tools=[FunctionTool(save_text_artifact), FunctionTool(retrieve_artifact)],
         )

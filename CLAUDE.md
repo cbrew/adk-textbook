@@ -107,7 +107,7 @@ textbook-adk-ch02/paper_finding/
 - Web UI plugin system for service injection
 
 ### Environment & Dependencies
-- **Python 3.11+** (enforced in pyproject.toml)
+- **Python 3.13+** (enforced in pyproject.toml)
 - **uv** for fast package management
 - **pytest** with asyncio support for testing
 - **Google ADK[eval]** framework with evaluation extras

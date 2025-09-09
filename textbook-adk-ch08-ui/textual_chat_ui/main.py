@@ -11,7 +11,6 @@ from adk_consumer import ADKConsumer
 from artifact_event_consumer import ArtifactEventConsumer
 from dotenv import load_dotenv
 from event_extractor import extract_description_from_event
-
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
@@ -52,7 +51,7 @@ class ChatInterface(App):
         self.artifact_content_cache: dict[str, str] = {}  # Cache artifact content
         self.active_tab = "chat"  # Track active tab
         self.current_modal: SystemMessageModal | None = None  # Track current modal
-        
+
         # Initialize handlers
         self.event_handler = EventHandler(self)
         self.artifact_handler = ArtifactHandler(self)
@@ -75,7 +74,7 @@ class ChatInterface(App):
             with TabPane("Artifacts", id="artifacts"):
                 yield Static(
                     "📁 **Artifact Tracking** - Click on an artifact to view content",
-                    id="artifacts-info"
+                    id="artifacts-info",
                 )
                 with Horizontal(id="artifacts-container"):
                     with Vertical(id="artifacts-list"):
@@ -83,7 +82,7 @@ class ChatInterface(App):
                     with Vertical(id="artifacts-viewer"):
                         yield Static(
                             "Select an artifact from the list to view content here.",
-                            id="artifact-content"
+                            id="artifact-content",
                         )
 
         with Horizontal(id="input-container"):
@@ -224,8 +223,8 @@ class ChatInterface(App):
                 # If we don't have the actual content cached, try to retrieve it
                 cache_missing = filename not in self.artifact_content_cache
                 cache_has_placeholder = (
-                    not cache_missing and
-                    self.artifact_content_cache[filename].startswith(
+                    not cache_missing
+                    and self.artifact_content_cache[filename].startswith(
                         "**Artifact Information:**"
                     )
                 )
@@ -273,17 +272,23 @@ class ChatInterface(App):
             # Track if we got content from the retrieve call
             retrieved_content = None
 
-            async for event_type, event_data in self.adk_consumer.message(text=retrieve_message):
+            async for event_type, event_data in self.adk_consumer.message(
+                text=retrieve_message
+            ):
                 if event_type == "Event:" and isinstance(event_data, dict):
                     # Use enhanced artifact consumer for processing
                     if self.artifact_consumer:
-                        enhanced_info = self.artifact_consumer.extract_enhanced_event_info(event_data)
+                        enhanced_info = (
+                            self.artifact_consumer.extract_enhanced_event_info(
+                                event_data
+                            )
+                        )
 
                         # Debug: Log event types we're seeing
                         event_type_received = enhanced_info.get("type", "UNKNOWN")
                         retrieval_events = [
                             "ARTIFACT_RETRIEVAL_CALL",
-                            "ARTIFACT_RETRIEVAL_RESPONSE"
+                            "ARTIFACT_RETRIEVAL_RESPONSE",
                         ]
                         if event_type_received in retrieval_events:
                             self.update_status(
@@ -296,14 +301,16 @@ class ChatInterface(App):
                         if function_responses:
                             for resp in function_responses:
                                 is_retrieve = (
-                                    isinstance(resp, dict) and
-                                    resp.get("name") == "retrieve_artifact"
+                                    isinstance(resp, dict)
+                                    and resp.get("name") == "retrieve_artifact"
                                 )
                                 if is_retrieve:
                                     response_data = resp.get("response", {})
                                     if isinstance(response_data, dict):
                                         if response_data.get("status") == "success":
-                                            retrieved_content = response_data.get("content", "")
+                                            retrieved_content = response_data.get(
+                                                "content", ""
+                                            )
                                             content_length = response_data.get(
                                                 "content_length", len(retrieved_content)
                                             )
@@ -312,7 +319,9 @@ class ChatInterface(App):
                                             )
 
                                             # Cache the retrieved content
-                                            self.artifact_content_cache[filename] = retrieved_content
+                                            self.artifact_content_cache[filename] = (
+                                                retrieved_content
+                                            )
 
                                             # Update the display with the actual content
                                             display_content = f"""**Content:**
@@ -321,8 +330,8 @@ class ChatInterface(App):
 
 ---
 **Metadata:**
-- Status: {artifact_record.get('status', 'Unknown')}
-- Version: {artifact_record.get('version', 'Unknown')}
+- Status: {artifact_record.get("status", "Unknown")}
+- Version: {artifact_record.get("version", "Unknown")}
 - Size: {content_length} characters
 - MIME Type: {mime_type}
 - Retrieved: Just now"""
@@ -410,9 +419,15 @@ class ChatInterface(App):
                 if event_type == "Event:" and isinstance(event_data, dict):
                     # Use enhanced artifact consumer for better event processing
                     if self.artifact_consumer:
-                        enhanced_info = self.artifact_consumer.extract_enhanced_event_info(event_data)
+                        enhanced_info = (
+                            self.artifact_consumer.extract_enhanced_event_info(
+                                event_data
+                            )
+                        )
                         self.event_handler.store_event_record(enhanced_info)
-                        self.artifact_handler.handle_enhanced_artifact_update(enhanced_info)
+                        self.artifact_handler.handle_enhanced_artifact_update(
+                            enhanced_info
+                        )
                         event_type_to_use = enhanced_info["type"]
                         text_to_use = enhanced_info["text"]
                         author_to_use = enhanced_info["author"]
@@ -427,7 +442,11 @@ class ChatInterface(App):
 
                     # Handle different event types with enhanced classifications
                     await self._handle_event_type(
-                        event_type_to_use, text_to_use, author_to_use, enhanced_info, buffer
+                        event_type_to_use,
+                        text_to_use,
+                        author_to_use,
+                        enhanced_info,
+                        buffer,
                     )
 
             # remove the "thinking" notice after we're done
@@ -452,12 +471,12 @@ class ChatInterface(App):
             self.current_agent_md = None
 
     async def _handle_event_type(
-        self, 
-        event_type: str, 
-        text: str, 
-        author: str, 
-        enhanced_info: dict, 
-        buffer: list[str]
+        self,
+        event_type: str,
+        text: str,
+        author: str,
+        enhanced_info: dict,
+        buffer: list[str],
     ) -> None:
         """Handle different types of events from the agent."""
         if event_type == "STREAMING_TEXT_CHUNK":
@@ -473,9 +492,17 @@ class ChatInterface(App):
                 if self.current_agent_md:
                     await self.current_agent_md.update("".join(buffer))
                     self._scroll_to_active(self.current_agent_md)
-        elif event_type in ["TOOL_CALL", "ARTIFACT_CREATION_CALL", "ARTIFACT_RETRIEVAL_CALL"]:
+        elif event_type in [
+            "TOOL_CALL",
+            "ARTIFACT_CREATION_CALL",
+            "ARTIFACT_RETRIEVAL_CALL",
+        ]:
             self._handle_tool_call_event(event_type, enhanced_info)
-        elif event_type in ["TOOL_RESULT", "ARTIFACT_CREATION_RESPONSE", "ARTIFACT_RETRIEVAL_RESPONSE"]:
+        elif event_type in [
+            "TOOL_RESULT",
+            "ARTIFACT_CREATION_RESPONSE",
+            "ARTIFACT_RETRIEVAL_RESPONSE",
+        ]:
             self._handle_tool_result_event(event_type, enhanced_info)
         elif event_type == "ARTIFACT_UPDATE":
             self._handle_artifact_update_event(enhanced_info)
@@ -529,9 +556,7 @@ class ChatInterface(App):
                 if status == "success":
                     tool_msg = f"🔍 Artifact '{artifact_name}' retrieved successfully"
                 else:
-                    tool_msg = (
-                        f"❌ Failed to retrieve artifact '{artifact_name}'"
-                    )
+                    tool_msg = f"❌ Failed to retrieve artifact '{artifact_name}'"
             else:
                 num_results = len(function_responses)
                 tool_msg = f"✅ Received {num_results} tool result(s)"
@@ -543,9 +568,7 @@ class ChatInterface(App):
         if artifact_delta:
             filenames = list(artifact_delta.keys())
             if filenames:
-                tool_msg = (
-                    f"*📁 Updated artifacts: {', '.join(filenames)}*"
-                )
+                tool_msg = f"*📁 Updated artifacts: {', '.join(filenames)}*"
                 self.add_system_message(tool_msg)
 
     def _handle_error_event(self, enhanced_info: dict) -> None:
@@ -603,7 +626,7 @@ class ChatInterface(App):
                     self.current_modal.dismiss()
                 except Exception:
                     pass  # Modal might already be dismissed
-            
+
             # Create and show new modal
             self.current_modal = SystemMessageModal(message.strip(), message_type)
             self.push_screen(self.current_modal)
@@ -613,13 +636,17 @@ class ChatInterface(App):
         # Determine message type based on content
         if "❌" in message or "error" in message.lower() or "failed" in message.lower():
             message_type = "error"
-        elif "✅" in message or "success" in message.lower() or "connected" in message.lower():
+        elif (
+            "✅" in message
+            or "success" in message.lower()
+            or "connected" in message.lower()
+        ):
             message_type = "success"
         elif "⚠️" in message or "warning" in message.lower():
             message_type = "warning"
         else:
             message_type = "info"
-        
+
         # Only show important status updates as modals (skip debug messages)
         important_keywords = ["Starting", "Connected", "Failed", "Error", "Ready"]
         if any(keyword in message for keyword in important_keywords):

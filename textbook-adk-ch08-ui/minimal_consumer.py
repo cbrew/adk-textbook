@@ -12,7 +12,9 @@ def print_data(prefix: str, response: dict | str):
 async def main():
     async with httpx.AsyncClient(timeout=None) as client:
         adk_consumer = await ADKConsumer.create(client)
-        async for et, data in adk_consumer.message("make me a note about rhubarb and save it as an artifact"):
+        async for et, data in adk_consumer.message(
+            "make me a note about rhubarb and save it as an artifact"
+        ):
             print_data(et, data)
 
 

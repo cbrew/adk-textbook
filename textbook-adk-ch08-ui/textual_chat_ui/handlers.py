@@ -5,7 +5,7 @@ Event and artifact handling logic for the chat interface.
 import time
 from typing import TYPE_CHECKING
 
-from textual.widgets import DataTable, Static
+from textual.widgets import DataTable
 
 if TYPE_CHECKING:
     from .main import ChatInterface
@@ -13,15 +13,15 @@ if TYPE_CHECKING:
 
 class EventHandler:
     """Handles event storage and table updates."""
-    
+
     def __init__(self, chat_interface: "ChatInterface"):
         self.chat_interface = chat_interface
-    
+
     def setup_events_table(self) -> None:
         """Setup the events table with columns."""
         table = self.chat_interface.query_one("#events-table", DataTable)
         table.add_columns("Time", "Type", "Author", "Text", "Function Calls", "Error")
-    
+
     def store_event_record(self, extracted: dict) -> None:
         """Store an event record and update the events table."""
         # Create a simplified record for the table
@@ -30,14 +30,15 @@ class EventHandler:
             "type": extracted.get("type", ""),
             "author": extracted.get("author", "") or "",
             "text": (
-                (extracted.get("text", "") or "")[:50] +
-                ("..." if len(extracted.get("text", "") or "") > 50 else "")
+                (extracted.get("text", "") or "")[:50]
+                + ("..." if len(extracted.get("text", "") or "") > 50 else "")
             ),
             "function_calls": (
                 str(len(extracted.get("function_calls", []) or []))
-                if extracted.get("function_calls") else ""
+                if extracted.get("function_calls")
+                else ""
             ),
-            "error": extracted.get("error", "") or ""
+            "error": extracted.get("error", "") or "",
         }
 
         # Store full record
@@ -52,7 +53,7 @@ class EventHandler:
                 record["author"],
                 record["text"],
                 record["function_calls"],
-                record["error"]
+                record["error"],
             )
         except Exception:
             pass  # Table might not be ready yet
@@ -60,10 +61,10 @@ class EventHandler:
 
 class ArtifactHandler:
     """Handles artifact management and table updates."""
-    
+
     def __init__(self, chat_interface: "ChatInterface"):
         self.chat_interface = chat_interface
-    
+
     def setup_artifacts_table(self) -> None:
         """Setup the artifacts table with columns."""
         try:
@@ -74,7 +75,7 @@ class ArtifactHandler:
             table.show_cursor = True
         except Exception:
             pass  # Table might not be ready yet
-    
+
     def handle_artifact_update(self, extracted: dict) -> None:
         """Handle artifact creation/update events (original method)."""
         artifact_delta = extracted.get("artifact_delta", {})
@@ -88,7 +89,7 @@ class ArtifactHandler:
             "version": "Unknown",
             "size_bytes": "Unknown",
             "status": "Created",
-            "delta": artifact_delta
+            "delta": artifact_delta,
         }
 
         # Try to extract filename/version from the delta or function calls
@@ -125,7 +126,7 @@ class ArtifactHandler:
                 artifact_record["filename"],
                 artifact_record["version"],
                 artifact_record["size_bytes"],
-                artifact_record["status"]
+                artifact_record["status"],
             )
 
             # Also show a system message about the artifact
@@ -151,7 +152,7 @@ class ArtifactHandler:
                 "filename": "Unknown",
                 "version": "Unknown",
                 "size_bytes": "Unknown",
-                "status": "Created"
+                "status": "Created",
             }
 
             # Extract artifact details from function calls (creation)
@@ -169,14 +170,16 @@ class ArtifactHandler:
 
                         # Cache the artifact content for viewing
                         if filename != "Unknown" and content:
-                            self.chat_interface.artifact_content_cache[filename] = content
+                            self.chat_interface.artifact_content_cache[filename] = (
+                                content
+                            )
 
             # Extract artifact details from function responses (completion)
             if function_responses:
                 for resp in function_responses:
                     is_save_artifact = (
-                        isinstance(resp, dict) and
-                        resp.get("name") == "save_text_artifact"
+                        isinstance(resp, dict)
+                        and resp.get("name") == "save_text_artifact"
                     )
                     if is_save_artifact:
                         response_data = resp.get("response", {})
@@ -228,7 +231,7 @@ class ArtifactHandler:
                         artifact_record["filename"],
                         artifact_record["version"],
                         artifact_record["size_bytes"],
-                        artifact_record["status"]
+                        artifact_record["status"],
                     )
                 except Exception:
                     pass  # Table might not be ready yet
@@ -246,10 +249,10 @@ class ArtifactHandler:
 
 ---
 **Metadata:**
-- Status: {artifact_record.get('status', 'Unknown')}
-- Version: {artifact_record.get('version', 'Unknown')}
-- Size: {artifact_record.get('size_bytes', 'Unknown')} bytes
-- Created: {artifact_record.get('time', 'Unknown')}"""
+- Status: {artifact_record.get("status", "Unknown")}
+- Version: {artifact_record.get("version", "Unknown")}
+- Size: {artifact_record.get("size_bytes", "Unknown")} bytes
+- Created: {artifact_record.get("time", "Unknown")}"""
             else:
                 return cached_content
 
@@ -260,19 +263,19 @@ class ArtifactHandler:
                 # Show artifact metadata since we don't have direct content access
                 artifact_info = summary["artifacts"][filename]
                 content = f"""**Artifact Information:**
-- Filename: {artifact_info.get('filename', 'Unknown')}
-- Version: {artifact_info.get('version', 'Unknown')}
-- Content Length: {artifact_info.get('content_length', 'Unknown')} characters
-- Created In: {artifact_info.get('created_in', 'Unknown')[:16]}...
+- Filename: {artifact_info.get("filename", "Unknown")}
+- Version: {artifact_info.get("version", "Unknown")}
+- Content Length: {artifact_info.get("content_length", "Unknown")} characters
+- Created In: {artifact_info.get("created_in", "Unknown")[:16]}...
 
 **Status:**
 This artifact was created during the conversation.
 The actual content is stored in the ADK artifact system.
 
 **Record Details:**
-- Status: {artifact_record.get('status', 'Unknown')}
-- Size: {artifact_record.get('size_bytes', 'Unknown')} bytes
-- Time Created: {artifact_record.get('time', 'Unknown')}
+- Status: {artifact_record.get("status", "Unknown")}
+- Size: {artifact_record.get("size_bytes", "Unknown")} bytes
+- Time Created: {artifact_record.get("time", "Unknown")}
 
 💡 Tip: Artifacts are stored persistently and can be retrieved via ADK."""
                 self.chat_interface.artifact_content_cache[filename] = content
@@ -281,9 +284,9 @@ The actual content is stored in the ADK artifact system.
         # Fallback to basic info
         return f"""**{filename}**
 
-Status: {artifact_record.get('status', 'Unknown')}
-Version: {artifact_record.get('version', 'Unknown')}
-Size: {artifact_record.get('size_bytes', 'Unknown')} bytes
-Created: {artifact_record.get('time', 'Unknown')}
+Status: {artifact_record.get("status", "Unknown")}
+Version: {artifact_record.get("version", "Unknown")}
+Size: {artifact_record.get("size_bytes", "Unknown")} bytes
+Created: {artifact_record.get("time", "Unknown")}
 
 Select different artifacts to view their details."""
