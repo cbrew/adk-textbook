@@ -3,6 +3,7 @@ import asyncio
 
 import httpx
 from adk_consumer import ADKChatApp
+from artifact_event_consumer import ArtifactEventConsumer
 from event_extractor import extract_description_from_event
 
 
@@ -14,6 +15,8 @@ async def main():
     async with httpx.AsyncClient(timeout=None) as client:
         try:
             chat_app = await ADKChatApp.create(client)
+            # Create enhanced artifact consumer
+            artifact_consumer = ArtifactEventConsumer(chat_app.consumer) if chat_app.consumer else None
             print("✅ Connected to ADK agent")
 
             while True:
@@ -32,30 +35,80 @@ async def main():
 
                     # Send message and stream response
                     response_text = ""
+                    artifact_created = []
                     async for event in chat_app.send_message(user_input):
                         if isinstance(event, dict):
-                            # Extract structured event information using event extractor
-                            extracted = extract_description_from_event(event)
+                            # Use enhanced artifact consumer if available
+                            if artifact_consumer:
+                                enhanced_info = artifact_consumer.extract_enhanced_event_info(event)
+                                event_type_to_use = enhanced_info["type"]
+                                text_to_use = enhanced_info["text"]
+                                author_to_use = enhanced_info["author"]
+                                function_calls = enhanced_info.get("function_calls", [])
+                                function_responses = enhanced_info.get("function_responses", [])
+                                error_text = enhanced_info.get("error")
+                            else:
+                                # Fallback to original extractor
+                                extracted = extract_description_from_event(event)
+                                event_type_to_use = extracted["type"]
+                                text_to_use = extracted["text"]
+                                author_to_use = extracted["author"]
+                                function_calls = extracted.get("function_calls", [])
+                                function_responses = extracted.get("function_responses", [])
+                                error_text = extracted.get("error")
                             
-                            # Handle different event types
-                            if extracted["type"] == "STREAMING_TEXT_CHUNK":
-                                if extracted["text"] and extracted["author"] != "user":
-                                    print(extracted["text"], end="", flush=True)
-                                    response_text += extracted["text"]
-                            elif extracted["type"] == "COMPLETE_TEXT":
-                                if extracted["text"] and extracted["author"] != "user":
-                                    print(extracted["text"], end="", flush=True)
-                                    response_text += extracted["text"]
-                            elif extracted["type"] == "TOOL_CALL":
-                                if extracted["function_calls"]:
-                                    print(f"[🔧 Tool call: {len(extracted['function_calls'])} functions]", end="", flush=True)
-                            elif extracted["type"] == "TOOL_RESULT":
-                                if extracted["function_responses"]:
+                            # Handle different event types with enhanced classifications
+                            if event_type_to_use == "STREAMING_TEXT_CHUNK":
+                                if text_to_use and author_to_use != "user":
+                                    print(text_to_use, end="", flush=True)
+                                    response_text += text_to_use
+                            elif event_type_to_use == "COMPLETE_TEXT":
+                                if text_to_use and author_to_use != "user":
+                                    print(text_to_use, end="", flush=True)
+                                    response_text += text_to_use
+                            elif event_type_to_use == "ARTIFACT_CREATION_CALL":
+                                if function_calls:
+                                    print(f"[📁 Creating artifact...]", end="", flush=True)
+                                    # Extract artifact filename from function calls
+                                    for call in function_calls:
+                                        if isinstance(call, dict) and "artifact_info" in call:
+                                            artifact_info = call["artifact_info"]
+                                            filename = artifact_info.get("filename", "unknown")
+                                            print(f"[📁 Creating '{filename}'...]", end="", flush=True)
+                                            break
+                            elif event_type_to_use == "ARTIFACT_CREATION_RESPONSE":
+                                if function_responses:
+                                    print(f"[📁 Artifact created successfully]", end="", flush=True)
+                                    # Track created artifacts
+                                    for resp in function_responses:
+                                        if isinstance(resp, dict) and resp.get("name") == "save_text_artifact":
+                                            response_data = resp.get("response", {})
+                                            if isinstance(response_data, dict):
+                                                filename = response_data.get("filename", "artifact")
+                                                version = response_data.get("version", 0)
+                                                artifact_created.append(f"{filename} v{version}")
+                            elif event_type_to_use == "TOOL_CALL":
+                                if function_calls:
+                                    print(f"[🔧 Tool call: {len(function_calls)} functions]", end="", flush=True)
+                            elif event_type_to_use == "TOOL_RESULT":
+                                if function_responses:
                                     print(f"[✅ Tool results received]", end="", flush=True)
-                            elif extracted["type"] == "ERROR":
-                                print(f"\n❌ Agent error: {extracted['error']}", end="", flush=True)
+                            elif event_type_to_use == "ARTIFACT_UPDATE":
+                                print(f"[📁 Artifacts updated]", end="", flush=True)
+                            elif event_type_to_use == "ERROR":
+                                print(f"\n❌ Agent error: {error_text}", end="", flush=True)
 
                     print()  # New line after response
+                    
+                    # Show artifact summary if any were created
+                    if artifact_created:
+                        print(f"📁 Artifacts created: {', '.join(artifact_created)}")
+                    
+                    # Show conversation summary from enhanced consumer
+                    if artifact_consumer:
+                        summary = artifact_consumer.get_conversation_summary()
+                        if summary["total_artifacts"] > 0:
+                            print(f"💾 Total artifacts in session: {summary['total_artifacts']}")
 
                 except KeyboardInterrupt:
                     print("\n👋 Chat interrupted. Goodbye!")
