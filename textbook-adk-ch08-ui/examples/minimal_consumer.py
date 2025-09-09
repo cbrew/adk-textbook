@@ -2,7 +2,7 @@
 import asyncio
 
 import httpx
-from adk_consumer import ADKConsumer
+from adk_core import ADKConsumer
 
 
 def print_data(prefix: str, response: dict | str):

@@ -203,6 +203,11 @@ def deserialize_json(json_str: Optional[str]) -> Any:
     """Safely deserialize JSON from database."""
     if json_str is None:
         return None
+    
+    # If it's already a Python object (dict, list, etc.), return as-is
+    if not isinstance(json_str, str):
+        return json_str
+    
     try:
         return json.loads(json_str)
     except (json.JSONDecodeError, TypeError):

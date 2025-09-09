@@ -7,7 +7,8 @@ def test_python_import_target():
         def __init__(self, a="1", b="2"):
             self.a, self.b = a, b
 
-    import types, sys
+    import sys
+    import types
 
     mod = types.ModuleType("tmp_mod")
     mod._X = _X

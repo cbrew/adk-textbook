@@ -17,13 +17,14 @@ Public surface:
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Any
-from urllib.parse import urlparse, parse_qsl
 import importlib
 import inspect
+from collections.abc import Callable
+from typing import Any
+from urllib.parse import parse_qsl, urlparse
 
 # registry[kind][scheme] = factory(parse_result, kwargs) -> instance
-_REGISTRY: Dict[str, Dict[str, Callable[..., Any]]] = {
+_REGISTRY: dict[str, dict[str, Callable[..., Any]]] = {
     "session": {},
     "memory": {},
     "artifact": {},

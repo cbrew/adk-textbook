@@ -2,8 +2,9 @@
 import asyncio
 
 import httpx
-from .consumer import ADKChatApp
+
 from .artifact_consumer import ArtifactEventConsumer
+from .consumer import ADKChatApp
 from .event_extractor import extract_description_from_event
 
 

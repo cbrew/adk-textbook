@@ -2,7 +2,7 @@
 """
 Simple Usage Demo: PostgreSQL Artifact Storage with Event Sourcing
 
-This demonstrates the key features of our implementation without complex ADK interactions.
+This demonstrates key features without complex ADK interactions.
 """
 
 import asyncio
@@ -31,7 +31,7 @@ async def demonstrate_artifact_storage():
     # Get services
     session_service = runtime.get_session_service()
     artifact_service = runtime.get_artifact_service()
-    memory_service = runtime.get_memory_service()
+    # memory_service = runtime.get_memory_service()  # Available if needed
 
     # Demo session
     session_id = str(uuid.uuid4())
@@ -227,8 +227,8 @@ population health management, and precision medicine applications.
                         session_id=session_id,
                         filename=artifact,
                     )
-                except:
-                    pass
+                except Exception:
+                    pass  # Ignore deletion errors during cleanup
 
             # Delete session
             await session_service.delete_session(

@@ -9,17 +9,14 @@ This test suite verifies:
 """
 
 import asyncio
-import pytest
 from unittest.mock import AsyncMock, Mock
-from typing import Any, Dict
 
+import pytest
 from google.adk.tools.tool_context import ToolContext
-from google.genai import types
 
+from adk_runtime.database.connection import DatabaseManager
 from adk_runtime.services.artifact_service import PostgreSQLArtifactService
 from adk_runtime.services.session_service import PostgreSQLSessionService
-from adk_runtime.services.memory_service import PostgreSQLMemoryService
-from adk_runtime.database.connection import DatabaseManager
 
 
 class TestAsyncServiceCompliance:

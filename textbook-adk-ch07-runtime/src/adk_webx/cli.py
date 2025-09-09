@@ -1,4 +1,3 @@
-.
 """
 CLI: `adk-webx` — a minimal FastAPI server using pluggable runtime services.
 """

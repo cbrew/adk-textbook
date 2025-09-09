@@ -7,10 +7,8 @@ import subprocess
 from pathlib import Path
 
 import httpx
-from adk_consumer import ADKConsumer
-from artifact_event_consumer import ArtifactEventConsumer
+from adk_core import ADKConsumer, ArtifactEventConsumer, extract_description_from_event
 from dotenv import load_dotenv
-from event_extractor import extract_description_from_event
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive

@@ -9,13 +9,13 @@ FastAPI app factory with pluggable runtime services (standalone).
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+
 from .service_loader import load_service
 
 
@@ -50,9 +50,9 @@ def get_fast_api_app(
     memory_service: Any | None = None,
     artifact_service: Any | None = None,
     # URL-based configuration
-    session_service_url: Optional[str] = None,
-    memory_service_url: Optional[str] = None,
-    artifact_service_url: Optional[str] = None,
+    session_service_url: str | None = None,
+    memory_service_url: str | None = None,
+    artifact_service_url: str | None = None,
     **kwargs: Any,
 ) -> FastAPI:
     """Construct a FastAPI app and attach resolved services to app.state.*"""

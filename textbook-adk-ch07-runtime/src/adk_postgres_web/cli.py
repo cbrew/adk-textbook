@@ -6,11 +6,9 @@ This is a direct copy of the ADK web command that we can modify to inject
 our PostgreSQL services instead of using the broken URL parsing.
 """
 
-import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
-from typing import Optional
 
 import click
 import uvicorn
@@ -51,15 +49,15 @@ def web(
     agents_dir: str,
     host: str = "127.0.0.1",
     port: int = 8000,
-    allow_origins: Optional[str] = None,
+    allow_origins: str | None = None,
     verbose: bool = False,
     log_level: str = "info",
     reload: bool = False,
     trace_to_cloud: bool = False,
-    eval_storage_uri: Optional[str] = None,
-    session_service_uri: Optional[str] = None,
-    artifact_service_uri: Optional[str] = None,
-    memory_service_uri: Optional[str] = None,
+    eval_storage_uri: str | None = None,
+    session_service_uri: str | None = None,
+    artifact_service_uri: str | None = None,
+    memory_service_uri: str | None = None,
 ):
     """Starts a FastAPI server with Web UI for agents using PostgreSQL services.
 

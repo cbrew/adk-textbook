@@ -17,27 +17,23 @@ from __future__ import annotations
 import json
 import logging
 import os
-from pathlib import Path
 import shutil
+from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
-from typing import Mapping
-from typing import Optional
 
 import click
-from fastapi import FastAPI
-from fastapi import UploadFile
-from fastapi.responses import FileResponse
-from fastapi.responses import PlainTextResponse
-from opentelemetry.sdk.trace import export
-from opentelemetry.sdk.trace import TracerProvider
-from starlette.types import Lifespan
-from watchdog.observers import Observer
-
+from fastapi import FastAPI, UploadFile
+from fastapi.responses import FileResponse, PlainTextResponse
 from google.adk.artifacts.gcs_artifact_service import GcsArtifactService
 from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
 from google.adk.auth.credential_service.in_memory_credential_service import (
     InMemoryCredentialService,
 )
+from google.adk.cli.adk_web_server import AdkWebServer
+from google.adk.cli.utils import envs, evals
+from google.adk.cli.utils.agent_change_handler import AgentChangeEventHandler
+from google.adk.cli.utils.agent_loader import AgentLoader
 from google.adk.evaluation.local_eval_set_results_manager import (
     LocalEvalSetResultsManager,
 )
@@ -48,11 +44,10 @@ from google.adk.runners import Runner
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.sessions.vertex_ai_session_service import VertexAiSessionService
 from google.adk.utils.feature_decorator import working_in_progress
-from google.adk.cli.adk_web_server import AdkWebServer
-from google.adk.cli.utils import envs
-from google.adk.cli.utils import evals
-from google.adk.cli.utils.agent_change_handler import AgentChangeEventHandler
-from google.adk.cli.utils.agent_loader import AgentLoader
+from opentelemetry.sdk.trace import TracerProvider, export
+from starlette.types import Lifespan
+from watchdog.observers import Observer
+
 from .service_loader import load_service
 
 logger = logging.getLogger("google_adk." + __name__)
@@ -61,19 +56,19 @@ logger = logging.getLogger("google_adk." + __name__)
 def get_fast_api_app(
     *,
     agents_dir: str,
-    session_service_uri: Optional[str] = None,
-    session_db_kwargs: Optional[Mapping[str, Any]] = None,
-    artifact_service_uri: Optional[str] = None,
-    memory_service_uri: Optional[str] = None,
-    eval_storage_uri: Optional[str] = None,
-    allow_origins: Optional[list[str]] = None,
+    session_service_uri: str | None = None,
+    session_db_kwargs: Mapping[str, Any] | None = None,
+    artifact_service_uri: str | None = None,
+    memory_service_uri: str | None = None,
+    eval_storage_uri: str | None = None,
+    allow_origins: list[str] | None = None,
     web: bool,
     a2a: bool = False,
     host: str = "127.0.0.1",
     port: int = 8000,
     trace_to_cloud: bool = False,
     reload_agents: bool = False,
-    lifespan: Optional[Lifespan[FastAPI]] = None,
+    lifespan: Lifespan[FastAPI] | None = None,
 ) -> FastAPI:
     # Set up eval managers.
     if eval_storage_uri:
@@ -293,7 +288,7 @@ def get_fast_api_app(
         response_model_exclude_none=True,
         response_class=PlainTextResponse,
     )
-    async def get_agent_builder(app_name: str, file_path: Optional[str] = None):
+    async def get_agent_builder(app_name: str, file_path: str | None = None):
         base_path = Path.cwd() / agents_dir
         agent_dir = base_path / app_name
         if not file_path:
@@ -327,7 +322,6 @@ def get_fast_api_app(
             from a2a.server.tasks import InMemoryTaskStore
             from a2a.types import AgentCard
             from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
-
             from google.adk.a2a.executor.a2a_agent_executor import A2aAgentExecutor
 
         except ImportError as e:
