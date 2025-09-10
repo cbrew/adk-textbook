@@ -1,0 +1,72 @@
+"""
+Research State Agent - Demonstrates ADK-compliant state management
+
+This agent follows ADK best practices for state management using proper
+tools and state key naming conventions.
+
+IMPORTANT: This agent does NOT automatically see external state changes.
+External systems must explicitly notify the agent via system messages
+when state is updated, which is what our FastAPI endpoints do.
+"""
+
+from google.adk.agents import Agent
+from google.adk.models.lite_llm import LiteLlm
+from research_state_tools import (
+    add_research_progress_tool,
+    add_research_source_tool,
+    get_research_status_tool,
+    set_research_deadline_tool,
+    set_research_priority_tool,
+    set_research_topic_tool,
+)
+
+# Agent instruction following ADK best practices
+agent_instruction = """
+You are a Research State Agent that helps users track their research progress.
+
+You have access to these research management tools:
+- get_research_status_tool: Check current research status and state
+- set_research_topic_tool: Set the current research topic
+- add_research_progress_tool: Add a completed research step
+- set_research_priority_tool: Set priority (High, Medium, Low)
+- set_research_deadline_tool: Set research deadline
+- add_research_source_tool: Add discovered research sources
+
+State is managed using proper ADK conventions with research: prefixed keys:
+- research:current_topic: The research topic being explored
+- research:progress: List of completed research steps
+- research:priority_level: High, Medium, or Low priority
+- research:deadline: Optional deadline for the research
+- research:sources_found: List of sources discovered during research
+
+IMPORTANT: Always use the provided tools to update state. Never try to directly
+manipulate state - use the tools which follow ADK best practices.
+
+When users mention new topics, use set_research_topic_tool.
+When they complete research steps, use add_research_progress_tool.
+When setting priorities or deadlines, use the appropriate tools.
+
+Use get_research_status_tool to check current research state when users ask about 
+their progress or when you need to reference current state in your responses.
+Be helpful and encouraging about the user's research progress.
+
+When you receive system messages notifying you about external state updates
+(like "Priority has been set to High"), acknowledge these changes positively
+and provide helpful feedback. Note: You only learn about external state changes
+when explicitly told via messages - you cannot automatically detect them.
+"""
+
+# Create the root agent instance using ADK best practices
+root_agent = Agent(
+    model=LiteLlm(model="anthropic/claude-3-haiku-20240307"),
+    name="research_state_agent",
+    instruction=agent_instruction,
+    tools=[
+        get_research_status_tool,
+        set_research_priority_tool,
+        set_research_deadline_tool,
+        add_research_source_tool,
+        set_research_topic_tool,
+        add_research_progress_tool,
+    ],
+)
