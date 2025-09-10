@@ -25,7 +25,9 @@ from google.adk.tools.base_tool import BaseTool
 logger = logging.getLogger(__name__)
 
 
-async def rate_limit_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> None:
+async def rate_limit_callback(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> None:
     """Simple rate limiting callback to prevent API overuse."""
     await asyncio.sleep(0.1)  # 100ms delay between calls
 
@@ -35,14 +37,15 @@ async def before_agent(callback_context: CallbackContext) -> None:
     logger.info("Starting paper finding agent session")
 
 
-async def before_tool(tool: BaseTool,
-                      args: dict[str, Any], tool_context: ToolContext) -> None:
+async def before_tool(
+    tool: BaseTool, args: dict[str, Any], tool_context: ToolContext
+) -> None:
     """Callback executed before tool execution."""
     logger.info("Executing tool: %s with input: %s", tool.name, args)
 
 
-async def after_tool(tool: BaseTool, args: dict,
-                     tool_context: ToolContext,
-                     tool_response:dict[str, Any]) -> None:
+async def after_tool(
+    tool: BaseTool, args: dict, tool_context: ToolContext, tool_response: dict[str, Any]
+) -> None:
     """Callback executed after tool execution."""
     logger.info("Tool %s completed successfully", tool.name)

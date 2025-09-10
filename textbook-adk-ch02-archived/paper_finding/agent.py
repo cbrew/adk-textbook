@@ -23,7 +23,7 @@ from .shared_libraries.callbacks import (
     rate_limit_callback,
     before_agent,
     before_tool,
-    after_tool
+    after_tool,
 )
 from .tools.tools import (
     search_arxiv,

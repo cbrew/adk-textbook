@@ -29,7 +29,7 @@ def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
                     "citations": 1247,
                     "venue": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
                     "url": "https://semantic-scholar.org/paper/12345",
-                    "available": True
+                    "available": True,
                 },
                 {
                     "title": "Attention Mechanisms in Neural Networks: A Survey",
@@ -39,8 +39,8 @@ def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
                     "citations": 892,
                     "venue": "Nature Machine Intelligence",
                     "url": "https://semantic-scholar.org/paper/67890",
-                    "available": True
-                }
+                    "available": True,
+                },
             ]
         },
         "NATURAL LANGUAGE PROCESSING": {
@@ -53,7 +53,7 @@ def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
                     "citations": 523,
                     "venue": "Computational Linguistics",
                     "url": "https://semantic-scholar.org/paper/24680",
-                    "available": True
+                    "available": True,
                 }
             ]
         },
@@ -67,10 +67,10 @@ def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
                     "citations": 45891,
                     "venue": "Advances in Neural Information Processing Systems",
                     "url": "https://semantic-scholar.org/paper/transformer",
-                    "available": True
+                    "available": True,
                 }
             ]
-        }
+        },
     }
 
     for key, data in papers_db.items():
@@ -80,7 +80,7 @@ def search_semantic_scholar(query: str, field: str) -> Dict[str, any]:
     return {
         "papers": [],
         "message": f"No papers found for query '{query}' in Semantic Scholar",
-        "suggestion": "Try broader keywords or check spelling"
+        "suggestion": "Try broader keywords or check spelling",
     }
 
 
@@ -111,7 +111,7 @@ def search_arxiv(query: str, category: str) -> Dict[str, any]:
                     "category": "cs.AI",
                     "url": "https://arxiv.org/abs/2212.08073",
                     "submitted": "2023-01-15",
-                    "available": True
+                    "available": True,
                 }
             ]
         },
@@ -126,10 +126,10 @@ def search_arxiv(query: str, category: str) -> Dict[str, any]:
                     "category": "cs.CL",
                     "url": "https://arxiv.org/abs/2005.11401",
                     "submitted": "2020-05-22",
-                    "available": True
+                    "available": True,
                 }
             ]
-        }
+        },
     }
 
     for key, data in arxiv_papers.items():
@@ -139,7 +139,7 @@ def search_arxiv(query: str, category: str) -> Dict[str, any]:
     return {
         "papers": [],
         "message": f"No papers found for query '{query}' in arXiv category '{category}'",
-        "suggestion": "Try different keywords or browse recent submissions"
+        "suggestion": "Try different keywords or browse recent submissions",
     }
 
 
@@ -170,7 +170,7 @@ def search_acm_digital_library(query: str, publication_type: str) -> Dict[str, a
                     "doi": "10.1145/3544548.3581234",
                     "pages": "1-14",
                     "type": "conference",
-                    "available": True
+                    "available": True,
                 }
             ]
         },
@@ -185,10 +185,10 @@ def search_acm_digital_library(query: str, publication_type: str) -> Dict[str, a
                     "doi": "10.1145/3469877",
                     "pages": "1-35",
                     "type": "journal",
-                    "available": True
+                    "available": True,
                 }
             ]
-        }
+        },
     }
 
     for key, data in acm_papers.items():
@@ -198,7 +198,7 @@ def search_acm_digital_library(query: str, publication_type: str) -> Dict[str, a
     return {
         "papers": [],
         "message": f"No papers found for query '{query}' in ACM Digital Library",
-        "suggestion": "Try broader computer science terms or specific venue names"
+        "suggestion": "Try broader computer science terms or specific venue names",
     }
 
 
@@ -229,7 +229,7 @@ def search_acl_anthology(query: str, venue: str) -> Dict[str, any]:
                     "anthology_id": "2023.acl-long.123",
                     "pages": "1234-1245",
                     "url": "https://aclanthology.org/2023.acl-long.123",
-                    "available": True
+                    "available": True,
                 }
             ]
         },
@@ -244,10 +244,10 @@ def search_acl_anthology(query: str, venue: str) -> Dict[str, any]:
                     "anthology_id": "2022.emnlp-main.456",
                     "pages": "5678-5692",
                     "url": "https://aclanthology.org/2022.emnlp-main.456",
-                    "available": True
+                    "available": True,
                 }
             ]
-        }
+        },
     }
 
     for key, data in acl_papers.items():
@@ -257,7 +257,7 @@ def search_acl_anthology(query: str, venue: str) -> Dict[str, any]:
     return {
         "papers": [],
         "message": f"No papers found for query '{query}' in ACL Anthology",
-        "suggestion": "Try NLP-specific terms or author names from the computational linguistics community"
+        "suggestion": "Try NLP-specific terms or author names from the computational linguistics community",
     }
 
 
@@ -289,7 +289,7 @@ def search_osu_digital_collections(query: str, collection: str) -> Dict[str, any
                     "advisor": "Dr. Alan Ritter",
                     "url": "https://etd.ohiolink.edu/pg_123456",
                     "pages": 187,
-                    "available": True
+                    "available": True,
                 }
             ]
         },
@@ -305,10 +305,10 @@ def search_osu_digital_collections(query: str, collection: str) -> Dict[str, any
                     "journal": "OSU Medical Research Quarterly",
                     "url": "https://kb.osu.edu/handle/1811/98765",
                     "pages": "45-62",
-                    "available": True
+                    "available": True,
                 }
             ]
-        }
+        },
     }
 
     for key, data in osu_papers.items():
@@ -318,7 +318,7 @@ def search_osu_digital_collections(query: str, collection: str) -> Dict[str, any
     return {
         "papers": [],
         "message": f"No papers found for query '{query}' in OSU Digital Collections",
-        "suggestion": "Try searching for OSU faculty names or browse by department"
+        "suggestion": "Try searching for OSU faculty names or browse by department",
     }
 
 
@@ -335,7 +335,7 @@ def visit_osu_library(query: str, assistance_type: str) -> Dict[str, any]:
     """
     if not assistance_type:
         assistance_type = "research"
-    
+
     services = {
         "research": {
             "service_name": "Research Consultation",
@@ -343,64 +343,61 @@ def visit_osu_library(query: str, assistance_type: str) -> Dict[str, any]:
             "contact": {
                 "phone": "(614) 292-6151",
                 "email": "library@osu.edu",
-                "chat": "Available 24/7 online"
+                "chat": "Available 24/7 online",
             },
             "what_to_expect": [
                 "One-on-one consultation with subject librarian",
                 "Help developing search strategies",
                 "Access to specialized databases",
-                "Guidance on citation management"
+                "Guidance on citation management",
             ],
             "hours": "Mon-Thu: 8am-2am, Fri: 8am-9pm, Sat: 9am-9pm, Sun: 11am-2am",
-            "best_for": "Complex research questions requiring specialized databases or expert guidance"
+            "best_for": "Complex research questions requiring specialized databases or expert guidance",
         },
         "database_access": {
             "service_name": "Database Access & Training",
             "location": "Any OSU Library location or online",
             "contact": {
                 "phone": "(614) 292-6151",
-                "url": "https://library.osu.edu/databases"
+                "url": "https://library.osu.edu/databases",
             },
             "databases_available": [
                 "Web of Science - Citation analysis and discovery",
-                "Scopus - Abstract and citation database", 
+                "Scopus - Abstract and citation database",
                 "IEEE Xplore - Engineering and technology",
                 "PsycINFO - Psychology and behavioral sciences",
-                "MathSciNet - Mathematics research"
+                "MathSciNet - Mathematics research",
             ],
             "training_available": "Group workshops and individual training sessions",
-            "best_for": "Accessing subscription databases not available through free sources"
+            "best_for": "Accessing subscription databases not available through free sources",
         },
         "interlibrary_loan": {
             "service_name": "OhioLINK & Interlibrary Loan",
             "location": "Online request system",
-            "contact": {
-                "url": "https://library.osu.edu/ill",
-                "email": "ill@osu.edu"
-            },
+            "contact": {"url": "https://library.osu.edu/ill", "email": "ill@osu.edu"},
             "what_to_expect": [
                 "Access to materials from other Ohio universities",
                 "Worldwide interlibrary loan requests",
                 "Digital delivery when possible",
-                "Physical item pickup at OSU libraries"
+                "Physical item pickup at OSU libraries",
             ],
             "turnaround_time": "3-10 business days for most requests",
             "cost": "Free for OSU students, staff, and faculty",
-            "best_for": "Papers and books not available in OSU collections or online"
-        }
+            "best_for": "Papers and books not available in OSU collections or online",
+        },
     }
 
     service = services.get(assistance_type, services["research"])
-    
+
     return {
         "query": query,
         "recommended_service": service,
         "next_steps": [
             f"Contact {service['service_name']} using the information above",
             "Prepare your research question and any specific requirements",
-            "Bring your BuckID for library access"
+            "Bring your BuckID for library access",
         ],
-        "additional_tip": "OSU Libraries also provide access to research guides for specific subjects at https://guides.osu.edu"
+        "additional_tip": "OSU Libraries also provide access to research guides for specific subjects at https://guides.osu.edu",
     }
 
 
@@ -462,7 +459,7 @@ You are an academic paper finder agent for researchers and students. 📚🎓 Yo
 """
 
 
-agent  = LlmAgent(
+agent = LlmAgent(
     model=LiteLlm(model="anthropic/claude-3-haiku-20240307"),
     name="claude_direct_agent",
     instruction=agent_instruction,
@@ -473,10 +470,8 @@ agent  = LlmAgent(
         search_acl_anthology,
         search_osu_digital_collections,
         visit_osu_library,
-    ]
+    ],
 )
-
-
 
 
 root_agent = agent
