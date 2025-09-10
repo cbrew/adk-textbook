@@ -126,7 +126,22 @@ eval:
 
 ---
 
-## 8) What’s next?
+## 8) What's next?
 
-- Explore `textbook-adk-ch01/README.md` for the no-code walkthrough.  
-- Chapter 2 will introduce a minimal Python agent and structured I/O.
+### Chapter Structure
+
+This textbook follows a progressive learning approach:
+
+| Chapter | Focus | Technology Stack |
+|---------|-------|------------------|
+| **[Chapter 1](textbook-adk-ch01/)** | Config-only agents | YAML configuration files |
+| **[Chapter 2](textbook-adk-ch02/)** | Python-based agents | Custom tools, evaluation frameworks |
+| **[Chapter 6](textbook-adk-ch06-runtime/)** | ADK Runtime Fundamentals | FastAPI, state management, UI contracts |
+| **[Chapter 7](textbook-adk-ch07-runtime/)** | PostgreSQL Runtime | Database persistence, custom services |
+
+### Getting Started
+
+- **New to ADK?** Start with `textbook-adk-ch01/README.md` for the no-code walkthrough
+- **Ready for Python?** Move to `textbook-adk-ch02/README.md` for custom tools and agents  
+- **Want to understand runtimes?** Explore `textbook-adk-ch06-runtime/README.md` for ADK internals
+- **Building production systems?** See `textbook-adk-ch07-runtime/README.md` for PostgreSQL integration

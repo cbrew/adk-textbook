@@ -48,6 +48,24 @@ uv run adk run textbook-adk-ch02/paper_finding
 uv run adk web textbook-adk-ch02/paper_finding
 ```
 
+#### Chapter 6: ADK Runtime Fundamentals
+```bash
+# FastAPI server with ADK UI Contract compliance
+cd textbook-adk-ch06-runtime
+python fastapi_starter.py
+
+# Interactive state management demonstrations
+python demo_state_delta.py
+python demo_enhanced_state.py
+
+# Server-sent events streaming test
+python test_sse_client.py
+
+# Run state-aware agents directly
+uv run adk run research_state_agent.py
+uv run adk run enhanced_research_agent.py
+```
+
 #### Chapter 7: PostgreSQL Runtime & Web UI Plugin System
 ```bash
 # Setup and start PostgreSQL services
@@ -80,6 +98,7 @@ The textbook follows a progressive learning approach with increasingly sophistic
 |---------|-------|------------------|
 | **Chapter 1** | Config-only agents | YAML configuration files |
 | **Chapter 2** | Python-based agents | Custom tools, evaluation frameworks |
+| **Chapter 6** | ADK Runtime fundamentals | FastAPI, state management, UI contracts |
 | **Chapter 7** | Database persistence | PostgreSQL runtime, web UI plugins |
 
 ### Agent Architecture Patterns
@@ -98,6 +117,20 @@ textbook-adk-ch02/paper_finding/
 ├── tools/tools.py        # Custom academic research tools
 └── shared_libraries/     # Reusable components
     └── callbacks.py      # Agent lifecycle and monitoring
+```
+
+#### ADK Runtime Fundamentals (Chapter 6)
+```
+textbook-adk-ch06-runtime/
+├── fastapi_starter.py         # Complete ADK UI Contract implementation
+├── adk_ui_contract.md         # Contract documentation and patterns
+├── research_state_agent.py    # Basic state-aware agent
+├── research_state_tools.py    # Simple state management tools
+├── enhanced_research_agent.py # Advanced state management
+├── enhanced_research_tools.py # EventActions.state_delta demonstrations
+├── demo_state_delta.py        # Interactive state management demos
+├── demo_enhanced_state.py     # Advanced state patterns
+└── test_sse_client.py         # SSE streaming client
 ```
 
 #### Database-Backed Agents (Chapter 7)

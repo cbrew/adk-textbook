@@ -1,6 +1,8 @@
-# Chapter 7: Custom ADK Runtime with PostgreSQL Persistence
+# Chapter 7: Custom PostgreSQL Runtime Implementation
 
-This chapter implements a production-grade ADK runtime with local PostgreSQL persistence, providing an alternative to Google Cloud services while maintaining full ADK compatibility.
+Build production-ready agent systems with PostgreSQL persistence, replacing ADK's default in-memory services with scalable database backends.
+
+> **Prerequisites**: Complete **Chapter 6: ADK Runtime Fundamentals** first to understand ADK UI Contract, state management, and event sourcing patterns before building custom runtimes.
 
 ## 🚀 Quick Start
 
@@ -200,15 +202,36 @@ If you see permission errors, try running:
 podman unshare chown 999:999 ~/.local/share/containers/storage/volumes/
 ```
 
-## Learning Objectives
+## What You'll Learn
 
-By completing this chapter, you'll understand:
+This chapter builds on **Chapter 6: ADK Runtime Fundamentals** by implementing a complete custom runtime with PostgreSQL persistence:
 
-- **Custom Runtime Development**: Building production-grade ADK runtimes
-- **Database Integration**: PostgreSQL with JSONB and vector extensions
-- **Event Sourcing**: Implementing audit trails and state recovery
-- **Service Architecture**: Designing modular, testable service layers
-- **Production Deployment**: Docker, migrations, monitoring, and scaling
+### Core Learning Objectives
+
+1. **PostgreSQL Service Implementation**: Replace default ADK services with database-backed implementations
+2. **Database Schema Design**: Design schemas for Sessions, Events, Memory, and Artifacts with ADK compatibility
+3. **Hybrid Storage Strategies**: Combine BYTEA storage with filesystem backing for optimal performance
+4. **Migration Management**: Handle database schema evolution and data migrations
+5. **Production Architecture**: Build scalable, monitored, production-ready agent systems
+
+### Building on Chapter 6 Foundations
+
+| Chapter 6 Concept | Chapter 7 Implementation |
+|-------------------|---------------------------|
+| **ADK UI Contract** | PostgreSQL services that maintain contract compliance |
+| **State Management** | Database persistence of state_delta updates |
+| **Event Sourcing** | PostgreSQL event tables with complete audit trails |
+| **External State Mutation** | Database-backed state that survives server restarts |
+| **Agent State Visibility** | Persistent state that agents can access across sessions |
+
+### Practical Outcomes
+
+After completing this chapter, you'll be able to:
+- Replace any ADK service with custom database implementations
+- Design production PostgreSQL schemas for agent systems  
+- Implement hybrid storage for large artifacts and binary data
+- Deploy agent systems with persistent, searchable memory
+- Scale agent systems beyond single-server limitations
 
 ## Starting Agents with PostgreSQL Services
 
