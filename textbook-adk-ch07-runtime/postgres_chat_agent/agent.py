@@ -313,7 +313,7 @@ def get_research_session_status(
 agent_instruction = """
 You are an **Academic Research Assistant** that demonstrates PostgreSQL-backed ADK services for professional academic workflows.
 
-🎓 **Your Role**: Help academics with research tasks while demonstrating persistent PostgreSQL services:
+🎓 **Your Role**: Help academics with research tasks
 - **Literature Management**: Track research papers, citations, and academic discussions
 - **Research Memory**: Build persistent knowledge from conversations across sessions
 - **Academic Artifacts**: Save research notes, bibliographies, and analysis documents
@@ -326,16 +326,12 @@ You are an **Academic Research Assistant** that demonstrates PostgreSQL-backed A
 - Track research progress and connections across multiple sessions
 - Provide continuity for long-term research projects
 
-🛠️ **PostgreSQL Service Integration** (for pedagogical demonstration):
-- `search_research_memory` - Search past academic conversations and research discussions
-- `track_research_progress` - Track research topics and findings via session state
-- `save_artifact` - Store research documents, bibliographies, and analysis
-- `list_artifacts` - Review saved academic materials and research outputs
+
 - `get_research_session_status` - Check research session continuity and progress
 
-💡 **Key Learning**: All persistence comes from custom PostgreSQL services integrated into ADK's Runner infrastructure, not default ADK services. Memory is created automatically from conversations - no manual saving needed!
 
-Focus on helping with academic research while demonstrating how PostgreSQL services enable persistent, professional academic workflows!
+
+Focus on helping with academic research.
 """
 
 # Create the Agent
@@ -343,109 +339,4 @@ agent = Agent(
     model=LiteLlm(model="anthropic/claude-3-haiku-20240307"),
     name="postgres_chat_agent",
     instruction=agent_instruction,
-    tools=[
-        search_research_memory,
-        track_research_progress,
-        save_artifact,
-        list_artifacts,
-        get_research_session_status,
-    ],
 )
-
-
-async def create_runner_with_postgresql_services():
-    """
-    Create an ADK Runner with our custom PostgreSQL services.
-
-    This is the key pedagogical demonstration: showing how to wire
-    custom services into ADK's infrastructure.
-    """
-    # Initialize our PostgreSQL runtime
-    runtime = await ensure_runtime_initialized()
-
-    # Get our custom service implementations
-    session_service = runtime.get_session_service()
-    memory_service = runtime.get_memory_service()
-    artifact_service = runtime.get_artifact_service()
-
-    logger.info("🔌 Wiring PostgreSQL services into ADK Runner...")
-
-    # Create ADK Runner with our custom PostgreSQL services
-    # This replaces ADK's default services with our implementations
-    runner = Runner(
-        agent=agent,
-        app_name="postgres_chat_agent",
-        session_service=session_service,  # Our PostgreSQL session service
-        memory_service=memory_service,  # Our PostgreSQL memory service
-        artifact_service=artifact_service,  # Our PostgreSQL artifact service
-    )
-
-    logger.info("✅ ADK Runner configured with custom PostgreSQL services!")
-    return runner
-
-
-# For ADK CLI integration, we need to provide the root_agent
-# But the real integration happens when we create a Runner with our services
-root_agent = agent
-
-
-# Custom runner factory for ADK CLI integration
-async def create_runner(agent, app_name: str | None = None, **kwargs):
-    """
-    Custom runner factory that ADK CLI can use to create a Runner
-    with our PostgreSQL services instead of default ones.
-    """
-    logger.info("🔄 ADK CLI requesting Runner creation with PostgreSQL services...")
-
-    # Initialize our PostgreSQL runtime
-    runtime = await ensure_runtime_initialized()
-
-    # Get our custom service implementations
-    session_service = runtime.get_session_service()
-    memory_service = runtime.get_memory_service()
-    artifact_service = runtime.get_artifact_service()
-
-    logger.info("🔌 Creating ADK Runner with PostgreSQL services...")
-
-    # Create ADK Runner with our custom PostgreSQL services
-    # This replaces ADK's default services with our implementations
-    runner = Runner(
-        agent=agent,
-        app_name=app_name or "postgres_chat_agent",
-        session_service=session_service,  # Our PostgreSQL session service
-        memory_service=memory_service,  # Our PostgreSQL memory service
-        artifact_service=artifact_service,  # Our PostgreSQL artifact service
-        **kwargs,
-    )
-
-    logger.info("✅ ADK Runner configured with custom PostgreSQL services!")
-    return runner
-
-
-# For demonstration purposes, let's show how the Runner integration would work
-if __name__ == "__main__":
-
-    async def demonstrate_integration():
-        """Demonstrate the proper service integration approach."""
-        print("🎓 Demonstrating PostgreSQL Service Integration with ADK")
-        print("=" * 60)
-
-        try:
-            # This is how you properly integrate custom services with ADK
-            runner = await create_runner_with_postgresql_services()
-
-            print("✅ Successfully created ADK Runner with PostgreSQL services!")
-            print("🏗️  Architecture:")
-            print("   • SessionService → PostgreSQL")
-            print("   • MemoryService → PostgreSQL")
-            print("   • ArtifactService → PostgreSQL")
-            print("   • All services integrated via ADK Runner")
-
-        except Exception as e:
-            print(f"❌ Integration failed: {e}")
-
-        finally:
-            if _runtime:
-                await _runtime.shutdown()
-
-    asyncio.run(demonstrate_integration())

@@ -7,8 +7,6 @@ FastAPI app factory with pluggable runtime services (standalone).
 - Does not depend on ADK internals beyond optional service classes for defaults.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 
