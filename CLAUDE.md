@@ -161,3 +161,5 @@ textbook-adk-ch06-runtime/
 - **Mock external dependencies**: Chapter 2 uses mocked academic APIs
 - **End-to-end validation**: Each chapter includes complete test suites
 - we don't do over general greps in unlikely places to find files. we reason carefully about where things are likely to be
+- in ADK tool functions, one must not document the tool_context argument. Make sure this is not done, and put a NOQA annotation to stop ruff from complaining
+- and ToolContext arguments have to be called, exactly tool_context, or they don't work

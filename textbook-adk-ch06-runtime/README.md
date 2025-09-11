@@ -56,17 +56,42 @@ Learn how to integrate agents with web UIs, implement the ADK UI Contract, and m
 
 ## Key Files and Their Purpose
 
-| File | Purpose | Key Concepts |
-|------|---------|--------------|
+| File/Directory | Purpose | Key Concepts |
+|----------------|---------|--------------|
 | `fastapi_starter.py` | Complete ADK UI Contract implementation | Contract compliance, external state mutation |
 | `adk_ui_contract.md` | Contract documentation and patterns | Point 4 (state_delta), API specifications |
-| `research_state_agent.py` | Basic state-aware agent | Simple state management, tool integration |
-| `research_state_tools.py` | Simple state management tools | tool_context.update_state() patterns |
-| `enhanced_research_agent.py` | Advanced state management agent | Both simple and EventActions.state_delta |
-| `enhanced_research_tools.py` | EventActions.state_delta tools | "The Standard Way" for complex updates |
+| `research_state_agent/` | Basic state-aware agent (ADK structure) | Simple state management, tool integration |
+| `enhanced_research_agent/` | Advanced state management agent (ADK structure) | Both simple and EventActions.state_delta |
 | `demo_state_delta.py` | Interactive state management demo | External API integration, agent responses |
 | `demo_enhanced_state.py` | Advanced state patterns demo | Complex state updates, notification patterns |
 | `test_sse_client.py` | SSE streaming client | Event parsing, real-time communication |
+
+### Agent Directory Structure (ADK Conventions)
+
+Both agents now follow ADK best practices:
+
+```
+research_state_agent/
+├── agent.py              # Main agent definition
+├── prompts.py            # Agent instructions and behavior
+├── __init__.py           # Exports root_agent
+├── .env                  # Environment configuration
+├── .env.sample          # Environment template
+└── tools/
+    ├── __init__.py
+    └── research_state_tools.py
+
+enhanced_research_agent/
+├── agent.py              # Main agent definition  
+├── prompts.py            # Agent instructions and behavior
+├── __init__.py           # Exports root_agent
+├── .env                  # Environment configuration
+├── .env.sample          # Environment template
+└── tools/
+    ├── __init__.py
+    ├── research_state_tools.py      # Simple state tools
+    └── enhanced_research_tools.py   # EventActions.state_delta tools
+```
 
 ## Running the Examples
 
@@ -93,10 +118,10 @@ python test_sse_client.py
 ### Individual Agent Testing
 ```bash
 # Simple state management
-uv run adk run research_state_agent.py
+uv run adk run research_state_agent/
 
 # Advanced state management
-uv run adk run enhanced_research_agent.py
+uv run adk run enhanced_research_agent/
 ```
 
 ## Key Discoveries and Best Practices

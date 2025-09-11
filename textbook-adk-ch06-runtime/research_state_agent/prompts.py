@@ -1,27 +1,12 @@
 """
-Research State Agent - Demonstrates ADK-compliant state management
+Agent instructions and prompts for the Research State Agent.
 
-This agent follows ADK best practices for state management using proper
-tools and state key naming conventions.
-
-IMPORTANT: This agent does NOT automatically see external state changes.
-External systems must explicitly notify the agent via system messages
-when state is updated, which is what our FastAPI endpoints do.
+This module contains the agent's behavioral instructions following ADK best practices
+for prompt organization and maintainability.
 """
 
-from google.adk.agents import Agent
-from google.adk.models.lite_llm import LiteLlm
-from research_state_tools import (
-    add_research_progress_tool,
-    add_research_source_tool,
-    get_research_status_tool,
-    set_research_deadline_tool,
-    set_research_priority_tool,
-    set_research_topic_tool,
-)
-
-# Agent instruction following ADK best practices
-agent_instruction = """
+# Main agent instruction defining behavior and capabilities
+AGENT_INSTRUCTION = """
 You are a Research State Agent that helps users track their research progress.
 
 You have access to these research management tools:
@@ -55,18 +40,3 @@ When you receive system messages notifying you about external state updates
 and provide helpful feedback. Note: You only learn about external state changes
 when explicitly told via messages - you cannot automatically detect them.
 """
-
-# Create the root agent instance using ADK best practices
-root_agent = Agent(
-    model=LiteLlm(model="anthropic/claude-3-haiku-20240307"),
-    name="research_state_agent",
-    instruction=agent_instruction,
-    tools=[
-        get_research_status_tool,
-        set_research_priority_tool,
-        set_research_deadline_tool,
-        add_research_source_tool,
-        set_research_topic_tool,
-        add_research_progress_tool,
-    ],
-)
