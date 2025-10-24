@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GroundingBox",
+  "type": "object",
+  "required": [
+    "goal",
+    "stage",
+    "progress",
+    "assumptions",
+    "open_items",
+    "next_action"
+  ],
+  "properties": {
+    "goal": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "stage": {
+      "type": "string"
+    },
+    "progress": {
+      "type": "object",
+      "required": [
+        "k",
+        "n"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 4
+    },
+    "open_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6
+    },
+    "next_action": {
+      "type": "object",
+      "required": [
+        "owner",
+        "verb",
+        "due"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "verb": {
+          "type": "string"
+        },
+        "due": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
