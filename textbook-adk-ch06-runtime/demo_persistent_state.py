@@ -71,6 +71,7 @@ async def demonstrate_persistent_state():
     # PHASE 2: Close and reopen - demonstrate persistence
     print("\n" + "=" * 60)
     print("PHASE 2: Session Persistence - New Connection")
+
     print("=" * 60)
     await phase2_persistent_retrieval(db_url, app_name, user_id, session_id)
     
