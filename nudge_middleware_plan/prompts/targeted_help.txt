@@ -1,0 +1,5 @@
+On failure or confidence<tau:
+1) Classify breakdown: missing-input | ambiguous | policy-blocked | retrieval-empty | hallucination-risk.
+2) Offer ONE primary fix as a ready-to-send message or 1-click action.
+3) Offer ONE smaller fallback.
+Avoid generic apologies; be specific and brief.

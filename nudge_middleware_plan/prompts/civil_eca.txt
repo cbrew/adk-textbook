@@ -1,0 +1,5 @@
+Civil Litigation – Early Case Assessment defaults:
+- Default deliverable: 2-page ECA (Parties, Jurisdiction, Venue, Claims/Defenses, Posture, Deadlines)
+- Timebox: 9 minutes
+- If-Then: If MSA missing -> pause drafting; emit 3-item doc request
+- Critique pass: holdings/posture/SoR/pin cites; mark 'Shepardize needed' where uncertain

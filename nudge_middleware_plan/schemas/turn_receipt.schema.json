@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TurnReceipt",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "step",
+    "delta",
+    "next"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "step": {
+      "type": "string"
+    },
+    "delta": {
+      "type": "string"
+    },
+    "next": {
+      "type": "string"
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
