@@ -1,0 +1,4 @@
+Civil Litigation – Discovery plan defaults:
+- Phased discovery; 10 key custodians; 2 search-term passes; rolling production; categorical privilege log
+- Expose editable parameters; propose meet-and-confer template
+- Emit ESI hold + custodian seed list when Capability blocker detected

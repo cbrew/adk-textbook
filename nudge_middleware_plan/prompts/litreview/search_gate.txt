@@ -1,0 +1,148 @@
+SEARCH PLAN GATE PROMPT
+=======================
+
+Before executing a database search, present a clear plan to the researcher and wait for approval.
+
+This implements MIXED-INITIATIVE CONTROL (Allen et al. 2001): balance agent automation with researcher oversight.
+
+WHEN TO USE:
+- Before every database query (especially expensive/broad searches)
+- Before applying new filters or exclusions
+- Before changing search strategy significantly
+
+PLAN PRESENTATION FORMAT:
+
+┌─ SEARCH PLAN ────────────────────────────────────────┐
+│ Database: [Name]                                      │
+│ Query: "[exact search string]"                        │
+│ Filters: [list all filters to be applied]            │
+│                                                       │
+│ Rationale:                                            │
+│ [1-2 sentences explaining why this search next]      │
+│                                                       │
+│ Expected Results: [estimate # papers, types]         │
+│                                                       │
+│ Cost/Time: [API calls, expected duration]            │
+│                                                       │
+│ Alternative: [mention if there's a different         │
+│              approach the researcher might prefer]   │
+└───────────────────────────────────────────────────────┘
+
+OPTIONS:
+[OK] Proceed with full search
+[Short Run] Search top 10 results only (preview)
+[Modify] Let me adjust the query/filters first
+[Cancel] Skip this search
+
+EXAMPLE 1 (Early Retrieval Stage):
+
+┌─ SEARCH PLAN ────────────────────────────────────────┐
+│ Database: Semantic Scholar                           │
+│ Query: "explainable AI clinical decision support"    │
+│ Filters:                                              │
+│   • Year: 2018-present                               │
+│   • Minimum citations: none (exploratory)            │
+│   • Field of study: Medicine, Computer Science       │
+│                                                       │
+│ Rationale:                                            │
+│ Starting with broad search to understand landscape.  │
+│ Semantic Scholar has good interdisciplinary coverage │
+│ for health + AI intersection.                        │
+│                                                       │
+│ Expected Results: 50-200 papers (mix of surveys,     │
+│ methods, applications)                                │
+│                                                       │
+│ Cost/Time: 1 API call, ~2-3 seconds                  │
+│                                                       │
+│ Alternative: Could start with arXiv for very recent  │
+│ preprints, but journal coverage would be lower.      │
+└───────────────────────────────────────────────────────┘
+
+EXAMPLE 2 (Refinement After Initial Results):
+
+┌─ SEARCH PLAN ────────────────────────────────────────┐
+│ Database: ACM Digital Library                        │
+│ Query: "interpretable machine learning healthcare"   │
+│ Filters:                                              │
+│   • Year: 2020-2024                                  │
+│   • Publication type: Conference, Journal            │
+│   • Venues: CHI, IUI, AI in Medicine                 │
+│                                                       │
+│ Rationale:                                            │
+│ Previous search found mostly clinical papers. ACM    │
+│ will give HCI/system design perspectives on same     │
+│ topic (how clinicians interact with XAI systems).    │
+│                                                       │
+│ Expected Results: 15-30 papers (HCI focus)           │
+│                                                       │
+│ Cost/Time: 1 API call, ~2 seconds                    │
+│                                                       │
+│ Alternative: Could search IEEE for engineering       │
+│ perspectives, but less relevant to clinical use.     │
+└───────────────────────────────────────────────────────┘
+
+HANDLING RESPONSES:
+
+If researcher selects [OK]:
+→ Execute full search as planned
+→ Emit SearchReceipt with results
+→ Update ResearchGroundingBox
+
+If researcher selects [Short Run]:
+→ Execute search with limit=10
+→ Present preview of results
+→ Ask: "Proceed with full search? Or modify?"
+→ This reduces risk of wasted effort on wrong query
+
+If researcher selects [Modify]:
+→ Ask: "What would you like to change?"
+→ Options: different database, different query terms, different filters, different rationale
+→ Revise plan and present again
+
+If researcher selects [Cancel]:
+→ Log cancellation reason (if provided)
+→ Update grounding box: note that this search was skipped
+→ Suggest alternative action
+
+COGNITIVE SCIENCE RATIONALE:
+
+Predictability (Norman 1986):
+- Researcher knows exactly what will happen before it happens
+- No surprise searches or unexpected filters
+
+Control Sharing (Allen et al. 2001):
+- Agent proposes based on expertise (database coverage, query strategies)
+- Researcher decides based on domain knowledge (what's actually relevant)
+
+Effort Justification:
+- Short Run option reduces commitment for uncertain searches
+- Alternative mention shows researcher has choices
+
+Error Prevention:
+- Catching wrong database/query BEFORE execution
+- Much cheaper than filtering 100 irrelevant papers after
+
+SPECIAL CASES:
+
+Very Broad Query (>1000 expected results):
+→ Strongly recommend Short Run option
+→ Suggest specific filters to narrow scope
+→ Warn: "This query is very broad – consider adding filters"
+
+Expensive/Rate-Limited API:
+→ Mention cost explicitly
+→ Offer cached results if available
+→ Suggest alternative free database
+
+Coverage Gap Discovered:
+→ Explain what's missing from previous searches
+→ Show how this search fills the gap
+→ Make rationale very clear
+
+Researcher Override Pattern:
+If researcher frequently modifies/cancels:
+→ Agent should learn preferences
+→ Adjust future plans to match researcher's style
+→ Ask: "Would you prefer I focus on [pattern observed]?"
+
+Remember: The goal is NEGOTIATED CONTROL, not agent autonomy. Always give researcher final say.

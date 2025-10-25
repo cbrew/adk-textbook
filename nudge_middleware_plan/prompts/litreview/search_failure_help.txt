@@ -1,0 +1,300 @@
+SEARCH FAILURE TARGETED HELP PROMPT
+====================================
+
+When a search fails or returns problematic results, provide SPECIFIC, ACTIONABLE help based on failure classification.
+
+This implements ERROR RECOVERY (Norman 1983): targeted remedies based on error type, not generic "try again" messages.
+
+FAILURE CLASSIFICATION:
+
+1. EMPTY_RESULTS
+2. AMBIGUOUS_TERMINOLOGY
+3. DATABASE_COVERAGE_GAP
+4. QUERY_TOO_BROAD
+5. ACCESS_RESTRICTED
+6. INCONSISTENT_RESULTS
+
+---
+
+FAILURE TYPE 1: EMPTY_RESULTS
+Symptoms: Query returned 0 papers
+
+HELP TEMPLATE:
+```
+No papers found for "[query]" in [Database]
+
+Possible reasons:
+• Query too specific (too many filters)
+• Terminology mismatch (database uses different terms)
+• Coverage gap (topic not well-represented in this database)
+
+READY-TO-CLICK ACTIONS:
+→ [Broaden Query] Remove filters: [list removable filters]
+→ [Try Synonyms] Alternative terms: [suggest 2-3 synonyms]
+→ [Different Database] Try [DatabaseB] instead (better coverage for [aspect])
+→ [Ask Researcher] What term does your field use for [concept]?
+
+Which would you like to try?
+```
+
+EXAMPLE:
+```
+No papers found for "federated learning healthcare privacy 2024" in ACM
+
+Possible reasons:
+• Very recent topic (2024 papers still being indexed)
+• ACM focuses on CS venues (medical privacy may be in health databases)
+
+READY-TO-CLICK ACTIONS:
+→ [Broaden Query] Remove "2024" filter → search 2022-2024
+→ [Try Synonyms] "distributed learning" OR "collaborative learning"
+→ [Different Database] Try PubMed (better health/privacy coverage)
+→ [Ask Researcher] Is "privacy-preserving ML" acceptable alternative?
+```
+
+---
+
+FAILURE TYPE 2: AMBIGUOUS_TERMINOLOGY
+Symptoms: Results span multiple unrelated topics
+
+HELP TEMPLATE:
+```
+"[term]" has multiple meanings in the literature:
+
+INTERPRETATION 1: [definition]
+Example papers: [show 1-2 titles]
+Typical venues: [venues]
+
+INTERPRETATION 2: [definition]
+Example papers: [show 1-2 titles]
+Typical venues: [venues]
+
+[Add INTERPRETATION 3 if relevant]
+
+READY-TO-CLICK ACTIONS:
+→ [Focus on Interp 1] Add filter: [specific constraint]
+→ [Focus on Interp 2] Add filter: [specific constraint]
+→ [See Both] Keep broad but group results by interpretation
+→ [Ask Researcher] Which meaning matches your research question?
+
+Which interpretation is relevant to your research?
+```
+
+EXAMPLE:
+```
+"AI governance" has multiple meanings in the literature:
+
+INTERPRETATION 1: Policy and regulation of AI systems
+Example papers: "Governing AI: A Policy Framework for Europe"
+Typical venues: Policy journals, law & technology conferences
+
+INTERPRETATION 2: Internal model governance (monitoring, auditing)
+Example papers: "Model Governance in Production ML Systems"
+Typical venues: MLOps, software engineering conferences
+
+INTERPRETATION 3: AI systems for governance (e-government applications)
+Example papers: "AI for Public Sector Decision Making"
+Typical venues: E-government, public administration journals
+
+READY-TO-CLICK ACTIONS:
+→ [Policy Focus] Add keywords: "regulation", "ethics", "policy"
+→ [Technical Focus] Add keywords: "model monitoring", "ML pipeline"
+→ [E-Gov Focus] Add keywords: "public sector", "government services"
+→ [Ask Researcher] Which aspect of governance are you studying?
+```
+
+---
+
+FAILURE TYPE 3: DATABASE_COVERAGE_GAP
+Symptoms: Expected papers missing, known work not appearing
+
+HELP TEMPLATE:
+```
+[Database] may have incomplete coverage for this topic.
+
+Known limitations:
+• [Database] focuses on [disciplines/venues]
+• Weak coverage of: [gaps]
+• Strong coverage of: [strengths]
+
+Papers you expected to find might be in:
+→ [DatabaseB]: [why it might have them]
+→ [DatabaseC]: [why it might have them]
+
+READY-TO-CLICK ACTIONS:
+→ [Search DatabaseB] [specific suggestion why]
+→ [Cross-check] Search same query in [DatabaseB] to compare
+→ [Note Limitation] Continue but document coverage gap for methods section
+→ [Ask Researcher] Do you know which venues published key papers?
+
+WARNING: This is a systematic gap, not a query issue. Consider multi-database strategy.
+```
+
+EXAMPLE:
+```
+ACM Digital Library may have incomplete coverage for medical AI ethics.
+
+Known limitations:
+• ACM focuses on computer science and HCI venues
+• Weak coverage of: bioethics journals, medical journals, policy venues
+• Strong coverage of: CHI, FAccT, AIES conferences (tech ethics)
+
+Papers on clinical ethics, patient perspectives, medical regulations
+likely in PubMed, bioethics databases, or health policy journals.
+
+READY-TO-CLICK ACTIONS:
+→ [Search PubMed] Medical/clinical perspectives on AI ethics
+→ [Search PhilPapers] Philosophical/ethical analysis
+→ [Continue ACM] Get tech ethics perspectives, note medical gap
+→ [Ask Researcher] Are you focusing on tech ethics or clinical ethics?
+
+WARNING: For comprehensive coverage, plan to search multiple databases.
+```
+
+---
+
+FAILURE TYPE 4: QUERY_TOO_BROAD
+Symptoms: 1000+ results, unclear how to prioritize
+
+HELP TEMPLATE:
+```
+Query "[query]" returned [N] papers – too many to review effectively.
+
+Suggested narrowing strategies:
+
+OPTION 1: Time-based filter
+→ [Recent Only] 2022-2024 (focus on latest approaches)
+→ [Foundational] 2015-2020 (focus on established methods)
+
+OPTION 2: Venue-based filter
+→ [Top Venues] [list 3-5 prestigious venues for this topic]
+→ [Specific Venue] [suggest if there's an obvious match]
+
+OPTION 3: Citation-based filter
+→ [Highly Cited] Minimum 50 citations (seminal work)
+→ [Recent Impact] 2022+ with 10+ citations (emerging work)
+
+OPTION 4: Publication type
+→ [Surveys/Reviews] Get landscape overview first
+→ [Conferences] Latest innovations
+→ [Journals] Mature, validated work
+
+READY-TO-CLICK ACTIONS:
+→ [Short Run] Show top 20 by citations (preview before deciding)
+→ [Apply Filter] [specific filter based on research stage]
+→ [Refine Query] Add more specific terms: [suggestions]
+→ [Ask Researcher] What aspect of [topic] is most relevant?
+
+Recommendation: Start with Short Run to see what kinds of papers appear.
+```
+
+---
+
+FAILURE TYPE 5: ACCESS_RESTRICTED
+Symptoms: Papers found but full-text unavailable
+
+HELP TEMPLATE:
+```
+Found [N] relevant papers, but [M] have restricted access:
+
+ACCESSIBLE NOW:
+• [N-M] papers available (full-text or open access)
+
+RESTRICTED:
+• [M] papers behind paywalls or subscriptions
+
+Access options for restricted papers:
+
+IMMEDIATE OPTIONS:
+→ [Check Library] OSU library subscriptions (use visit_osu_library tool)
+→ [Find Preprints] Search arXiv/author websites for open versions
+→ [Request ILL] Interlibrary loan (3-10 days)
+
+WORKAROUND OPTIONS:
+→ [Use Abstracts] Continue with abstracts only (note limitation)
+→ [Contact Authors] Request copy via email/ResearchGate
+→ [Alternative Papers] Find similar open-access papers on same topic
+
+READY-TO-CLICK ACTIONS:
+→ [Library Check] Check OSU access for top [5] restricted papers
+→ [Find Open] Search for open-access versions automatically
+→ [Proceed Anyway] Work with accessible papers, note incomplete access
+→ [Ask Researcher] Are specific papers critical, or is sample sufficient?
+
+WARNING: Research limited by access – document this in methods section.
+```
+
+---
+
+FAILURE TYPE 6: INCONSISTENT_RESULTS
+Symptoms: Different databases return conflicting info (citations, metadata, availability)
+
+HELP TEMPLATE:
+```
+Found inconsistencies across databases for this query:
+
+DATABASE A ([Database1]):
+• [N] papers found
+• Citation counts: [range/average]
+• Metadata quality: [assessment]
+
+DATABASE B ([Database2]):
+• [M] papers found
+• Citation counts: [range/average]
+• Metadata quality: [assessment]
+
+Common causes:
+• Different update cycles (citations lag)
+• Different coverage (venues, years)
+• Different indexing quality
+
+VALIDATION STRATEGY:
+→ [Cross-check Key Papers] Verify important papers in both databases
+→ [Use Primary Source] Trust [Database] for [specific data type]
+→ [Aggregate] Combine results, note sources in provenance
+
+READY-TO-CLICK ACTIONS:
+→ [Compare Top 10] Show same papers from both databases side-by-side
+→ [Choose Primary] Use [Database] as primary source (explain why)
+→ [Document Differences] Note inconsistencies for methods section
+→ [Ask Researcher] Which database is authoritative in your field?
+
+NOTE: This is expected for cross-database search – not an error, but needs handling.
+```
+
+---
+
+GENERAL PRINCIPLES FOR TARGETED HELP:
+
+1. CLASSIFY FIRST
+   - Identify failure type before suggesting remedies
+   - Different failures need different solutions
+
+2. SPECIFIC OVER GENERIC
+   - "Try 'interpretable ML' instead of 'explainable ML'"
+   - NOT "Try different keywords"
+
+3. READY-TO-CLICK ACTIONS
+   - Actionable, specific, one-click options
+   - Not "consider other databases" but "Search PubMed [why]"
+
+4. EDUCATIONAL
+   - Explain WHY the failure occurred
+   - Help researcher understand database characteristics
+
+5. MULTIPLE OPTIONS
+   - Primary remedy (most likely to work)
+   - Fallback remedy (if primary doesn't fit)
+   - Ask researcher (when agent can't decide)
+
+6. PRESERVE CONTEXT
+   - Show what was tried (query, database, filters)
+   - Show what failed and why
+   - Suggest next step that builds on this knowledge
+
+7. RESPECTFUL OF RESEARCHER TIME
+   - Short Run options for uncertain remedies
+   - Don't make researcher repeat work
+   - Learn from cancellations/modifications
+
+Remember: Targeted help turns breakdowns into learning opportunities about database characteristics and query strategies.

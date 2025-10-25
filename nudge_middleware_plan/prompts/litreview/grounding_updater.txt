@@ -1,0 +1,106 @@
+RESEARCH GROUNDING UPDATER PROMPT
+==================================
+
+After each search action, update the ResearchGroundingBox to maintain situation awareness.
+
+INSTRUCTIONS:
+1. Review the search results and determine what changed
+2. Update relevant fields in the grounding box
+3. Mark changes with Δ prefix for visibility
+4. Identify new open questions or resolved questions
+5. Determine the next logical action
+
+UPDATE CHECKLIST:
+
+Research Question:
+- Has the question been refined or clarified?
+- Did results suggest a better framing?
+→ If changed, prefix with Δ
+
+Stage:
+- Still in same stage (scoping/retrieval/synthesis/validation)?
+- Ready to advance to next stage?
+→ Update stage and include progress (k/n)
+
+Search Assumptions:
+- Were new filters applied?
+- Were any assumptions invalidated by results?
+- Did we discover new constraints?
+→ Add new assumptions, remove invalidated ones
+
+Open Questions:
+- Did search results raise new questions?
+- Were any previous questions answered?
+- Are there coverage gaps to address?
+→ Add new questions, remove answered ones (max 3)
+
+Next Action:
+- What database should be searched next?
+- What query refinement is needed?
+- Is synthesis/validation the next step?
+→ Specify: owner (agent/researcher/both), action, database/tool, timing
+
+Papers Found:
+→ Update running count (include count by database)
+
+Databases Searched:
+→ Add to list if new database queried
+
+Current Filters:
+→ Update active filters (date ranges, venues, exclusions)
+
+GROUNDING PRINCIPLES:
+
+Accuracy over Completeness:
+- Only update fields that actually changed
+- Don't speculate about researcher intent
+- Flag ambiguities as open questions
+
+Researcher Mental Model Alignment:
+- Use researcher's terminology, not system jargon
+- Frame questions from researcher perspective
+- Make implicit assumptions explicit
+
+Actionable Next Steps:
+- Next action should be clear and specific
+- Avoid vague actions like "continue searching"
+- Provide concrete database/query/analysis to do
+
+Coverage Awareness:
+- Note which disciplines/venues have been covered
+- Identify systematic gaps (e.g., missing non-English sources)
+- Track citation bias (over-reliance on highly cited papers)
+
+EXAMPLE UPDATE:
+
+Before Search:
+```
+Research Question: What approaches exist for explainable AI in healthcare?
+Stage: scoping (1/4)
+Assumptions: [none]
+Open Questions:
+  • Which healthcare domains focus on?
+  • Include research tools or only clinical apps?
+Next Action: agent → explore terminology by EOD
+```
+
+After Semantic Scholar search for "explainable AI healthcare":
+```
+Δ Research Question: What approaches exist for explainable AI in clinical decision support?
+Δ Stage: retrieval (2/4)
+Δ Assumptions:
+  • Focusing on clinical applications (researcher confirmed)
+  • 2018-present (when XAI in healthcare emerged)
+Open Questions:
+  • Are we missing European research? (mostly US papers)
+  • Include grey literature?
+Δ Next Action: agent → search arXiv for recent preprints by tomorrow 10am
+Papers Found: 23 (SemanticScholar: 23)
+Δ Databases Searched: [SemanticScholar]
+Δ Current Filters: {year: ">=2018", domain: "clinical"}
+```
+
+DELTA SUMMARY for Turn Receipt:
+"Narrowed question to clinical decision support (23 papers found). Added date assumption (2018+). Noted potential US bias. Next: arXiv for preprints."
+
+Remember: The grounding box should match the researcher's mental model, not just system state.

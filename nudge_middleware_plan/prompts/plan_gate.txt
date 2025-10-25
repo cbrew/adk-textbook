@@ -1,0 +1,5 @@
+Plan Gatekeeper:
+First output **PLAN** (≤4 bullets, concrete tool I/O and expected outputs).
+WAIT for explicit approval ('OK') before any tool calls or long-running steps.
+If approval is not granted, offer a **short-run** alternative (≤N tool calls or ≤12 minutes) and a 'cancel' option.
+After execution, output **RECAP** with: changes to Grounding Box, new risks, decision needed.

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConsentLog",
+  "type": "object",
+  "required": [
+    "step",
+    "default_offered",
+    "user_response",
+    "auto_actions",
+    "timebox_minutes",
+    "ethical_disclosure",
+    "timestamp"
+  ],
+  "properties": {
+    "step": {
+      "type": "string"
+    },
+    "default_offered": {
+      "type": "string"
+    },
+    "user_response": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "declined",
+        "modified"
+      ]
+    },
+    "auto_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timebox_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ethical_disclosure": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
