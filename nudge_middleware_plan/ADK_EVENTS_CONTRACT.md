@@ -721,6 +721,749 @@ def handle_user_response(message: str, tool_context: ToolContext) -> str:
 
 ---
 
+## User Event Generation (Panel → Server)
+
+The Research Grounding Panel has two primary input mechanisms that generate ADK user events:
+
+### 1. Chat Box (Text Input)
+
+**Purpose**: Free-form researcher input for search requests, questions, and conversation
+
+**User Action**: Researcher types message and presses Enter/Send
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Search Semantic Scholar for explainable AI in healthcare" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": null
+}
+```
+
+**Resulting ADK Event** (streamed to panel):
+```json
+{
+  "author": "user",
+  "content": {
+    "parts": [
+      { "text": "Search Semantic Scholar for explainable AI in healthcare" }
+    ]
+  },
+  "invocation_id": "inv_123",
+  "id": "evt_user_001",
+  "timestamp": 1698765432.123
+}
+```
+
+**UI Implementation** (JavaScript/TypeScript):
+```typescript
+// Chat box submit handler
+chatForm.onSubmit = async (message: string) => {
+  const request = {
+    app_name: "research_agent",
+    user_id: currentUser.id,
+    session_id: currentSession.id,
+    new_message: {
+      role: "user",
+      parts: [{ text: message }]
+    },
+    streaming: true,
+    state_delta: null
+  };
+
+  // Send via SSE
+  const eventSource = await fetch('/run_sse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  });
+
+  // Consume response stream (see Pattern 2 earlier)
+  consumeEventStream(eventSource);
+};
+```
+
+### 2. Grounding Panel Control Surfaces
+
+The grounding panel includes interactive controls that generate **structured user events** to signal approval, modifications, or actions.
+
+#### Control Surface 2.1: Search Plan Approval Buttons
+
+**Purpose**: Respond to agent's search plan presentation
+
+**UI Elements**: Four buttons appear when agent presents a search plan
+
+```
+[   OK   ]  [Short Run]  [  Modify  ]  [  Cancel  ]
+```
+
+**Button Actions**:
+
+##### OK Button
+
+**User Action**: Click [OK]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "OK" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:user_approval": "ok",
+    "grounding:approval_timestamp": "2024-01-25T14:23:00Z"
+  }
+}
+```
+
+**Agent Response**: Proceeds with full search as planned
+
+##### Short Run Button
+
+**User Action**: Click [Short Run]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Short Run" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:user_approval": "short_run",
+    "grounding:preview_mode": true,
+    "grounding:approval_timestamp": "2024-01-25T14:23:00Z"
+  }
+}
+```
+
+**Agent Response**: Executes search with `limit=10`, then asks for full search approval
+
+##### Modify Button
+
+**User Action**: Click [Modify]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Modify" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:user_approval": "modify",
+    "grounding:approval_timestamp": "2024-01-25T14:23:00Z"
+  }
+}
+```
+
+**Agent Response**: Asks "What would you like to change?" → researcher uses chat box to specify
+
+##### Cancel Button
+
+**User Action**: Click [Cancel]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Cancel" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:user_approval": "cancel",
+    "grounding:pending_search_plan": null,
+    "grounding:approval_timestamp": "2024-01-25T14:23:00Z"
+  }
+}
+```
+
+**Agent Response**: Cancels search, clears pending plan, suggests next action
+
+**UI Implementation**:
+```typescript
+// Search plan approval button handlers
+const approvalButtons = {
+  ok: () => sendApproval("OK", { user_approval: "ok" }),
+  shortRun: () => sendApproval("Short Run", { user_approval: "short_run", preview_mode: true }),
+  modify: () => sendApproval("Modify", { user_approval: "modify" }),
+  cancel: () => sendApproval("Cancel", { user_approval: "cancel", pending_search_plan: null })
+};
+
+function sendApproval(message: string, stateDelta: object) {
+  const request = {
+    app_name: "research_agent",
+    user_id: currentUser.id,
+    session_id: currentSession.id,
+    new_message: {
+      role: "user",
+      parts: [{ text: message }]
+    },
+    streaming: true,
+    state_delta: {
+      ...stateDelta,
+      "grounding:approval_timestamp": new Date().toISOString()
+    }
+  };
+
+  fetch('/run_sse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  }).then(consumeEventStream);
+}
+```
+
+#### Control Surface 2.2: Targeted Help Action Buttons
+
+**Purpose**: Select remedy for search failure
+
+**UI Elements**: Action buttons appear after search failure classification
+
+```
+→ [Try Synonyms] "AI transparency" OR "algorithmic explainability"
+→ [Different Database] Try IEEE for medical informatics
+→ [Broaden Query] Remove "clinical" filter
+```
+
+**Button Actions**:
+
+##### Try Synonyms Button
+
+**User Action**: Click [Try Synonyms]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Try Synonyms" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:selected_remedy": "try_synonyms",
+    "grounding:remedy_context": {
+      "original_query": "explainable AI clinical",
+      "suggested_synonyms": ["AI transparency", "algorithmic explainability"]
+    }
+  }
+}
+```
+
+**Agent Response**: Executes refined search with synonyms
+
+##### Different Database Button
+
+**User Action**: Click [Different Database]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Different Database" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:selected_remedy": "different_database",
+    "grounding:remedy_context": {
+      "original_database": "ACM",
+      "suggested_database": "IEEE"
+    }
+  }
+}
+```
+
+**Agent Response**: Presents search plan for alternative database
+
+##### Broaden Query Button
+
+**User Action**: Click [Broaden Query]
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "user",
+    "parts": [
+      { "text": "Broaden Query" }
+    ]
+  },
+  "streaming": true,
+  "state_delta": {
+    "grounding:selected_remedy": "broaden_query",
+    "grounding:remedy_context": {
+      "original_query": "explainable AI clinical decision support",
+      "filter_to_remove": "clinical"
+    }
+  }
+}
+```
+
+**Agent Response**: Executes search with broader query
+
+**UI Implementation**:
+```typescript
+// Targeted help action button handlers
+function createRemedyButton(
+  label: string,
+  remedy: string,
+  context: object
+): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.textContent = label;
+  button.onclick = () => {
+    const request = {
+      app_name: "research_agent",
+      user_id: currentUser.id,
+      session_id: currentSession.id,
+      new_message: {
+        role: "user",
+        parts: [{ text: label }]
+      },
+      streaming: true,
+      state_delta: {
+        "grounding:selected_remedy": remedy,
+        "grounding:remedy_context": context
+      }
+    };
+
+    fetch('/run_sse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    }).then(consumeEventStream);
+  };
+  return button;
+}
+```
+
+#### Control Surface 2.3: Grounding Panel Direct State Mutation
+
+**Purpose**: Allow researcher to directly modify grounding state (e.g., add/remove assumptions)
+
+**UI Elements**: Editable fields or buttons in grounding panel
+
+##### Add Assumption Button
+
+**User Action**: Click [+ Add Assumption], enter text in modal
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "system",
+    "parts": []
+  },
+  "streaming": false,
+  "state_delta": {
+    "grounding:search_assumptions": [
+      "Clinical applications only",
+      "2020-present",
+      "English language papers"
+    ]
+  }
+}
+```
+
+**Note**: Uses `role: "system"` with empty `parts` for state-only update (no agent processing)
+
+##### Remove Open Question Button
+
+**User Action**: Click [✕] next to open question
+
+**Generated Event Request**:
+```json
+POST /run_sse
+{
+  "app_name": "research_agent",
+  "user_id": "researcher_123",
+  "session_id": "session_456",
+  "new_message": {
+    "role": "system",
+    "parts": []
+  },
+  "streaming": false,
+  "state_delta": {
+    "grounding:open_questions": [
+      "Include grey literature?"
+    ]
+  }
+}
+```
+
+**UI Implementation**:
+```typescript
+// Direct state mutation for panel controls
+function updateGroundingState(stateDelta: object) {
+  const request = {
+    app_name: "research_agent",
+    user_id: currentUser.id,
+    session_id: currentSession.id,
+    new_message: {
+      role: "system",  // State-only update
+      parts: []
+    },
+    streaming: false,
+    state_delta: stateDelta
+  };
+
+  fetch('/run', {  // Use /run (non-streaming) for immediate state updates
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  }).then(response => response.json())
+    .then(events => {
+      // Update panel with echoed state
+      const stateEvent = events.find(e => e.actions?.state_delta);
+      if (stateEvent) {
+        updateGroundingPanel(stateEvent.actions.state_delta);
+      }
+    });
+}
+
+// Example: Add assumption
+addAssumptionButton.onclick = () => {
+  const newAssumption = prompt("Enter search assumption:");
+  if (newAssumption) {
+    const currentAssumptions = getGroundingState("search_assumptions") || [];
+    updateGroundingState({
+      "grounding:search_assumptions": [...currentAssumptions, newAssumption]
+    });
+  }
+};
+```
+
+#### Control Surface 2.4: Export Search Strategy Button
+
+**Purpose**: Download complete search strategy for methods section
+
+**User Action**: Click [Export Strategy]
+
+**Generated Event Request**: **None** (client-side only)
+
+**UI Implementation**:
+```typescript
+// Export button (no server interaction)
+exportButton.onclick = () => {
+  const strategy = generateSearchStrategyMarkdown(
+    getGroundingState("search_history"),
+    getGroundingState("search_assumptions"),
+    getGroundingState("databases_searched"),
+    getGroundingState("papers_found")
+  );
+
+  // Download as .md file
+  downloadFile("search_strategy.md", strategy);
+};
+
+function generateSearchStrategyMarkdown(
+  searchHistory: SearchReceipt[],
+  assumptions: string[],
+  databases: string[],
+  paperCount: number
+): string {
+  return `# Literature Review Search Strategy
+
+## Research Question
+${getGroundingState("research_question")}
+
+## Databases Searched
+${databases.join(", ")}
+
+## Search Queries
+${searchHistory.map(h =>
+  `- ${h.database}: "${h.query}" (${h.results_count} results)`
+).join("\n")}
+
+## Inclusion Criteria
+${assumptions.map(a => `- ${a}`).join("\n")}
+
+## Total Papers Found
+${paperCount}
+
+## Search Date
+${new Date().toISOString().split('T')[0]}
+`;
+}
+```
+
+#### Control Surface 2.5: View Search History Button
+
+**Purpose**: Expand/collapse full search history timeline
+
+**User Action**: Click [View Search History]
+
+**Generated Event Request**: **None** (UI state only)
+
+**UI Implementation**:
+```typescript
+// Toggle search history visibility (client-side only)
+viewHistoryButton.onclick = () => {
+  const historyPanel = document.getElementById('search-history-panel');
+  historyPanel.classList.toggle('expanded');
+
+  if (historyPanel.classList.contains('expanded')) {
+    // Render full search history from state
+    const searchHistory = getGroundingState("search_history") || [];
+    renderSearchHistory(searchHistory);
+  }
+};
+
+function renderSearchHistory(history: SearchReceipt[]) {
+  const timeline = history.map(receipt => `
+    <div class="history-item">
+      <span class="timestamp">${receipt.timestamp}</span>
+      <span class="database">${receipt.database}</span>
+      <span class="query">"${receipt.query}"</span>
+      <span class="results">${receipt.results_count} papers</span>
+      ${receipt.warnings.length > 0 ?
+        `<span class="warnings">⚠️ ${receipt.warnings.join(", ")}</span>` : ''}
+    </div>
+  `).join('\n');
+
+  document.getElementById('search-history-timeline').innerHTML = timeline;
+}
+```
+
+---
+
+## Complete Bidirectional Event Flow Examples
+
+### Example 1: Researcher Initiates Search via Chat
+
+```
+┌─────────────┐                    ┌─────────────┐                    ┌─────────────┐
+│  Chat Box   │                    │   Server    │                    │ Grounding   │
+│             │                    │             │                    │   Panel     │
+└──────┬──────┘                    └──────┬──────┘                    └──────┬──────┘
+       │                                  │                                  │
+       │ User types: "Search Semantic     │                                  │
+       │ Scholar for XAI in healthcare"   │                                  │
+       │                                  │                                  │
+       │ POST /run_sse                    │                                  │
+       │ { new_message: {...},            │                                  │
+       │   state_delta: null }            │                                  │
+       ├─────────────────────────────────>│                                  │
+       │                                  │                                  │
+       │                 SSE: User input event                               │
+       │<─────────────────────────────────┤                                  │
+       │                 │                │                                  │
+       │                 SSE: Agent presents search plan                     │
+       │<─────────────────────────────────┤                                  │
+       │                 │                │                                  │
+       │                 SSE: State delta (pending_plan)                     │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                 Panel updates:   │
+       │                 │                │                 Shows plan with  │
+       │                 │                │                 [OK][Short][...]  │
+       │                 │                │                                  │
+```
+
+### Example 2: Researcher Clicks [OK] Button
+
+```
+┌─────────────┐                    ┌─────────────┐                    ┌─────────────┐
+│  Chat Box   │                    │   Server    │                    │ Grounding   │
+│             │                    │             │                    │   Panel     │
+└──────┬──────┘                    └──────┬──────┘                    └──────┬──────┘
+       │                                  │                                  │
+       │                                  │        User clicks [OK]          │
+       │                                  │<─────────────────────────────────┤
+       │                                  │                                  │
+       │                                  │ POST /run_sse                    │
+       │                                  │ { new_message: {text: "OK"},     │
+       │                                  │   state_delta: {user_approval:   │
+       │                                  │   "ok"} }                        │
+       │                                  │                                  │
+       │                 SSE: User input event ("OK")                        │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                                  │
+       │                 SSE: Tool call (search_semantic_scholar)            │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                 Panel shows:     │
+       │                 │                │                 "Searching..."   │
+       │                 │                │                                  │
+       │                 SSE: Tool result (34 papers)                        │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                                  │
+       │                 SSE: State delta (papers_found: 34,                 │
+       │                      databases_searched: ["Semantic Scholar"])     │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                 Panel updates:   │
+       │                 │                │                 Papers: 34       │
+       │                 │                │                 DBs: 1           │
+       │                 │                │                                  │
+       │                 SSE: Search receipt (human-readable)                │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │ Displays in     │                │                 Shows in turn    │
+       │ chat history    │                │                 receipt area     │
+       │                 │                │                                  │
+       │                 SSE: turn_complete=true                             │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                                  │                                  │
+```
+
+### Example 3: Researcher Clicks [Try Synonyms] After Failure
+
+```
+┌─────────────┐                    ┌─────────────┐                    ┌─────────────┐
+│  Chat Box   │                    │   Server    │                    │ Grounding   │
+│             │                    │             │                    │   Panel     │
+└──────┬──────┘                    └──────┬──────┘                    └──────┬──────┘
+       │                                  │                                  │
+       │ (Previous search returned        │                                  │
+       │  only 3 papers - failure)        │                                  │
+       │                                  │                                  │
+       │                 SSE: State delta (last_search_failure)              │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                                  │
+       │                 SSE: Targeted help with remedy buttons              │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                 Panel shows:     │
+       │                 │                │                 [Try Synonyms]   │
+       │                 │                │                 [Different DB]   │
+       │                 │                │                                  │
+       │                                  │   User clicks [Try Synonyms]     │
+       │                                  │<─────────────────────────────────┤
+       │                                  │                                  │
+       │                                  │ POST /run_sse                    │
+       │                                  │ { new_message: {text: "Try       │
+       │                                  │   Synonyms"},                    │
+       │                                  │   state_delta: {selected_remedy: │
+       │                                  │   "try_synonyms", remedy_context:│
+       │                                  │   {...}} }                       │
+       │                                  │                                  │
+       │                 SSE: User input event ("Try Synonyms")              │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                                  │
+       │                 SSE: New search plan with synonyms                  │
+       │<─────────────────────────────────┼─────────────────────────────────>│
+       │                 │                │                 Panel updates:   │
+       │                 │                │                 New plan shown   │
+       │                 │                │                                  │
+```
+
+### Example 4: Researcher Adds Assumption via Panel
+
+```
+┌─────────────┐                    ┌─────────────┐                    ┌─────────────┐
+│  Chat Box   │                    │   Server    │                    │ Grounding   │
+│             │                    │             │                    │   Panel     │
+└──────┬──────┘                    └──────┬──────┘                    └──────┬──────┘
+       │                                  │                                  │
+       │                                  │   User clicks [+ Add Assumption] │
+       │                                  │   Enters: "Peer-reviewed only"   │
+       │                                  │<─────────────────────────────────┤
+       │                                  │                                  │
+       │                                  │ POST /run                        │
+       │                                  │ { new_message: {role: "system",  │
+       │                                  │   parts: []},                    │
+       │                                  │   state_delta: {                 │
+       │                                  │   search_assumptions: [...]      │
+       │                                  │   } }                            │
+       │                                  │                                  │
+       │                 Response: [state delta event]                       │
+       │                                  ├─────────────────────────────────>│
+       │                                  │                 Panel updates:   │
+       │                                  │                 Assumptions:     │
+       │                                  │                 • Clinical only  │
+       │                                  │                 • 2020-present   │
+       │                                  │                 Δ • Peer-reviewed│
+       │                                  │                                  │
+       │                                  │                 (Δ shows change) │
+       │                                  │                                  │
+```
+
+---
+
+## Summary: Bidirectional Event Contract
+
+### Panel → Server (User Events)
+
+| Input Source | Event Type | Content | State Delta | Use Case |
+|-------------|-----------|---------|-------------|----------|
+| Chat Box | User input | Free text | null | Natural language queries |
+| [OK] button | User input | "OK" | user_approval: "ok" | Approve search plan |
+| [Short Run] | User input | "Short Run" | user_approval: "short_run" | Request preview |
+| [Modify] | User input | "Modify" | user_approval: "modify" | Adjust plan |
+| [Cancel] | User input | "Cancel" | pending_plan: null | Cancel search |
+| [Try Synonyms] | User input | "Try Synonyms" | selected_remedy: "try_synonyms" | Apply remedy |
+| [+ Add Assumption] | System (state-only) | (empty) | search_assumptions: [...] | Direct state mutation |
+| [Export Strategy] | (none) | N/A | N/A | Client-side only |
+
+### Server → Panel (Agent/System Events)
+
+| Event Type | Content | State Delta | Use Case |
+|-----------|---------|-------------|----------|
+| Agent response | Search plan text | pending_plan: {...} | Present plan for approval |
+| Tool call | function_calls | null | Show search in progress |
+| Tool result | function_responses | null | Display papers found |
+| State update | null | papers_found, databases_searched, etc. | Update grounding panel |
+| Agent response | Search receipt text | search_history: [...] | Show turn summary |
+| Agent response | Targeted help text | last_search_failure: {...} | Display remedies |
+| Turn complete | null | null | Signal end of interaction |
+
+---
+
 ## Summary: Pure ADK Event Compliance
 
 The Research Grounding Panel achieves full functionality using **only standard ADK events**:
