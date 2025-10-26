@@ -1,0 +1,23 @@
+# ADK Capstone: Research Grounding Panel Dependencies
+
+# Core ADK
+google-adk[eval]
+
+# FastAPI server
+fastapi
+uvicorn[standard]
+sse-starlette
+python-dotenv
+
+# Textual UI
+textual
+
+# HTTP client
+httpx
+
+# Type hints
+pydantic
+
+# Development
+ruff
+pyright

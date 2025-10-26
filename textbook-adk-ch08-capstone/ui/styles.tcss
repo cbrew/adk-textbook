@@ -1,0 +1,61 @@
+/* Textual CSS for Research Grounding Panel */
+
+/* Overall layout */
+Screen {
+    layout: vertical;
+}
+
+/* Grounding panel container */
+#grounding-container {
+    height: 40%;
+    border: solid $primary;
+    padding: 1;
+}
+
+.section-title {
+    text-style: bold;
+    color: $accent;
+    content-align: center middle;
+}
+
+.separator {
+    color: $primary-lighten-2;
+}
+
+.grounding-field {
+    margin: 0 1;
+    color: $text;
+}
+
+.grounding-field-secondary {
+    margin: 0 1;
+    color: $text-muted;
+}
+
+/* Receipts container */
+#receipts-container {
+    height: 50%;
+    border: solid $secondary;
+    padding: 1;
+}
+
+#turn-receipts {
+    height: 1fr;
+    border: none;
+}
+
+/* Input container */
+#input-container {
+    height: 10%;
+    layout: horizontal;
+    padding: 1;
+}
+
+#message-input {
+    width: 1fr;
+}
+
+#send-button {
+    width: auto;
+    margin-left: 1;
+}
