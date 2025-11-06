@@ -1,4 +1,17 @@
-"""Configuration for MCP Code Execution Agent."""
+"""Configuration for MCP Code Execution Agent.
+
+Environment Variables:
+    USE_REAL_MCP: Set to "true" to use real MCP servers instead of demo mode.
+                  Requires MCP servers to be available (e.g., filesystem server).
+                  Default: "false"
+
+Example:
+    # Use demo mode (default)
+    $ uv run adk run mcp_code_agent/
+
+    # Use real MCP servers
+    $ USE_REAL_MCP=true uv run adk run mcp_code_agent/
+"""
 
 from dataclasses import dataclass
 from pathlib import Path

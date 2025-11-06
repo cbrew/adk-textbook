@@ -4,12 +4,18 @@ This module demonstrates the progressive disclosure pattern where tool definitio
 are loaded on-demand rather than all at once, conserving context tokens.
 """
 
+import asyncio
 import json
+import os
 from typing import Literal
 
 from google.adk.tools.tool_context import ToolContext
 
-from .mcp_tools import MOCK_MCP_TOOLS
+from .mcp_client import get_manager
+from .mcp_demo_data import get_demo_tools
+
+# Check if we should use real MCP servers or demo mode
+USE_REAL_MCP = os.getenv("USE_REAL_MCP", "false").lower() in ("true", "1", "yes")
 
 
 def get_tool_definition(
@@ -29,34 +35,61 @@ def get_tool_definition(
     Returns:
         JSON string with the tool definition
     """
-    # Search for the tool across all categories
-    for category, tools in MOCK_MCP_TOOLS.items():
-        if tool_name in tools:
-            tool_def = tools[tool_name]
+    if USE_REAL_MCP:
+        # Use real MCP client
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-            if detail_level == "summary":
-                return json.dumps(
-                    {
-                        "name": tool_name,
-                        "description": tool_def["description"],
-                        "category": category,
-                    },
-                    indent=2,
-                )
-            else:  # full
-                return json.dumps(
-                    {
-                        "name": tool_name,
-                        "description": tool_def["description"],
-                        "category": category,
-                        "parameters": tool_def["parameters"],
-                        "server": tool_def["server"],
-                        "examples": _get_tool_examples(tool_name),
-                    },
-                    indent=2,
-                )
+        async def _get_definition() -> dict:
+            manager = await get_manager()
+            # Search for this specific tool
+            all_matches = await manager.search_tools(tool_name, detail_level)
 
-    return json.dumps({"error": f"Tool {tool_name} not found"})
+            # Find exact match
+            for match in all_matches:
+                if match.get("name") == tool_name:
+                    return match
+
+            return {"error": f"Tool {tool_name} not found"}
+
+        result = loop.run_until_complete(_get_definition())
+        return json.dumps(result, indent=2)
+
+    else:
+        # Use demo mode
+        all_tools = get_demo_tools()
+
+        # Search for the tool across all categories
+        for category, tools in all_tools.items():
+            if tool_name in tools:
+                tool_def = tools[tool_name]
+
+                if detail_level == "summary":
+                    return json.dumps(
+                        {
+                            "name": tool_name,
+                            "description": tool_def["description"],
+                            "category": category,
+                        },
+                        indent=2,
+                    )
+                else:  # full
+                    return json.dumps(
+                        {
+                            "name": tool_name,
+                            "description": tool_def["description"],
+                            "category": category,
+                            "parameters": tool_def["parameters"],
+                            "server": tool_def["server"],
+                            "examples": _get_tool_examples(tool_name),
+                        },
+                        indent=2,
+                    )
+
+        return json.dumps({"error": f"Tool {tool_name} not found"})
 
 
 def _get_tool_examples(tool_name: str) -> list[dict[str, str]]:

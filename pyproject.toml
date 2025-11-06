@@ -20,6 +20,7 @@ dependencies = [
     # Chapter 8: UI Framework dependencies
     "textual>=0.87.0",
     "httpx>=0.28.0",
+    "mcp>=1.13.1",
 ]
 
 [project.optional-dependencies]

@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from mcp_code_agent.tools.code_executor import SafeCodeExecutor
-from mcp_code_agent.tools.mcp_tools import MOCK_MCP_TOOLS
+from mcp_code_agent.tools.mcp_demo_data import get_demo_tools
 
 
 def demo_traditional_approach() -> None:
@@ -29,8 +29,9 @@ def demo_traditional_approach() -> None:
     # Count total tokens (approximation)
     total_chars = 0
     all_tools = []
+    mock_tools = get_demo_tools()
 
-    for category, tools in MOCK_MCP_TOOLS.items():
+    for category, tools in mock_tools.items():
         for tool_name, tool_def in tools.items():
             all_tools.append(
                 {
@@ -66,7 +67,8 @@ def demo_progressive_disclosure() -> None:
 
     query = "file operations"
     matches = []
-    for category, tools in MOCK_MCP_TOOLS.items():
+    mock_tools = get_demo_tools()
+    for category, tools in mock_tools.items():
         for tool_name, tool_def in tools.items():
             searchable = f"{tool_name} {tool_def['description']} {category}".lower()
             if any(term in searchable for term in query.lower().split()):
@@ -90,7 +92,8 @@ def demo_progressive_disclosure() -> None:
 
     # Find the specific tool
     tool_def = None
-    for category, tools in MOCK_MCP_TOOLS.items():
+    mock_tools2 = get_demo_tools()
+    for category, tools in mock_tools2.items():
         if "read_file" in tools:
             tool_def = {
                 "name": "read_file",
@@ -114,7 +117,8 @@ def demo_progressive_disclosure() -> None:
 
     # Calculate traditional approach tokens for comparison
     all_tools = []
-    for category, tools in MOCK_MCP_TOOLS.items():
+    mock_tools3 = get_demo_tools()
+    for category, tools in mock_tools3.items():
         for tool_name, tool_def in tools.items():
             all_tools.append(
                 {
@@ -177,7 +181,8 @@ result = processed
     # Provide mock implementations for demonstration
     def mock_search_mcp_tools(query: str, detail_level: str) -> str:
         matches = []
-        for category, tools in MOCK_MCP_TOOLS.items():
+        mock_tools4 = get_demo_tools()
+        for category, tools in mock_tools4.items():
             for tool_name, tool_def in tools.items():
                 if "file" in query.lower() and "file" in tool_name.lower():
                     if detail_level == "summary":
@@ -190,7 +195,8 @@ result = processed
         return json.dumps({"matches": matches})
 
     def mock_get_tool_definition(tool_name: str, detail_level: str) -> str:
-        for category, tools in MOCK_MCP_TOOLS.items():
+        mock_tools5 = get_demo_tools()
+        for category, tools in mock_tools5.items():
             if tool_name in tools:
                 return json.dumps(
                     {

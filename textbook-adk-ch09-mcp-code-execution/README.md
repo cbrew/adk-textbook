@@ -87,6 +87,84 @@ python textbook-adk-ch09-mcp-code-execution/examples/data_filtering.py
 python textbook-adk-ch09-mcp-code-execution/examples/control_flow.py
 ```
 
+## Real MCP Integration
+
+This chapter supports both **demo mode** (default) and **real MCP servers**.
+
+### Demo Mode (Default)
+
+By default, the agent uses mock data for demonstration purposes. This allows you to:
+- Run examples without external dependencies
+- Learn the patterns without setting up MCP servers
+- Test and experiment quickly
+
+No configuration needed - just run the agent or examples!
+
+### Real MCP Mode
+
+To connect to actual MCP servers, set the environment variable:
+
+```bash
+# Use real MCP servers
+export USE_REAL_MCP=true
+
+# Then run the agent
+uv run adk run textbook-adk-ch09-mcp-code-execution/mcp_code_agent/
+
+# Or run examples
+uv run python textbook-adk-ch09-mcp-code-execution/examples/progressive_disclosure.py
+```
+
+### Setting Up MCP Servers
+
+To use real MCP servers, you'll need to install and run them:
+
+#### Filesystem Server
+
+```bash
+# Install the official filesystem MCP server
+npm install -g @modelcontextprotocol/server-filesystem
+
+# The agent will automatically connect to it using:
+# npx -y @modelcontextprotocol/server-filesystem /tmp
+```
+
+#### Custom MCP Servers
+
+You can add your own MCP servers by modifying `mcp_client.py`:
+
+```python
+# In initialize_default_servers()
+await manager.add_client(
+    "my_server",
+    "path/to/server/command",
+    ["--arg1", "--arg2"]
+)
+```
+
+#### Available MCP Servers
+
+Some MCP servers you can integrate:
+- **Filesystem**: `@modelcontextprotocol/server-filesystem` - File operations
+- **Database**: Custom DB MCP servers for data access
+- **Research**: Asta Scientific Corpus Tool for academic papers
+- **Custom Tools**: Your own MCP server implementations
+
+### Switching Between Modes
+
+```bash
+# Demo mode (no setup required)
+uv run adk run mcp_code_agent/
+
+# Real MCP mode (requires MCP servers)
+USE_REAL_MCP=true uv run adk run mcp_code_agent/
+
+# Temporarily enable for single command
+USE_REAL_MCP=true uv run python examples/data_filtering.py
+```
+
+The code automatically falls back to demo mode if real servers fail to connect.
+
 ## Key Takeaways
 
 1. **Code execution is more efficient than tool chaining** for complex workflows
@@ -122,18 +200,16 @@ textbook-adk-ch09-mcp-code-execution/
 │   └── tools/
 │       ├── __init__.py
 │       ├── code_executor.py           # Code execution tool
-│       ├── mcp_tools.py               # MCP integration tools
+│       ├── mcp_client.py              # Real MCP client (NEW!)
+│       ├── mcp_tools.py               # MCP integration (real + demo)
+│       ├── mcp_demo_data.py           # Demo data fallback (NEW!)
 │       └── progressive_discovery.py   # Tool discovery helpers
 ├── examples/                          # Standalone demonstrations
 │   ├── progressive_disclosure.py
 │   ├── data_filtering.py
-│   ├── control_flow.py
-│   ├── privacy_demo.py
-│   └── skills_builder.py
+│   └── control_flow.py
 └── tests/                             # Test suite
-    ├── test_code_executor.py
-    ├── test_progressive_disclosure.py
-    └── test_data_filtering.py
+    └── test_code_executor.py
 ```
 
 ## Learning Objectives

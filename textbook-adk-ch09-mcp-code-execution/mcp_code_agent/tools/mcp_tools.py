@@ -2,71 +2,38 @@
 
 These tools provide the interface for interacting with MCP servers,
 demonstrating progressive disclosure and efficient data handling.
+
+Supports both real MCP servers and demo mode for when servers aren't available.
 """
 
+import asyncio
 import json
+import os
 from typing import Any, Literal
 
 from google.adk.tools.tool_context import ToolContext
 
-# Mock MCP tool registry for demonstration
-# In production, this would query actual MCP servers
-MOCK_MCP_TOOLS = {
-    "filesystem": {
-        "read_file": {
-            "name": "read_file",
-            "description": "Read contents of a file",
-            "parameters": {"path": "string"},
-            "server": "filesystem",
-        },
-        "write_file": {
-            "name": "write_file",
-            "description": "Write contents to a file",
-            "parameters": {"path": "string", "content": "string"},
-            "server": "filesystem",
-        },
-        "list_directory": {
-            "name": "list_directory",
-            "description": "List files in a directory",
-            "parameters": {"path": "string"},
-            "server": "filesystem",
-        },
-    },
-    "data_processing": {
-        "get_records": {
-            "name": "get_records",
-            "description": "Get records from data store",
-            "parameters": {"filter": "object", "limit": "number"},
-            "server": "data_processing",
-        },
-        "aggregate_data": {
-            "name": "aggregate_data",
-            "description": "Aggregate data by specified fields",
-            "parameters": {"data": "array", "group_by": "string"},
-            "server": "data_processing",
-        },
-    },
-    "research": {
-        "search_papers": {
-            "name": "search_papers",
-            "description": "Search academic papers",
-            "parameters": {"query": "string", "max_results": "number"},
-            "server": "research",
-        },
-        "get_citations": {
-            "name": "get_citations",
-            "description": "Get citations for a paper",
-            "parameters": {"paper_id": "string"},
-            "server": "research",
-        },
-        "analyze_paper": {
-            "name": "analyze_paper",
-            "description": "Analyze paper content and metadata",
-            "parameters": {"paper_id": "string"},
-            "server": "research",
-        },
-    },
-}
+from .mcp_client import get_manager, initialize_default_servers
+from .mcp_demo_data import get_demo_response, get_demo_tools
+
+# Check if we should use real MCP servers or demo mode
+USE_REAL_MCP = os.getenv("USE_REAL_MCP", "false").lower() in ("true", "1", "yes")
+
+# Track initialization
+_mcp_initialized = False
+
+
+async def _ensure_mcp_initialized() -> None:
+    """Ensure MCP servers are initialized."""
+    global _mcp_initialized
+    if not _mcp_initialized and USE_REAL_MCP:
+        try:
+            await initialize_default_servers()
+            _mcp_initialized = True
+            print("✓ Real MCP servers initialized")
+        except Exception as e:
+            print(f"⚠ Could not initialize MCP servers: {e}")
+            print("Falling back to demo mode")
 
 
 def search_mcp_tools(
@@ -89,38 +56,60 @@ def search_mcp_tools(
     Returns:
         JSON string with matching tools at the requested detail level
     """
-    # Search across all tool categories
-    matches = []
+    if USE_REAL_MCP:
+        # Use real MCP client
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-    query_lower = query.lower()
-    for category, tools in MOCK_MCP_TOOLS.items():
-        for tool_name, tool_def in tools.items():
-            # Simple keyword matching
-            searchable = f"{tool_name} {tool_def['description']} {category}".lower()
-            if any(term in searchable for term in query_lower.split()):
-                if detail_level == "summary":
-                    matches.append(
-                        {
-                            "name": tool_name,
-                            "description": tool_def["description"],
-                            "category": category,
-                        }
-                    )
-                elif detail_level == "moderate":
-                    matches.append(
-                        {
-                            "name": tool_name,
-                            "description": tool_def["description"],
-                            "category": category,
-                            "parameters": list(tool_def["parameters"].keys()),
-                        }
-                    )
-                else:  # full
-                    matches.append(tool_def)
+        async def _search() -> list[dict[str, Any]]:
+            await _ensure_mcp_initialized()
+            manager = await get_manager()
+            return await manager.search_tools(query, detail_level)
 
-    return json.dumps(
-        {"query": query, "detail_level": detail_level, "matches": matches}, indent=2
-    )
+        matches = loop.run_until_complete(_search())
+        return json.dumps(
+            {"query": query, "detail_level": detail_level, "matches": matches},
+            indent=2,
+        )
+    else:
+        # Use demo mode
+        all_tools = get_demo_tools()
+        matches = []
+        query_lower = query.lower()
+
+        for category, tools in all_tools.items():
+            for tool_name, tool_def in tools.items():
+                searchable = (
+                    f"{tool_name} {tool_def['description']} {category}".lower()
+                )
+                if any(term in searchable for term in query_lower.split()):
+                    if detail_level == "summary":
+                        matches.append(
+                            {
+                                "name": tool_name,
+                                "description": tool_def["description"],
+                                "category": category,
+                            }
+                        )
+                    elif detail_level == "moderate":
+                        matches.append(
+                            {
+                                "name": tool_name,
+                                "description": tool_def["description"],
+                                "category": category,
+                                "parameters": list(tool_def["parameters"].keys()),
+                            }
+                        )
+                    else:  # full
+                        matches.append(tool_def)
+
+        return json.dumps(
+            {"query": query, "detail_level": detail_level, "matches": matches},
+            indent=2,
+        )
 
 
 def call_mcp_tool(
@@ -140,96 +129,39 @@ def call_mcp_tool(
         parameters: Parameters to pass to the tool
 
     Returns:
-        JSON string with the tool's response (mocked for demonstration)
+        JSON string with the tool's response
     """
-    # Mock implementations for demonstration
-    if server == "filesystem":
-        if tool_name == "read_file":
-            path = parameters.get("path", "")
-            return json.dumps(
-                {
+    if USE_REAL_MCP:
+        # Use real MCP client
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        async def _call_tool() -> Any:
+            await _ensure_mcp_initialized()
+            manager = await get_manager()
+            result = await manager.call_tool(server, tool_name, parameters)
+
+            # Format result as JSON
+            if hasattr(result, "content"):
+                # MCP result object
+                return {
                     "success": True,
-                    "content": f"Mock content of {path}",
-                    "size": 1234,
+                    "content": result.content,
                 }
-            )
-        elif tool_name == "list_directory":
+            else:
+                return {"success": True, "result": result}
+
+        try:
+            result = loop.run_until_complete(_call_tool())
+            return json.dumps(result, indent=2)
+        except Exception as e:
             return json.dumps(
-                {
-                    "success": True,
-                    "files": [
-                        "paper1.pdf",
-                        "paper2.pdf",
-                        "data.csv",
-                        "analysis.py",
-                    ],
-                }
+                {"success": False, "error": f"MCP call failed: {e}"}, indent=2
             )
-
-    elif server == "data_processing":
-        if tool_name == "get_records":
-            # Return a large mock dataset to demonstrate filtering
-            limit = parameters.get("limit", 1000)
-            records = []
-            for i in range(limit):
-                records.append(
-                    {
-                        "id": i,
-                        "status": "active" if i % 3 == 0 else "inactive",
-                        "value": i * 10,
-                        "category": f"cat_{i % 5}",
-                    }
-                )
-            return json.dumps({"success": True, "records": records, "total": limit})
-
-        elif tool_name == "aggregate_data":
-            data = parameters.get("data", [])
-            group_by = parameters.get("group_by", "category")
-            # Mock aggregation
-            aggregated = {}
-            for item in data:
-                key = item.get(group_by, "unknown")
-                if key not in aggregated:
-                    aggregated[key] = []
-                aggregated[key].append(item)
-            return json.dumps({"success": True, "aggregated": aggregated})
-
-    elif server == "research":
-        if tool_name == "search_papers":
-            query = parameters.get("query", "")
-            max_results = parameters.get("max_results", 10)
-            papers = []
-            for i in range(max_results):
-                papers.append(
-                    {
-                        "id": f"paper_{i}",
-                        "title": f"Research Paper on {query} - Part {i}",
-                        "authors": ["Author A", "Author B"],
-                        "year": 2024,
-                        "citations": 100 + i * 10,
-                    }
-                )
-            return json.dumps({"success": True, "papers": papers, "query": query})
-
-        elif tool_name == "get_citations":
-            paper_id = parameters.get("paper_id", "")
-            citations = []
-            for i in range(50):  # Mock 50 citations
-                citations.append(
-                    {
-                        "id": f"cite_{i}",
-                        "title": f"Citing Paper {i}",
-                        "year": 2020 + (i % 5),
-                    }
-                )
-            return json.dumps(
-                {"success": True, "paper_id": paper_id, "citations": citations}
-            )
-
-    # Default response for unknown tools
-    return json.dumps(
-        {
-            "success": False,
-            "error": f"Tool {tool_name} not found on server {server}",
-        }
-    )
+    else:
+        # Use demo mode
+        response = get_demo_response(server, tool_name, parameters)
+        return json.dumps(response, indent=2)
